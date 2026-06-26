@@ -44,7 +44,7 @@ export const PHOTOS: Record<string, PersonPhoto> = {
   wjhall: { qid: "Q79619988", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/William_James_Hall_(cropped).jpg?width=240", wiki: "", wikiEn: "https://en.wikipedia.org/wiki/William_James_Hall", source: C },
   hardie: { qid: "", photo: "https://upload.wikimedia.org/wikipedia/en/d/df/R._A._Hardie.jpg", wiki: "https://ko.wikipedia.org/wiki/로버트_A._하디", wikiEn: "https://en.wikipedia.org/wiki/Robert_A._Hardie", source: "영문 위키백과(공정이용)" },
   eugenebell: { qid: "", photo: null, wiki: "", source: "" },
-  junkin: { qid: "", photo: null, wiki: "", source: "" },
+  junkin: { qid: "", photo: "/portraits/junkin.jpg", wiki: "", source: "Nisbet, Day In and Day Out in Korea(1920) · Internet Archive" },
   reynolds: { qid: "Q8007512", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/William_Davis_Reynolds.jpg?width=240", wiki: "https://ko.wikipedia.org/wiki/윌리엄_데이비스_레이놀즈", wikiEn: "https://en.wikipedia.org/wiki/William_D._Reynolds", namu: "https://namu.wiki/w/윌리엄 데이비스 레이놀즈", source: C },
   leegipung: { qid: "Q65281226", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/이기풍.jpg?width=240", wiki: "https://ko.wikipedia.org/wiki/이기풍", source: C },
   gilseonju: { qid: "Q4991796", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/길선주.jpg?width=240", wiki: "https://ko.wikipedia.org/wiki/길선주", namu: "https://namu.wiki/w/길선주", source: C },
