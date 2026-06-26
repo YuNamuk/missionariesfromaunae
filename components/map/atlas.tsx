@@ -1024,16 +1024,37 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   </ul>
                 </section>
               )}
-              <section style={{ marginTop: 14 }}>
-                <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>{lens === "cemetery" ? "이곳에 안장된 선교사" : "이곳의 인물"}</h3>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {(lens === "cemetery" ? buriedAt(selPlace.name) : data.people.filter((p) => p.place === selPlace.id)).map((p) => (
-                    <button key={p.id} onClick={() => setSelected({ kind: "person", id: p.id })} style={{ ...pill("rgba(135,93,167,.12)", "#5a3f72"), border: `1px solid ${C.line}`, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                      {p.photo ? <img src={p.photo} alt="" style={{ width: 18, height: 18, borderRadius: 99, objectFit: "cover" }} /> : <span>{p.glyph}</span>} {p.name}
-                    </button>
-                  ))}
-                </div>
-              </section>
+              {(() => {
+                // 묘역 여부는 lens 가 아니라 '안장 데이터'로 판단 → 헤더 드롭다운으로 와도 안장자 표시
+                const buried = buriedAt(selPlace.name);
+                const isCem = buried.length > 0;
+                const list = isCem ? buried : data.people.filter((p) => p.place === selPlace.id);
+                return (
+                  <section style={{ marginTop: 14 }}>
+                    <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>
+                      {isCem ? `이곳에 안장된 선교사 ${buried.length}명` : "이곳의 인물"}
+                    </h3>
+                    {list.length === 0 ? (
+                      <p style={{ margin: 0, fontSize: 12.5, color: C.muted }}>기록된 인물이 없습니다.</p>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        {list.map((p) => (
+                          <button key={p.id} onClick={() => setSelected({ kind: "person", id: p.id })}
+                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "6px 8px", borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.55)", cursor: "pointer" }}>
+                            {p.photo
+                              ? <img src={p.photo} alt="" style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, objectFit: "cover" }} />
+                              : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 15 }}>{p.glyph}</span>}
+                            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
+                              <span style={{ fontSize: 13.5, fontWeight: 800, color: "#3e2c1d" }}>{p.name}</span>
+                              <span style={{ fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.org, p.life].filter(Boolean).join(" · ")}</span>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                );
+              })()}
             </div>
           </>
         )}
