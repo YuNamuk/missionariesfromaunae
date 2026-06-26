@@ -34,7 +34,7 @@ export const PHOTOS: Record<string, PersonPhoto> = {
 
   // ── expanded roster ──
   moffett: { qid: "Q16168359", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/SAMoffett1889.png?width=240", wiki: "https://ko.wikipedia.org/wiki/새뮤얼_오스틴_모펫", wikiEn: "https://en.wikipedia.org/wiki/Samuel_Austin_Moffett", namu: "https://namu.wiki/w/사무엘 오스틴 모펫", source: C },
-  baird: { qid: "", photo: null, wiki: "https://ko.wikipedia.org/wiki/윌리엄_M._베어드", wikiEn: "https://en.wikipedia.org/wiki/William_M._Baird", namu: "https://namu.wiki/w/윌리엄 마튼 베어드", source: "한국어 위키백과" },
+  baird: { qid: "", photo: "/portraits/baird.jpg", wiki: "https://ko.wikipedia.org/wiki/윌리엄_M._베어드", wikiEn: "https://en.wikipedia.org/wiki/William_M._Baird", namu: "https://namu.wiki/w/윌리엄 마튼 베어드", source: "The Korea Mission Field 1932.1 · Internet Archive" },
   avison: { qid: "Q16096488", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/Oliver_R._Avison.jpg?width=240", wiki: "https://ko.wikipedia.org/wiki/올리버_R._에이비슨", wikiEn: "https://en.wikipedia.org/wiki/Oliver_R._Avison", namu: "https://namu.wiki/w/올리버 R. 에이비슨", source: C },
   gale: { qid: "Q11270711", photo: null, wiki: "https://ko.wikipedia.org/wiki/제임스_게일", wikiEn: "https://en.wikipedia.org/wiki/James_Scarth_Gale", namu: "https://namu.wiki/w/제임스 게일", source: "한국어 위키백과" },
   hulbert: { qid: "Q5890091", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/Homer_Bezaleel_Hulbert.jpg?width=240", wiki: "https://ko.wikipedia.org/wiki/호머_헐버트", wikiEn: "https://en.wikipedia.org/wiki/Homer_Hulbert", namu: "https://namu.wiki/w/호머 헐버트", source: C },
