@@ -1,0 +1,27 @@
+/* Dreamy School — Elevation, shadows, motion. Soft, diffuse, low-contrast. */
+:root {
+  /* Soft cloud shadows — cool-tinted, never harsh black */
+  --shadow-xs: 0 1px 2px rgba(14,36,56,0.06);
+  --shadow-sm: 0 2px 8px rgba(14,36,56,0.07);
+  --shadow-md: 0 8px 24px rgba(14,36,56,0.09);
+  --shadow-lg: 0 18px 44px rgba(14,36,56,0.12);
+  --shadow-xl: 0 30px 70px rgba(14,36,56,0.16);
+
+  /* Tinted glows for brand surfaces */
+  --shadow-sky:  0 14px 34px rgba(0,167,225,0.22);
+  --shadow-iris: 0 14px 34px rgba(108,92,231,0.22);
+
+  /* Hairlines */
+  --ring-soft: inset 0 0 0 1px rgba(14,36,56,0.06); /* @kind shadow */
+
+  /* Motion — gentle, dreamy. Slight ease-out, no aggressive bounce. */
+  --ease-soft:  cubic-bezier(0.22, 0.61, 0.36, 1); /* @kind other */
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */
+  --ease-float: cubic-bezier(0.34, 1.30, 0.64, 1); /* @kind other */
+  --dur-fast:   140ms; /* @kind other */
+  --dur-base:   220ms; /* @kind other */
+  --dur-slow:   420ms; /* @kind other */
+
+  /* Glass / dreamy blur */
+  --blur-glass: saturate(140%) blur(16px); /* @kind other */
+}

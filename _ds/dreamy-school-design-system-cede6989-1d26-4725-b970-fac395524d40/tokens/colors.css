@@ -1,0 +1,95 @@
+/* Dreamy School — Color tokens
+   Anchored on the brand cyan #00A7E1. A cool, dreamy palette: sky blue, dream
+   iris (periwinkle), aqua, soft lavender, with warm pops for playful moments. */
+:root {
+  /* ---- Sky (brand primary) ---- */
+  --sky-50:  #F1FAFE;
+  --sky-100: #E1F4FC;
+  --sky-200: #BCE7F8;
+  --sky-300: #84D5F2;
+  --sky-400: #45C1EC;
+  --sky-500: #00A7E1; /* brand cyan */
+  --sky-600: #0089C2;
+  --sky-700: #006D9C;
+  --sky-800: #075776;
+  --sky-900: #0E4862;
+
+  /* ---- Iris (dream purple / periwinkle) ---- */
+  --iris-50:  #F5F3FE;
+  --iris-100: #ECE9FD;
+  --iris-200: #D7D0FB;
+  --iris-300: #B9ADF6;
+  --iris-400: #9685EF;
+  --iris-500: #6C5CE7;
+  --iris-600: #5742D4;
+  --iris-700: #4734B0;
+  --iris-800: #3B2D8F;
+  --iris-900: #322874;
+
+  /* ---- Aqua (teal accent) ---- */
+  --aqua-50:  #ECFBFA;
+  --aqua-100: #D2F5F3;
+  --aqua-300: #8AE3DF;
+  --aqua-500: #29C3BC;
+  --aqua-700: #138C87;
+
+  /* ---- Soft playful pops ---- */
+  --lavender: #C4B5FD; /* dreamy haze */
+  --blush:    #FFC9E0; /* warm pop */
+  --sun:      #FFD166; /* sunny pop */
+  --peach:    #FFB59B; /* warm pop */
+
+  /* ---- Ink / cool neutrals ---- */
+  --ink-900: #0E2438; /* darkest text / navy */
+  --ink-800: #1E3852;
+  --ink-700: #36506B;
+  --ink-600: #51697F;
+  --ink-500: #6E8294;
+  --ink-400: #97A8B6;
+  --ink-300: #C2CDD7;
+  --ink-200: #DEE6EC;
+  --ink-100: #EEF3F7;
+  --ink-50:  #F6F9FB;
+  --white:   #FFFFFF;
+  --cloud:   #F7FBFE; /* off-white page wash */
+
+  /* ---- Status ---- */
+  --success: #2BB673;
+  --success-soft: #DCF5E9;
+  --warning: #F0A92B;
+  --warning-soft: #FCEFD3;
+  --danger:  #E5556B;
+  --danger-soft:  #FBE0E4;
+  --info:    var(--sky-500);
+  --info-soft: var(--sky-100);
+
+  /* ---- Brand gradients ---- */
+  --grad-dream:  linear-gradient(135deg, #00A7E1 0%, #6C5CE7 100%); /* @kind color */
+  --grad-sky:    linear-gradient(135deg, #45C1EC 0%, #00A7E1 100%); /* @kind color */
+  --grad-haze:   linear-gradient(135deg, #E1F4FC 0%, #ECE9FD 100%); /* @kind color */
+  --grad-aqua:   linear-gradient(135deg, #29C3BC 0%, #00A7E1 100%); /* @kind color */
+  --grad-dawn:   linear-gradient(135deg, #C4B5FD 0%, #84D5F2 60%, #8AE3DF 100%); /* @kind color */
+
+  /* ---- Semantic aliases ---- */
+  --color-brand:        var(--sky-500);
+  --color-brand-strong: var(--sky-600);
+  --color-accent:       var(--iris-500);
+
+  --text-strong:  var(--ink-900);
+  --text-body:    var(--ink-700);
+  --text-muted:   var(--ink-500);
+  --text-faint:   var(--ink-400);
+  --text-on-brand:var(--white);
+
+  --surface-page:  var(--cloud);
+  --surface-card:  var(--white);
+  --surface-sky:   var(--sky-50);
+  --surface-iris:  var(--iris-50);
+  --surface-sunken:var(--ink-50);
+
+  --border-soft:   var(--ink-200);
+  --border-strong: var(--ink-300);
+  --border-brand:  var(--sky-300);
+
+  --focus-ring: 0 0 0 4px rgba(0,167,225,0.30); /* @kind shadow */
+}

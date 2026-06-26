@@ -1,0 +1,81 @@
+export interface MapPlace {
+  id: string;
+  name: string;
+  cat: "port" | "origin" | "site" | "person";
+  catLabel: string;
+  color: string;
+  glyph: string;
+  lat: number;
+  lng: number;
+  year: number;
+  summary: string;
+  sub?: { name: string; note: string }[];
+}
+
+export interface MapPerson {
+  id: string;
+  name: string;
+  en: string;
+  glyph: string;
+  place: string;
+  placeName: string;
+  lat: number;
+  lng: number;
+  year: number;
+  country: string;
+  org: string;
+  role: string;
+  life: string;
+  summary: string;
+  interview: string;
+  photo: string | null;
+  wiki: string;
+  photoSource: string;
+  burial: string;
+  active: [number, number][];
+  facts: [string, string][];
+  timeline: [string, string][];
+  video: string;
+  photos: string[];
+  sources: { t: string; a: string }[];
+}
+
+export interface MapEdge {
+  from: string;
+  to: string;
+  type: string;
+  label: string;
+  color: string;
+  dash: string | null;
+  note: string;
+  directional: boolean;
+}
+
+export interface RelLegend {
+  key: string;
+  label: string;
+  color: string;
+  dash: string | null;
+}
+
+export interface MapEvent {
+  year: number;
+  title: string;
+  desc: string;
+  placeId: string;
+  placeName: string;
+  lat: number;
+  lng: number;
+  people: { id: string; name: string }[];
+}
+
+export interface AtlasData {
+  places: MapPlace[];
+  people: MapPerson[];
+  edges: MapEdge[];
+  relTypes: RelLegend[];
+  events: MapEvent[];
+  terms: Record<string, string>;
+  yearMin: number;
+  yearMax: number;
+}

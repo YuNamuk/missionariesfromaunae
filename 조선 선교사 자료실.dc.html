@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/dreamy-school-design-system-cede6989-1d26-4725-b970-fac395524d40/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/dreamy-school-design-system-cede6989-1d26-4725-b970-fac395524d40/tokens/colors.css">
+<link rel="stylesheet" href="_ds/dreamy-school-design-system-cede6989-1d26-4725-b970-fac395524d40/tokens/typography.css">
+<link rel="stylesheet" href="_ds/dreamy-school-design-system-cede6989-1d26-4725-b970-fac395524d40/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/dreamy-school-design-system-cede6989-1d26-4725-b970-fac395524d40/tokens/effects.css">
+<link rel="stylesheet" href="_ds/dreamy-school-design-system-cede6989-1d26-4725-b970-fac395524d40/styles.css">
+<script src="_ds/dreamy-school-design-system-cede6989-1d26-4725-b970-fac395524d40/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  .leaflet-container { background: #E7E0D2 !important; font-family: var(--font-body); outline: none; }
+  .leaflet-tile-pane { filter: sepia(0.22) saturate(0.92) brightness(0.99) contrast(1.02); }
+  .leaflet-container a { color: var(--sky-300); }
+  .dlabel { background: rgba(8,18,28,0.86) !important; border: 1px solid rgba(255,255,255,0.14) !important; color: #fff !important; font-family: var(--font-display) !important; font-weight: 800 !important; font-size: 11px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.45) !important; border-radius: 99px !important; padding: 2px 9px !important; white-space: nowrap; }
+  .dlabel.leaflet-tooltip-bottom::before, .dlabel::before { display: none !important; }
+  .leaflet-control-attribution { background: rgba(8,18,28,0.55) !important; color: rgba(225,244,252,0.45) !important; font-size: 9px !important; padding: 1px 6px !important; }
+  .leaflet-control-attribution a { color: rgba(132,213,242,0.7) !important; }
+  .dpin { transition: filter .15s ease; }
+  .leaflet-marker-icon:hover .dpin { filter: brightness(1.12); }
+  .reltip { background: rgba(14,36,56,0.92) !important; color: #fff !important; border: none !important; font-family: var(--font-display) !important; font-weight: 800 !important; font-size: 10px !important; padding: 1px 7px !important; border-radius: 99px !important; box-shadow: 0 2px 6px rgba(0,0,0,0.4) !important; white-space: nowrap; }
+  .reltip::before { display: none !important; }
+  .dlabel-dim { opacity: 0.5 !important; }
+  .leaflet-tooltip { transition: opacity .2s ease; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  .archive-root ::-webkit-scrollbar { width: 10px; height: 10px; }
+  .archive-root ::-webkit-scrollbar-thumb { background: rgba(14,36,56,0.18); border-radius: 99px; border: 2px solid transparent; background-clip: content-box; }
+  .archive-root ::-webkit-scrollbar-thumb:hover { background: rgba(14,36,56,0.32); background-clip: content-box; }
+  @keyframes pinDrop { 0% { opacity: 0; transform: translate(-50%, -160%) scale(0.4); } 60% { opacity: 1; } 100% { opacity: 1; transform: translate(-50%, -100%) scale(1); } }
+  @keyframes panelIn { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulseRing { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(2.4); opacity: 0; } }
+  .yr-slider { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 99px; background: rgba(255,255,255,0.22); outline: none; }
+  .yr-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #00A7E1; border: 3px solid #fff; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.35); }
+  .yr-slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #00A7E1; border: 3px solid #fff; cursor: pointer; }
+</style>
+</helmet>
+<div class="archive-root" style="font-family: var(--font-body, 'Nunito Sans', sans-serif); width: 100%; height: 100vh; min-height: 720px; display: flex; flex-direction: column; background: #0B1B2B; color: var(--ink-900); overflow: hidden;">
+
+  <header style="flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 0 26px; height: 66px; background: linear-gradient(180deg, #102A40 0%, #0E2438 100%); border-bottom: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 20px rgba(0,0,0,0.35); z-index: 40;">
+    <div style="display: flex; align-items: center; gap: 16px; min-width: 0;">
+      <div style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 11px; background: var(--grad-dream); box-shadow: 0 4px 14px rgba(0,167,225,0.4); flex: 0 0 auto;">
+        <span style="font-family: var(--font-display); font-weight: 900; font-size: 22px; color: #fff; line-height: 1;">Ð</span>
+      </div>
+      <div style="min-width: 0;">
+        <div style="font-family: var(--font-display); font-weight: 800; font-size: 17px; letter-spacing: -0.01em; color: #fff; line-height: 1.1; white-space: nowrap;">조선 선교사 온라인 자료실</div>
+        <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sky-300); line-height: 1.3;">Missionaries from Aunae · 1882–1935</div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 18px;">
+      <div style="display: flex; align-items: center; gap: 0; padding: 4px; border-radius: 99px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.08);">
+        <sc-for list="{{ layoutOptions }}" as="opt" hint-placeholder-count="2">
+          <button onClick="{{ opt.onClick }}" style="{{ opt.style }}">{{ opt.label }}</button>
+        </sc-for>
+      </div>
+      <button onClick="{{ openArchive }}" style="{{ archiveBtnStyle }}">
+        <span style="font-size: 15px; line-height: 1;">☰</span>
+        <span>자료실 전체보기</span>
+      </button>
+    </div>
+  </header>
+
+  <div style="flex: 1 1 auto; position: relative; min-height: 0; display: flex;">
+
+    <!-- ===== MAP STAGE ===== -->
+    <div style="{{ mapWrapStyle }}">
+      <div style="position: absolute; inset: 0; overflow: hidden;">
+
+        <div ref="{{ mapRef }}" style="position: absolute; inset: 0; background: #0B1B2B; z-index: 1;"></div>
+
+        <!-- vignette -->
+        <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(150% 130% at 50% 45%, transparent 72%, rgba(60,42,18,0.14) 100%); z-index: 5;"></div>
+
+        <div style="display: none" aria-hidden="true">
+          <svg viewBox="0 0 1200 1400" width="1200" height="1400" style="display: block;" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="seaG" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#13314A"></stop>
+                <stop offset="1" stop-color="#0C2335"></stop>
+              </linearGradient>
+              <linearGradient id="landG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#26506C"></stop>
+                <stop offset="1" stop-color="#1C3F58"></stop>
+              </linearGradient>
+              <pattern id="hatch" width="9" height="9" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="0" x2="0" y2="9" stroke="rgba(132,213,242,0.10)" stroke-width="1"></line>
+              </pattern>
+            </defs>
+
+            <!-- graticule -->
+            <g stroke="rgba(132,213,242,0.10)" stroke-width="1">
+              <line x1="200" y1="0" x2="200" y2="1400"></line>
+              <line x1="400" y1="0" x2="400" y2="1400"></line>
+              <line x1="600" y1="0" x2="600" y2="1400"></line>
+              <line x1="800" y1="0" x2="800" y2="1400"></line>
+              <line x1="1000" y1="0" x2="1000" y2="1400"></line>
+              <line x1="0" y1="240" x2="1200" y2="240"></line>
+              <line x1="0" y1="480" x2="1200" y2="480"></line>
+              <line x1="0" y1="720" x2="1200" y2="720"></line>
+              <line x1="0" y1="960" x2="1200" y2="960"></line>
+              <line x1="0" y1="1200" x2="1200" y2="1200"></line>
+            </g>
+
+            <!-- Manchuria / mainland (NW) -->
+            <path d="M -40 -40 L 560 -40 L 540 70 Q 500 150 430 180 Q 360 205 330 270 Q 300 340 360 380 Q 300 430 360 470 Q 300 520 250 540 L -40 560 Z" fill="url(#landG)" stroke="#0C2335" stroke-width="3"></path>
+            <path d="M -40 -40 L 560 -40 L 540 70 Q 500 150 430 180 Q 360 205 330 270 Q 300 340 360 380 Q 300 430 360 470 Q 300 520 250 540 L -40 560 Z" fill="url(#hatch)" stroke="none"></path>
+
+            <!-- Korean peninsula -->
+            <path d="M 560 -40 L 720 -40 Q 700 90 740 200 Q 770 320 760 470 Q 752 600 770 740 Q 782 850 760 940 Q 742 1000 690 1018 Q 648 1030 612 1006 Q 580 1040 540 1018 Q 500 1038 470 1000 Q 432 960 452 892 Q 470 828 446 778 Q 500 740 470 690 Q 520 654 486 612 Q 540 580 506 540 Q 556 506 520 470 Q 566 432 524 390 Q 560 350 520 300 Q 556 250 520 190 Q 548 110 540 70 Q 552 10 560 -40 Z" fill="url(#landG)" stroke="#0C2335" stroke-width="3.5"></path>
+            <path d="M 560 -40 L 720 -40 Q 700 90 740 200 Q 770 320 760 470 Q 752 600 770 740 Q 782 850 760 940 Q 742 1000 690 1018 Q 648 1030 612 1006 Q 580 1040 540 1018 Q 500 1038 470 1000 Q 432 960 452 892 Q 470 828 446 778 Q 500 740 470 690 Q 520 654 486 612 Q 540 580 506 540 Q 556 506 520 470 Q 566 432 524 390 Q 560 350 520 300 Q 556 250 520 190 Q 548 110 540 70 Q 552 10 560 -40 Z" fill="url(#hatch)" stroke="none"></path>
+
+            <!-- coastline echo -->
+            <path d="M 716 30 Q 696 110 736 210 Q 766 326 756 472 Q 748 602 766 740 Q 776 846 756 932 Q 738 992 690 1008" fill="none" stroke="rgba(132,213,242,0.22)" stroke-width="1.5" stroke-dasharray="2 6"></path>
+
+            <!-- Jeju -->
+            <ellipse cx="515" cy="1085" rx="46" ry="22" fill="url(#landG)" stroke="#0C2335" stroke-width="3"></ellipse>
+            <!-- west-coast islets -->
+            <circle cx="430" cy="640" r="7" fill="url(#landG)" stroke="#0C2335" stroke-width="2"></circle>
+            <circle cx="408" cy="700" r="5" fill="url(#landG)" stroke="#0C2335" stroke-width="2"></circle>
+            <circle cx="452" cy="940" r="6" fill="url(#landG)" stroke="#0C2335" stroke-width="2"></circle>
+
+            <!-- Japan (SE) -->
+            <path d="M 980 1040 Q 1060 1080 1110 1180 Q 1160 1280 1240 1320 L 1240 1440 L 940 1440 Q 980 1340 950 1240 Q 930 1140 980 1040 Z" fill="url(#landG)" stroke="#0C2335" stroke-width="3"></path>
+            <path d="M 980 1040 Q 1060 1080 1110 1180 Q 1160 1280 1240 1320 L 1240 1440 L 940 1440 Q 980 1340 950 1240 Q 930 1140 980 1040 Z" fill="url(#hatch)" stroke="none"></path>
+
+            <!-- region labels -->
+            <text x="120" y="200" fill="rgba(132,213,242,0.5)" font-family="var(--font-display)" font-size="26" font-weight="800" letter-spacing="8" style="text-transform: uppercase;">滿 洲</text>
+            <text x="1040" y="1380" fill="rgba(132,213,242,0.5)" font-family="var(--font-display)" font-size="24" font-weight="800" letter-spacing="6" style="text-transform: uppercase;">日 本</text>
+            <text x="612" y="430" fill="rgba(225,244,252,0.34)" font-family="var(--font-display)" font-size="40" font-weight="900" letter-spacing="16" style="text-transform: uppercase;">朝 鮮</text>
+
+            <!-- compass rose -->
+            <g transform="translate(1070,250)" opacity="0.85">
+              <circle r="46" fill="none" stroke="rgba(132,213,242,0.35)" stroke-width="1.5"></circle>
+              <circle r="34" fill="none" stroke="rgba(132,213,242,0.18)" stroke-width="1"></circle>
+              <path d="M 0 -44 L 9 0 L 0 44 L -9 0 Z" fill="rgba(132,213,242,0.30)"></path>
+              <path d="M 0 -44 L 9 0 L 0 0 Z" fill="#00A7E1"></path>
+              <path d="M -44 0 L 0 9 L 44 0 L 0 -9 Z" fill="rgba(132,213,242,0.16)"></path>
+              <text x="-6" y="-52" fill="var(--sky-300)" font-family="var(--font-display)" font-size="15" font-weight="800">N</text>
+            </g>
+          </svg>
+
+        </div>
+
+        <!-- zoom controls -->
+        <div style="position: absolute; right: 18px; bottom: 96px; display: flex; flex-direction: column; gap: 8px; z-index: 20;">
+          <button onClick="{{ zoomIn }}" style="width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(16,42,64,0.85); color: #fff; font-size: 22px; font-weight: 700; cursor: pointer; backdrop-filter: blur(6px); box-shadow: 0 4px 14px rgba(0,0,0,0.3);">+</button>
+          <button onClick="{{ zoomOut }}" style="width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(16,42,64,0.85); color: #fff; font-size: 22px; font-weight: 700; cursor: pointer; backdrop-filter: blur(6px); box-shadow: 0 4px 14px rgba(0,0,0,0.3);">−</button>
+          <button onClick="{{ resetView }}" style="width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.14); background: rgba(16,42,64,0.85); color: var(--sky-300); font-size: 15px; font-weight: 800; cursor: pointer; backdrop-filter: blur(6px); box-shadow: 0 4px 14px rgba(0,0,0,0.3);">⤢</button>
+        </div>
+
+        <!-- LEGEND / FILTER (floating, atlas) -->
+        <div style="position: absolute; left: 18px; top: 18px; width: 246px; padding: 16px 16px 14px; border-radius: 18px; background: rgba(12,28,42,0.78); border: 1px solid rgba(255,255,255,0.10); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 20;">
+          <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sky-300); margin-bottom: 10px;">지도 레이어</div>
+          <div style="display: flex; flex-direction: column; gap: 7px;">
+            <sc-for list="{{ layerChips }}" as="ch" hint-placeholder-count="4">
+              <button onClick="{{ ch.onClick }}" style="{{ ch.style }}">
+                <span style="{{ ch.swatch }}">{{ ch.glyph }}</span>
+                <span style="flex: 1 1 auto; text-align: left;">{{ ch.label }}</span>
+                <span style="font-size: 11px; font-weight: 800; opacity: 0.7;">{{ ch.count }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="margin-top: 13px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--iris-300); margin-bottom: 9px;">관계 유형 — 핀을 누르면 펼쳐집니다</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 7px 10px;">
+              <sc-for list="{{ relLegend }}" as="r" hint-placeholder-count="6">
+                <span style="display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 700; color: rgba(225,244,252,0.82);">
+                  <span style="{{ r.swatchStyle }}"></span>
+                  <span>{{ r.label }}</span>
+                </span>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIMELINE scrubber (bottom) -->
+        <div style="position: absolute; left: 50%; transform: translateX(-50%); bottom: 18px; width: min(620px, calc(100% - 320px)); padding: 13px 20px 15px; border-radius: 18px; background: rgba(12,28,42,0.82); border: 1px solid rgba(255,255,255,0.10); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 20;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px;">
+            <span style="font-size: 10px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sky-300);">연표 — 시기별 보기</span>
+            <span style="font-family: var(--font-display); font-weight: 900; font-size: 18px; color: #fff;">~ {{ year }}</span>
+          </div>
+          <input type="range" class="yr-slider" min="1882" max="1935" step="1" value="{{ year }}" onInput="{{ onYear }}" style="width: 100%;">
+          <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; font-weight: 700; color: rgba(225,244,252,0.45);">
+            <span>1882</span><span>1895</span><span>1907</span><span>1920</span><span>1935</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== DETAIL PANEL ===== -->
+    <sc-if value="{{ detail }}" hint-placeholder-val="{{ false }}">
+      <aside style="{{ detailWrapStyle }}">
+        <div style="position: relative; padding: 0; height: 100%; display: flex; flex-direction: column; background: var(--cloud);">
+
+          <!-- detail hero -->
+          <div style="position: relative; flex: 0 0 auto; padding: 22px 24px 18px; background: {{ detail.heroBg }}; color: #fff; overflow: hidden;">
+            <div style="position: absolute; inset: 0; opacity: 0.16; background-image: radial-gradient(circle at 80% 20%, #fff 0, transparent 40%), radial-gradient(circle at 15% 90%, #fff 0, transparent 35%);"></div>
+            <button onClick="{{ closeDetail }}" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.14); color: #fff; font-size: 16px; cursor: pointer; z-index: 3;">✕</button>
+            <div style="position: relative; z-index: 2;">
+              <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 99px; background: rgba(255,255,255,0.18); font-size: 11px; font-weight: 800; letter-spacing: 0.06em;">{{ detail.kindLabel }}</span>
+              <div style="display: flex; align-items: flex-end; gap: 16px; margin-top: 14px;">
+                <div style="flex: 0 0 auto; width: 76px; height: 76px; border-radius: 18px; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.28); display: flex; align-items: center; justify-content: center; font-size: 34px; box-shadow: 0 6px 18px rgba(0,0,0,0.2);">{{ detail.glyph }}</div>
+                <div style="min-width: 0;">
+                  <h2 style="margin: 0; font-family: var(--font-display); font-weight: 900; font-size: 25px; line-height: 1.08; letter-spacing: -0.01em;">{{ detail.name }}</h2>
+                  <div style="margin-top: 4px; font-size: 13px; font-weight: 600; opacity: 0.9;">{{ detail.sub }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- tabs -->
+          <div style="flex: 0 0 auto; display: flex; gap: 2px; padding: 0 14px; background: #fff; border-bottom: 1px solid var(--border-soft);">
+            <sc-for list="{{ detailTabs }}" as="t" hint-placeholder-count="4">
+              <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+            </sc-for>
+          </div>
+
+          <!-- tab body -->
+          <div style="flex: 1 1 auto; overflow-y: auto; padding: 22px 24px 40px;">
+
+            <!-- 개요 -->
+            <sc-if value="{{ tabOverview }}" hint-placeholder-val="{{ true }}">
+              <div style="animation: fadeUp 0.3s ease both;">
+                <p style="margin: 0 0 18px; font-size: 14.5px; line-height: 1.7; color: var(--ink-700);">{{ detail.summary }}</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <sc-for list="{{ detail.facts }}" as="f" hint-placeholder-count="4">
+                    <div style="padding: 12px 14px; border-radius: 14px; background: var(--surface-sky); border: 1px solid var(--border-soft);">
+                      <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sky-600); margin-bottom: 4px;">{{ f.k }}</div>
+                      <div style="font-size: 13.5px; font-weight: 700; color: var(--ink-900); line-height: 1.35;">{{ f.v }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ detail.hasRelations }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 20px;">
+                    <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-500); margin-bottom: 10px;">역학 관계</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <sc-for list="{{ detail.relations }}" as="r" hint-placeholder-count="3">
+                        <button onClick="{{ r.onClick }}" style="display: flex; align-items: center; gap: 11px; width: 100%; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--border-soft); background: #fff; cursor: pointer; text-align: left; transition: all 0.18s ease;" style-hover="border-color: var(--iris-300); transform: translateX(2px); box-shadow: var(--shadow-sm);">
+                          <span style="flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; background: var(--grad-haze); display: flex; align-items: center; justify-content: center; font-size: 17px;">{{ r.glyph }}</span>
+                          <span style="flex: 1 1 auto; min-width: 0;">
+                            <span style="display: block; font-size: 13.5px; font-weight: 800; color: var(--ink-900);">{{ r.name }}</span>
+                            <span style="display: block; font-size: 11.5px; color: var(--ink-500); line-height: 1.35;">{{ r.note }}</span>
+                          </span>
+                          <span style="flex: 0 0 auto; padding: 3px 9px; border-radius: 99px; font-size: 10.5px; font-weight: 800; color: #fff; background: {{ r.color }};">{{ r.relabel }}</span>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ detail.hasPeople }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 20px;">
+                    <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-500); margin-bottom: 10px;">이곳의 선교사</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <sc-for list="{{ detail.people }}" as="p" hint-placeholder-count="3">
+                        <button onClick="{{ p.onClick }}" style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--border-soft); background: #fff; cursor: pointer; text-align: left; transition: all 0.18s ease;" style-hover="border-color: var(--sky-300); transform: translateX(2px); box-shadow: var(--shadow-sm);">
+                          <span style="flex: 0 0 auto; width: 38px; height: 38px; border-radius: 11px; background: var(--grad-haze); display: flex; align-items: center; justify-content: center; font-size: 19px;">{{ p.glyph }}</span>
+                          <span style="flex: 1 1 auto; min-width: 0;">
+                            <span style="display: block; font-size: 14px; font-weight: 800; color: var(--ink-900);">{{ p.name }}</span>
+                            <span style="display: block; font-size: 12px; color: var(--ink-500);">{{ p.sub }}</span>
+                          </span>
+                          <span style="color: var(--sky-500); font-size: 16px;">›</span>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- 연표 -->
+            <sc-if value="{{ tabTimeline }}" hint-placeholder-val="{{ false }}">
+              <div style="animation: fadeUp 0.3s ease both; position: relative; padding-left: 8px;">
+                <sc-for list="{{ detail.timeline }}" as="ev" hint-placeholder-count="4">
+                  <div style="position: relative; padding: 0 0 22px 26px; border-left: 2px solid var(--border-strong);">
+                    <span style="position: absolute; left: -8px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--sky-500); border: 3px solid var(--cloud); box-shadow: 0 0 0 1px var(--border-strong);"></span>
+                    <div style="font-family: var(--font-display); font-weight: 900; font-size: 15px; color: var(--sky-700);">{{ ev.year }}</div>
+                    <div style="margin-top: 3px; font-size: 13.5px; line-height: 1.55; color: var(--ink-700);">{{ ev.event }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- 영상 -->
+            <sc-if value="{{ tabVideo }}" hint-placeholder-val="{{ false }}">
+              <div style="animation: fadeUp 0.3s ease both;">
+                <div style="position: relative; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; background: linear-gradient(135deg, #0E2438, #1E3852); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-soft);">
+                  <div style="position: absolute; inset: 0; opacity: 0.5; background-image: radial-gradient(circle at 30% 30%, rgba(0,167,225,0.4), transparent 50%), radial-gradient(circle at 75% 70%, rgba(108,92,231,0.4), transparent 50%);"></div>
+                  <div style="position: relative; text-align: center; color: #fff;">
+                    <div style="width: 62px; height: 62px; margin: 0 auto 12px; border-radius: 50%; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 24px; padding-left: 4px;">▶</div>
+                    <div style="font-size: 13px; font-weight: 700; opacity: 0.85;">영상 자료 (자리표시)</div>
+                  </div>
+                </div>
+                <div style="margin-top: 14px; font-family: var(--font-display); font-weight: 800; font-size: 16px; color: var(--ink-900);">{{ detail.videoTitle }}</div>
+                <p style="margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: var(--ink-500);">영상 링크가 준비되면 이 자리에 삽입됩니다. (유튜브·아카이브 영상 등)</p>
+              </div>
+            </sc-if>
+
+            <!-- 자료 -->
+            <sc-if value="{{ tabDocs }}" hint-placeholder-val="{{ false }}">
+              <div style="animation: fadeUp 0.3s ease both;">
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-500); margin-bottom: 10px;">관련 문헌 · 논문</div>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+                  <sc-for list="{{ detail.docs }}" as="d" hint-placeholder-count="3">
+                    <div style="display: flex; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border-soft); background: #fff;">
+                      <span style="flex: 0 0 auto; width: 34px; height: 42px; border-radius: 5px; background: {{ d.color }}; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; box-shadow: 0 2px 6px rgba(14,36,56,0.18);">▤</span>
+                      <span style="min-width: 0;">
+                        <span style="display: block; font-size: 13.5px; font-weight: 800; color: var(--ink-900); line-height: 1.3;">{{ d.title }}</span>
+                        <span style="display: block; font-size: 12px; color: var(--ink-500); margin-top: 2px;">{{ d.author }}</span>
+                      </span>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-500); margin-bottom: 10px;">당시 사진 · 기록물</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px;">
+                  <sc-for list="{{ detail.photos }}" as="ph" hint-placeholder-count="2">
+                    <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-soft); background: #fff;">
+                      <div style="aspect-ratio: 4/3; background: linear-gradient(135deg, var(--ink-100), var(--ink-200)); display: flex; align-items: center; justify-content: center; color: var(--ink-400); font-size: 22px;">▦</div>
+                      <div style="padding: 8px 10px; font-size: 11.5px; font-weight: 600; color: var(--ink-600); line-height: 1.35;">{{ ph }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <sc-if value="{{ detail.interview }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ noop }}" style="display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; border-radius: 16px; border: none; background: var(--grad-dream); color: #fff; cursor: pointer; text-align: left; box-shadow: 0 8px 22px rgba(0,167,225,0.3);">
+                    <span style="flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 20px;">✎</span>
+                    <span style="flex: 1 1 auto;">
+                      <span style="display: block; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.85;">가상 인터뷰집</span>
+                      <span style="display: block; font-size: 14px; font-weight: 800; margin-top: 2px; line-height: 1.3;">{{ detail.interview }}</span>
+                    </span>
+                    <span style="font-size: 20px;">›</span>
+                  </button>
+                </sc-if>
+              </div>
+            </sc-if>
+
+          </div>
+        </div>
+      </aside>
+    </sc-if>
+
+    <!-- ===== ARCHIVE (full resource list / search) ===== -->
+    <sc-if value="{{ archiveOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; z-index: 50; background: rgba(8,18,28,0.55); backdrop-filter: blur(4px); display: flex; justify-content: center; padding: 38px 24px;">
+        <div style="width: 100%; max-width: 1040px; max-height: 100%; display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: var(--cloud); box-shadow: 0 30px 80px rgba(0,0,0,0.5); animation: fadeUp 0.3s ease both;">
+          <div style="flex: 0 0 auto; display: flex; align-items: center; gap: 16px; padding: 18px 24px; background: #fff; border-bottom: 1px solid var(--border-soft);">
+            <div style="flex: 1 1 auto;">
+              <div style="font-family: var(--font-display); font-weight: 900; font-size: 19px; color: var(--ink-900);">자료실 전체보기</div>
+              <div style="font-size: 12px; color: var(--ink-500);">선교사 인물 · 유적지 · 문헌을 한눈에 검색하세요</div>
+            </div>
+            <button onClick="{{ closeArchive }}" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-soft); background: var(--ink-50); color: var(--ink-600); font-size: 16px; cursor: pointer;">✕</button>
+          </div>
+
+          <div style="flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 24px; background: #fff; border-bottom: 1px solid var(--border-soft);">
+            <div style="flex: 1 1 260px; display: flex; align-items: center; gap: 9px; padding: 10px 14px; border-radius: 12px; background: var(--ink-50); border: 1px solid var(--border-soft);">
+              <span style="color: var(--ink-400); font-size: 15px;">⌕</span>
+              <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="이름, 장소, 사역으로 검색…" style="flex: 1 1 auto; border: none; background: transparent; outline: none; font-family: inherit; font-size: 14px; color: var(--ink-900);">
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <sc-for list="{{ archiveFilters }}" as="af" hint-placeholder-count="4">
+                <button onClick="{{ af.onClick }}" style="{{ af.style }}">{{ af.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="flex: 1 1 auto; overflow-y: auto; padding: 20px 24px 30px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px;">
+              <sc-for list="{{ archiveResults }}" as="r" hint-placeholder-count="6">
+                <button onClick="{{ r.onClick }}" style="display: flex; flex-direction: column; text-align: left; padding: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--border-soft); background: #fff; cursor: pointer; transition: all 0.2s ease;" style-hover="transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--sky-200);">
+                  <div style="height: 78px; background: {{ r.bg }}; display: flex; align-items: center; justify-content: space-between; padding: 0 16px;">
+                    <span style="font-size: 30px;">{{ r.glyph }}</span>
+                    <span style="padding: 3px 9px; border-radius: 99px; background: rgba(255,255,255,0.22); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 0.06em;">{{ r.tag }}</span>
+                  </div>
+                  <div style="padding: 13px 15px 15px;">
+                    <div style="font-family: var(--font-display); font-weight: 800; font-size: 15px; color: var(--ink-900); line-height: 1.25;">{{ r.name }}</div>
+                    <div style="font-size: 12px; color: var(--ink-500); margin-top: 3px;">{{ r.sub }}</div>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ archiveEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 60px 0; text-align: center; color: var(--ink-400); font-size: 14px;">검색 결과가 없습니다.</div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  mapRef = React.createRef();
+  state = {
+    layout: 'atlas',          // 'atlas' | 'split'
+    selected: null,           // { kind:'person'|'place', id }
+    tab: 'overview',
+    layers: { port: true, origin: true, site: true, person: false },
+    year: 1935,
+    archiveOpen: false,
+    search: '',
+    archiveFilter: 'all',
+  };
+
+  // real-world coordinates [lat, lng]
+  GEO = {
+    jemulpo: [37.476, 126.625], busan: [35.101, 129.040], manju: [41.805, 123.431],
+    ilbon: [35.681, 139.767], jeongdong: [37.5662, 126.9740], yanghwajin: [37.5503, 126.9100],
+    pyongyang: [39.0392, 125.7625], haeju: [38.0441, 125.7148],
+    sorae: [37.917, 125.860],
+  };
+
+  // relationship types (역학 관계)
+  REL_TYPES = {
+    influence: { label: '영향', color: '#6C5CE7', dash: '3 7' },
+    prepare:   { label: '길을 엶', color: '#45C1EC', dash: '1 7' },
+    partner:   { label: '동역', color: '#00A7E1', dash: null },
+    mentor:    { label: '사제', color: '#29C3BC', dash: null },
+    family:    { label: '가족', color: '#E5808F', dash: null },
+    succeed:   { label: '계승·후임', color: '#E0A21B', dash: '8 6' },
+  };
+  // [a, b, type, note] — a→b for directional types
+  REL = [
+    ['leesujeong', 'underwood', 'influence', '번역·호소가 파송을 이끎'],
+    ['leesujeong', 'appenzeller', 'influence', '마가복음 번역으로 파송 촉발'],
+    ['ross', 'seo', 'mentor', '로스의 조사로 성경 번역'],
+    ['ross', 'underwood', 'prepare', '한글 성경이 먼저 들어옴'],
+    ['seo', 'underwood', 'partner', '권서로 전도 동역'],
+    ['allen', 'heron', 'succeed', '제중원 원장 후임으로 파송'],
+    ['allen', 'underwood', 'prepare', '먼저 입국해 발판을 마련'],
+    ['allen', 'william', 'partner', '의료 선교 동역'],
+    ['underwood', 'appenzeller', 'partner', '같은 배 입국·연합 선교'],
+    ['appenzeller', 'mscranton', 'partner', '북감리회 정동 동역'],
+    ['appenzeller', 'william', 'partner', '정동 교육·의료 동역'],
+    ['heron', 'underwood', 'partner', '제중원·전도 동역'],
+    ['mscranton', 'william', 'family', '어머니와 아들'],
+    ['rosetta', 'sherwoodhall', 'family', '어머니와 아들'],
+  ];
+
+  // ---------- DATA ----------
+  RES = [
+    { t: '한국 기독교의 역사 I', a: '한국기독교역사학회', c: '#36506B' },
+    { t: 'The Korean Repository', a: '영문 정기간행물 (1892–)', c: '#0089C2' },
+    { t: '초기 개신교선교사들의 교육이 한국 근현대화에 끼친 영향', a: '오주철 (2023)', c: '#5742D4' },
+    { t: '무디의 부흥운동과 학생자발운동의 영향 연구', a: '이호우 · 역사신학논총 14집', c: '#138C87' },
+    { t: '한국교회 처음이야기', a: '이덕주', c: '#0E4862' },
+    { t: '개화와 선교의 요람 정동이야기', a: '이덕주', c: '#4734B0' },
+    { t: '처음읽는 이야기 한국 교회사', a: '이종훈', c: '#075776' },
+    { t: '조선회상', a: '셔우드 홀', c: '#1E3852' },
+    { t: '아펜젤러', a: '윌리엄 그리피스', c: '#0089C2' },
+    { t: '언더우드', a: '릴리어스 호턴 언더우드', c: '#5742D4' },
+  ];
+
+  PEOPLE = [
+    { id: 'allen', name: '호러스 알렌', en: 'Horace N. Allen', glyph: '⚕', year: 1884, place: 'jeongdong',
+      country: '미국', org: '북장로회', role: '의료 · 외교', life: '1858–1932',
+      summary: '조선에 들어온 첫 개신교 선교사이자 의사. 1884년 갑신정변 때 칼에 찔린 민영익을 치료해 왕실의 신임을 얻었고, 이를 발판으로 1885년 한국 최초의 서양식 병원 광혜원(제중원)을 세웠다. 훗날 외교관으로도 활동했다.',
+      facts: [['입국','1884년 (제물포)'],['소속','미국 북장로회'],['사역','의료 · 외교'],['대표 업적','제중원 설립']],
+      timeline: [['1884','상하이를 거쳐 제물포로 입국'],['1884','갑신정변, 민영익 치료로 왕실 신임'],['1885','광혜원(제중원) 설립 — 최초의 서양식 병원'],['1887','주미 조선공사관 참찬관'],['1890','주한 미국공사관 서기관']],
+      docs: [0,1,4], video: '광혜원과 제중원, 한국 최초의 서양식 병원',
+      photos: ['제중원 전경 (1885년경)','알렌의 진료·처방 기록'], interview: '갑신정변의 밤, 한 사람을 살리다' },
+    { id: 'underwood', name: '호러스 언더우드', en: 'Horace G. Underwood', glyph: '✝', year: 1885, place: 'jeongdong',
+      country: '미국', org: '북장로회', role: '교육 · 전도 · 번역', life: '1859–1916',
+      summary: '1885년 부활절, 아펜젤러와 함께 제물포에 도착한 북장로회 선교사. 새문안교회를 세우고 경신학교와 연희전문학교(현 연세대)의 기틀을 놓았으며, 성서번역위원회를 이끌어 한글 성경 번역에 헌신했다.',
+      facts: [['입국','1885.4.5 (제물포)'],['소속','미국 북장로회'],['사역','교육 · 전도 · 번역'],['대표 업적','새문안교회 · 연희전문']],
+      timeline: [['1885','부활절, 제물포 입국'],['1887','새문안교회 설립'],['1886','고아원(경신학교 전신) 시작'],['1900','성서번역위원회 주도'],['1915','연희전문학교 설립']],
+      docs: [0,9,4], video: '언더우드, 보이지 않는 손길을 붙잡고',
+      photos: ['새문안교회 초기 교인들','언더우드 일가'], interview: '오, 주여 — 보이지 않아도 믿습니다' },
+    { id: 'appenzeller', name: '헨리 아펜젤러', en: 'Henry G. Appenzeller', glyph: '✝', year: 1885, place: 'jeongdong',
+      country: '미국', org: '북감리회', role: '교육 · 전도', life: '1858–1902',
+      summary: '언더우드와 같은 배로 입국한 북감리회 선교사. 1885년 배재학당을 세워 “욕위대자 당위인역(크게 되려는 자는 남을 섬기라)”을 교훈으로 삼았고 정동제일교회를 설립했다. 1902년 성경 번역 회의로 가던 길에 해상 사고로 순직했다.',
+      facts: [['입국','1885.4.5 (제물포)'],['소속','미국 북감리회'],['사역','교육 · 전도'],['대표 업적','배재학당 · 정동제일교회']],
+      timeline: [['1885','제물포 입국, 배재학당 설립'],['1887','정동제일교회 설립'],['1895','독립신문·서재필과 교류'],['1900','성서번역 사업 참여'],['1902','목포행 해상사고로 순직']],
+      docs: [0,8,5], video: '배재학당, 욕위대자 당위인역',
+      photos: ['배재학당 학생들','정동제일교회 예배당'], interview: '크게 되려는 자는 마땅히 남을 섬기라' },
+    { id: 'mscranton', name: '메리 스크랜튼', en: 'Mary F. Scranton', glyph: '❀', year: 1885, place: 'jeongdong',
+      country: '미국', org: '북감리회', role: '여성 교육', life: '1832–1909',
+      summary: '북감리회 여선교사. 단 한 명의 학생에서 시작해 1886년 이화학당을 세웠다. 조선 여성 교육의 문을 연 인물로, “한 사람의 조선 소녀라도”라는 마음으로 헌신했다.',
+      facts: [['입국','1885년'],['소속','미국 북감리회'],['사역','여성 교육'],['대표 업적','이화학당 설립']],
+      timeline: [['1885','아들 윌리엄 스크랜튼과 함께 입국'],['1886','이화학당 설립 (학생 1명에서 시작)'],['1888','여성 진료·전도 사업 확대']],
+      docs: [0,5], video: '이화학당, 한 사람의 조선 소녀로부터',
+      photos: ['이화학당 초기 학생들'], interview: '단 한 명의 소녀라도' },
+    { id: 'sherwoodhall', name: '셔우드 홀', en: 'Sherwood Hall', glyph: '⚕', year: 1926, place: 'haeju',
+      country: '캐나다·미국', org: '감리회 의료', role: '의료 · 결핵 퇴치', life: '1893–1991',
+      summary: '서울에서 태어난 선교사 2세 의사. 해주에 결핵 요양원을 세우고, 1932년 한국 최초의 크리스마스 씰을 발행해 결핵 퇴치 기금을 모았다. 회고록 『조선회상』을 남겼다.',
+      facts: [['활동','1926년~'],['소속','감리회 의료선교'],['사역','결핵 퇴치'],['대표 업적','크리스마스 씰 · 해주요양원']],
+      timeline: [['1893','서울에서 출생 (선교사 2세)'],['1926','의료 선교사로 귀환'],['1928','해주 구세요양원 설립'],['1932','한국 최초 크리스마스 씰 발행']],
+      docs: [7,1], video: '크리스마스 씰, 결핵과의 싸움',
+      photos: ['해주 구세요양원','1932년 첫 크리스마스 씰'], interview: '조선에서 태어나, 조선을 위해' },
+    { id: 'ross', name: '존 로스', en: 'John Ross', glyph: '✝', year: 1882, place: 'manju',
+      country: '영국(스코틀랜드)', org: '연합장로회', role: '성경 번역', life: '1842–1915',
+      summary: '만주에서 활동한 스코틀랜드 선교사. 한국인 청년들의 도움을 받아 성경을 한글로 옮겨 1887년 『예수셩교젼서』를 펴냈다. 선교사가 조선에 들어오기 전에 ‘말씀이 먼저’ 압록강을 건넜다.',
+      facts: [['활동','만주 우장·심양'],['소속','연합장로회'],['사역','성경 번역'],['대표 업적','예수셩교젼서 (1887)']],
+      timeline: [['1872','만주 선교 시작'],['1882','누가복음·요한복음 한글 번역 출간'],['1887','신약 전체 『예수셩교젼서』 완성']],
+      docs: [0,6], video: '압록강을 건너온 첫 한글 성경',
+      photos: ['예수셩교젼서','로스역 누가복음'], interview: '말씀이 먼저 들어왔다' },
+    { id: 'leesujeong', name: '이수정', en: 'Lee Su-jeong', glyph: '✦', year: 1883, place: 'ilbon',
+      country: '조선', org: '재일 개종자', role: '성경 번역', life: '1842–1886',
+      summary: '일본에 건너간 조선 지식인으로, 도쿄에서 기독교에 입교했다. 마가복음을 한글로 번역(현토)했고, 미국 선교부에 조선 선교를 호소하는 편지를 보내 언더우드·아펜젤러의 입국을 이끌었다.',
+      facts: [['활동','일본 도쿄'],['소속','재일 조선인 개종자'],['사역','성경 번역'],['대표 업적','현토 마가복음']],
+      timeline: [['1882','수신사 일행으로 일본행'],['1883','도쿄에서 세례'],['1884','현토 마가복음 번역'],['1885','이 번역본을 들고 선교사들이 입국']],
+      docs: [0,6], video: '일본에서 번역된 마가의 복음',
+      photos: ['이수정역 마가복음'], interview: '내 백성에게 복음을' },
+    { id: 'william', name: '윌리엄 스크랜튼', en: 'William B. Scranton', glyph: '⚕', year: 1885, place: 'jeongdong',
+      country: '미국', org: '북감리회', role: '의료 선교', life: '1856–1922',
+      summary: '메리 스크랜튼의 아들이자 의료 선교사. 1885년 어머니와 함께 입국해 정동에 시(施)병원을 열고 가난한 이들을 돌봤다. 상동교회를 중심으로 도시 민중 선교에 힘썼다.',
+      facts: [['입국','1885년'],['소속','미국 북감리회'],['사역','의료 선교'],['대표 업적','시병원 · 상동교회']],
+      timeline: [['1885','어머니 메리와 함께 입국'],['1885','정동에 시병원 개원'],['1888','상동으로 병원 이전, 민중 선교']],
+      docs: [0,4], video: '시병원, 가난한 이들의 병원',
+      photos: ['정동 시병원 터'], interview: '가장 낮은 곳의 의술' },
+    { id: 'heron', name: '존 헤론', en: 'John W. Heron', glyph: '⚕', year: 1885, place: 'jeongdong',
+      country: '미국', org: '북장로회', role: '의료 선교', life: '1856–1890',
+      summary: '알렌에 이어 제중원 2대 원장을 맡은 의료 선교사. 헌신적으로 환자를 돌보다 1890년 이질로 순직했고, 양화진 외국인 묘원에 처음으로 안장된 선교사가 되었다.',
+      facts: [['입국','1885년'],['소속','미국 북장로회'],['사역','의료 선교'],['대표 업적','제중원 2대 원장']],
+      timeline: [['1885','입국, 제중원 합류'],['1887','제중원 원장 취임'],['1890','이질로 순직 — 양화진 첫 안장']],
+      docs: [0], video: '제중원을 지킨 헌신',
+      photos: ['양화진 헤론의 묘'], interview: '끝까지 환자 곁에서' },
+    { id: 'seo', name: '서상륜', en: 'Seo Sang-ryun', glyph: '✦', year: 1882, place: 'sorae',
+      country: '조선', org: '권서 (한국인)', role: '성경 반포 · 전도', life: '1848–1926',
+      summary: '만주에서 로스를 도와 성경을 한글로 옮긴 한국인 권서(勸書). 번역한 성경을 품고 조선에 들어와 황해도 소래에 한국인 손으로 세운 첫 교회를 일구었다. 복음이 한국인을 통해 한국인에게 전해진 통로였다.',
+      facts: [['활동','만주 · 소래'],['소속','권서 (한국인)'],['사역','성경 반포 · 전도'],['대표 업적','소래교회 설립']],
+      timeline: [['1879','만주에서 로스를 만나 입교'],['1882','로스역 성경 번역에 동참'],['1884','황해 소래에 첫 한국인 교회 설립']],
+      docs: [0,6], video: '한국인 손으로 세운 첫 교회',
+      photos: ['소래교회'], interview: '내가 먼저 받은 복음을' },
+    { id: 'rosetta', name: '로제타 홀', en: 'Rosetta S. Hall', glyph: '❀', year: 1890, place: 'pyongyang',
+      country: '미국', org: '북감리회 의료', role: '여성의료 · 특수교육', life: '1865–1951',
+      summary: '여성과 장애인을 위해 헌신한 의료 선교사. 광혜여원에서 여성을 진료하고 평양에 한국 최초의 맹인학교를 세웠다. 남편과 딸을 한국에서 잃고도 남아 사역했으며, 셔우드 홀의 어머니다.',
+      facts: [['입국','1890년'],['소속','북감리회 의료'],['사역','여성의료 · 특수교육'],['대표 업적','평양 맹인학교']],
+      timeline: [['1890','여의사로 입국'],['1894','광혜여원에서 여성 진료'],['1900','평양에 한국 최초 맹인학교 설립']],
+      docs: [1], video: '보지 못하는 이들에게 빛을',
+      photos: ['평양 맹인학교'], interview: '남아서, 끝까지' },
+  ];
+
+  PLACES = [
+    { id: 'jemulpo', name: '제물포 (인천)', cat: 'port', x: 496, y: 628, year: 1883, cluster: false,
+      summary: '1883년 개항한 조선의 관문 항구. 알렌·언더우드·아펜젤러 등 대부분의 초기 선교사가 이 항구로 첫발을 내디뎠다. 한국 선교의 “입국장”과 같은 곳.',
+      facts: [['유형','주요 입국항'],['개항','1883년'],['의미','선교사들의 첫 관문']] },
+    { id: 'busan', name: '부산', cat: 'port', x: 706, y: 968, year: 1884, cluster: false,
+      summary: '조선 남부의 관문. 호주 장로회 선교의 거점이 되었고, 일부 선교사들이 부산을 통해 입국하거나 경상 지역 선교의 발판으로 삼았다.',
+      facts: [['유형','남부 입국항'],['거점','호주 장로회 선교'],['지역','경상도 선교 기점']] },
+    { id: 'manju', name: '만주 (우장·심양)', cat: 'origin', x: 252, y: 232, year: 1882, cluster: false,
+      summary: '존 로스와 매킨타이어가 한국인의 도움으로 성경을 한글로 번역한 곳. 선교사가 조선에 들어오기 전, 압록강 너머에서 ‘말씀이 먼저’ 들어온 복음의 발상지다.',
+      facts: [['유형','복음의 발상지'],['핵심','한글 성경 번역'],['결실','예수셩교젼서 (1887)']] },
+    { id: 'ilbon', name: '일본 (도쿄)', cat: 'origin', x: 1050, y: 1150, year: 1883, cluster: false,
+      summary: '이수정이 기독교에 입교하고 마가복음을 한글로 옮긴 곳. 재일 조선인 개종자를 통해 미국 선교부의 조선 선교 결정을 이끈 또 하나의 복음 통로였다.',
+      facts: [['유형','복음의 발상지'],['핵심','이수정의 성경 번역'],['영향','미국 선교부 파송 촉발']] },
+    { id: 'jeongdong', name: '한양 · 정동', cat: 'site', x: 576, y: 582, year: 1885, cluster: true,
+      summary: '개화와 선교의 요람. 미국 공사관을 중심으로 배재학당·이화학당·정동제일교회·제중원이 모여 있던 초기 선교의 심장부다. 교육·의료·전도가 이곳에서 함께 피어났다.',
+      facts: [['유형','선교 유적지 (집합)'],['별칭','선교의 요람'],['포함','배재 · 이화 · 정동제일 · 제중원']],
+      sub: [
+        { name: '미국 공사관', note: '외교·선교의 거점' },
+        { name: '배재학당', note: '아펜젤러, 1885 — 근대 교육' },
+        { name: '이화학당', note: '메리 스크랜튼, 1886 — 여성 교육' },
+        { name: '정동제일교회', note: '아펜젤러, 1887' },
+        { name: '제중원 (광혜원)', note: '알렌, 1885 — 서양식 병원' },
+      ] },
+    { id: 'yanghwajin', name: '양화진', cat: 'site', x: 534, y: 612, year: 1890, cluster: false,
+      summary: '한강 변에 자리한 외국인 선교사 묘원. 조선을 위해 생을 바친 선교사와 그 가족들이 잠든 헌신의 마지막 안식처다.',
+      facts: [['유형','선교 유적지'],['성격','외국인 선교사 묘원'],['의미','헌신의 안식처']] },
+    { id: 'pyongyang', name: '평양', cat: 'site', x: 512, y: 432, year: 1907, cluster: false,
+      summary: '1907년 대부흥운동의 진원지. “동방의 예루살렘”이라 불릴 만큼 교회가 융성했던 북부 선교의 중심지였다.',
+      facts: [['유형','선교 유적지'],['사건','1907 평양 대부흥'],['별칭','동방의 예루살렘']] },
+    { id: 'haeju', name: '해주', cat: 'site', x: 458, y: 498, year: 1928, cluster: false,
+      summary: '셔우드 홀이 결핵 요양원(구세요양원)을 세운 곳. 한국 최초의 크리스마스 씰이 이곳의 결핵 퇴치 운동에서 비롯됐다.',
+      facts: [['유형','선교 유적지'],['핵심','결핵 요양원'],['결실','크리스마스 씰 (1932)']] },
+  ];
+
+  CAT = {
+    port:   { label: '주요 입국항', color: '#FFD166', glyph: '⚓' },
+    origin: { label: '복음의 발상지', color: '#29C3BC', glyph: '✦' },
+    site:   { label: '선교 유적지', color: '#00A7E1', glyph: '✝' },
+    person: { label: '선교사 인물', color: '#6C5CE7', glyph: '◆' },
+  };
+
+  componentDidMount() {
+    this._tryInit = () => { if (window.L) { clearInterval(this._iv); this.initMap(); } };
+    this._iv = setInterval(this._tryInit, 60);
+    this._tryInit();
+  }
+  componentWillUnmount() { clearInterval(this._iv); if (this._map) { this._map.remove(); this._map = null; } }
+  componentDidUpdate(prevP, prevS) {
+    const s = this.state;
+    if (prevS.layers !== s.layers || prevS.year !== s.year || prevS.selected !== s.selected) this.rebuildMarkers();
+    if (prevS.layout !== s.layout && this._map) setTimeout(() => this._map.invalidateSize(), 360);
+  }
+
+  // ---------- Leaflet map ----------
+  initMap() {
+    const el = this.mapRef.current;
+    if (!el || this._map) return;
+    const map = L.map(el, { zoomControl: false, attributionControl: true, minZoom: 4, maxZoom: 15, zoomSnap: 0.25, scrollWheelZoom: true });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO',
+    }).addTo(map);
+    this._map = map;
+    this._mg = L.layerGroup().addTo(map);
+    this._home = L.latLngBounds([34.2, 121.3], [42.7, 141.2]);
+    this._fitOpts = { paddingTopLeft: [288, 30], paddingBottomRight: [44, 124] };
+    map.fitBounds(this._home, this._fitOpts);
+    this.rebuildMarkers();
+    setTimeout(() => map.invalidateSize(), 140);
+    if (this.state.selected) setTimeout(() => this.fitNetwork(), 280);
+  }
+
+  makeIcon(item, selected, dim, arrive) {
+    const c = item.color; const isPerson = item.kind === 'person';
+    const size = isPerson ? 26 : 34;
+    const ring = selected ? `box-shadow:0 0 0 4px ${c}55, 0 7px 18px rgba(0,0,0,.55);` : 'box-shadow:0 5px 13px rgba(0,0,0,.5);';
+    const fg = c === '#FFD166' ? '#0E2438' : '#fff';
+    const pulse = arrive ? `<span style="position:absolute;left:0;top:0;width:${size}px;height:${size}px;border-radius:50%;border:2px solid ${c};pointer-events:none;animation:pulseRing 1.7s ease-out infinite;"></span>` : '';
+    const html = `<div class="dpin" style="position:relative;width:${size}px;height:${size}px;${dim ? 'filter:grayscale(.55);' : ''}">${pulse}
+      <div style="position:absolute;left:50%;top:0;transform:translateX(-50%) rotate(-45deg);width:${size}px;height:${size}px;border-radius:50% 50% 50% 0;background:${c};border:2.5px solid ${selected ? '#fff' : 'rgba(255,255,255,.85)'};${ring}display:flex;align-items:center;justify-content:center;">
+        <span style="transform:rotate(45deg);color:${fg};font-size:${isPerson ? 12 : 15}px;line-height:1;font-weight:700;">${item.glyph}</span>
+      </div></div>`;
+    return L.divIcon({ html, className: '', iconSize: [size, size], iconAnchor: [size / 2, size], popupAnchor: [0, -size] });
+  }
+
+  personLL(base, i, n) {
+    if (n <= 1) return [base[0] + 0.05, base[1]];
+    const spread = 0.075; const off = i - (n - 1) / 2;
+    return [base[0] + 0.05, base[1] + off * spread];
+  }
+  personSelfLL(id) {
+    const p = this.pById(id); if (!p) return null;
+    const base = this.GEO[p.place];
+    const arr = this.PEOPLE.filter(x => x.place === p.place && x.year <= this.state.year);
+    const i = arr.findIndex(x => x.id === id);
+    return i < 0 ? [base[0] + 0.05, base[1]] : this.personLL(base, i, arr.length);
+  }
+
+  arrivedNow(p) { const d = this.state.year - p.year; return d >= 0 && d <= 1; }
+
+  buildNetwork(sel) {
+    if (!sel) return null;
+    const yr = this.state.year;
+    const nodes = new Map();
+    const addNode = (k, id) => nodes.set(k + ':' + id, { k, id });
+    const edges = [];
+    const arrived = (id) => { const p = this.pById(id); return p && p.year <= yr; };
+    if (sel.kind === 'place') {
+      const pl = this.plById(sel.id); if (!pl) return null;
+      addNode('place', pl.id);
+      const ppl = this.PEOPLE.filter(p => p.place === sel.id && p.year <= yr);
+      ppl.forEach(p => { addNode('person', p.id); edges.push({ a: { k: 'place', id: pl.id }, b: { k: 'person', id: p.id }, type: 'base' }); });
+      this.REL.forEach(([a, b, t, note]) => { if (ppl.find(x => x.id === a) && ppl.find(x => x.id === b)) edges.push({ a: { k: 'person', id: a }, b: { k: 'person', id: b }, type: t, note }); });
+    } else {
+      const p = this.pById(sel.id); if (!p) return null;
+      addNode('person', p.id);
+      if (this.plById(p.place)) { addNode('place', p.place); edges.push({ a: { k: 'person', id: p.id }, b: { k: 'place', id: p.place }, type: 'base' }); }
+      this.REL.forEach(([a, b, t, note]) => {
+        if (a === sel.id || b === sel.id) { const other = a === sel.id ? b : a; if (arrived(other)) { addNode('person', other); edges.push({ a: { k: 'person', id: a }, b: { k: 'person', id: b }, type: t, note }); } }
+      });
+    }
+    return { nodes, edges };
+  }
+
+  // person id -> latlng, consistent fan grouping (markers AND lines use this)
+  personPosMap() {
+    const s = this.state;
+    const show = new Set();
+    if (s.layers.person) this.PEOPLE.forEach(p => { if (p.year <= s.year) show.add(p.id); });
+    const net = this.buildNetwork(s.selected);
+    if (net) net.nodes.forEach(n => { if (n.k === 'person') show.add(n.id); });
+    const groups = {};
+    this.PEOPLE.forEach(p => { if (show.has(p.id)) (groups[p.place] = groups[p.place] || []).push(p); });
+    const pm = {};
+    Object.keys(groups).forEach(plid => { const base = this.GEO[plid]; const arr = groups[plid]; arr.forEach((p, i) => pm[p.id] = this.personLL(base, i, arr.length)); });
+    return pm;
+  }
+  nodeLL(node, pm) { return node.k === 'place' ? this.GEO[node.id] : pm[node.id]; }
+
+  rebuildMarkers() {
+    if (!this._map || !this._mg) return;
+    const s = this.state; const sel = s.selected;
+    this._mg.clearLayers();
+    const net = this.buildNetwork(sel);
+    const pm = this.personPosMap();
+    const inNet = (k, id) => net && net.nodes.has(k + ':' + id);
+    const dimOf = (k, id) => net ? !inNet(k, id) : false;
+
+    // ---- relationship lines (under markers) ----
+    if (net) {
+      net.edges.forEach(e => {
+        const a = this.nodeLL(e.a, pm), b = this.nodeLL(e.b, pm); if (!a || !b) return;
+        if (e.type === 'base') {
+          L.polyline([a, b], { color: '#7d93a8', weight: 1.5, opacity: 0.55, dashArray: '2 5', interactive: false }).addTo(this._mg);
+        } else {
+          const rt = this.REL_TYPES[e.type];
+          const ln = L.polyline([a, b], { color: rt.color, weight: 3, opacity: 0.92, dashArray: rt.dash || null, lineCap: 'round' });
+          ln.bindTooltip(rt.label, { permanent: true, direction: 'center', className: 'reltip' });
+          ln.addTo(this._mg);
+        }
+      });
+    }
+
+    const addMarker = (item) => {
+      const isSel = sel && sel.id === item.id && sel.kind === item.markKind;
+      const dim = dimOf(item.markKind, item.id);
+      const m = L.marker(item.ll, {
+        icon: this.makeIcon(item, isSel, dim, item.arrive && !dim), riseOnHover: true, opacity: dim ? 0.5 : 1,
+        zIndexOffset: isSel ? 1000 : (item.arrive ? 600 : (item.kind === 'person' ? (dim ? -300 : 0) : 250)),
+      });
+      if (item.label) m.bindTooltip(item.label, { permanent: item.kind !== 'person' && !dim, direction: 'bottom', offset: [0, 3], className: 'dlabel' + (dim ? ' dlabel-dim' : '') });
+      m.on('click', () => this.select(item.markKind, item.id));
+      m.addTo(this._mg);
+    };
+
+    this.PLACES.forEach(pl => {
+      const visible = pl.year <= s.year && s.layers[pl.cat];
+      if (!visible && !inNet('place', pl.id)) return;
+      addMarker({ ll: this.GEO[pl.id], id: pl.id, markKind: 'place', kind: 'place', cat: pl.cat, color: this.CAT[pl.cat].color, glyph: this.CAT[pl.cat].glyph, label: pl.name });
+    });
+
+    Object.keys(pm).forEach(pid => {
+      const p = this.pById(pid);
+      addMarker({ ll: pm[pid], id: pid, markKind: 'person', kind: 'person', color: this.CAT.person.color, glyph: p.glyph, label: p.name, arrive: this.arrivedNow(p) });
+    });
+  }
+
+  fitNetwork() {
+    if (!this._map) return;
+    const sel = this.state.selected; if (!sel) return;
+    const net = this.buildNetwork(sel); const pm = this.personPosMap();
+    const lls = [];
+    if (net) net.nodes.forEach(n => { const ll = this.nodeLL(n, pm); if (ll) lls.push(ll); });
+    if (lls.length >= 2) {
+      const split = this.state.layout === 'split';
+      const opts = { paddingTopLeft: [300, 44], paddingBottomRight: split ? [60, 132] : [466, 132], maxZoom: 11, duration: 0.75 };
+      this._map.flyToBounds(L.latLngBounds(lls), opts);
+    } else if (lls.length === 1) {
+      this._map.flyTo(lls[0], Math.max(this._map.getZoom(), 9), { duration: 0.7 });
+    }
+  }
+
+  // ---------- helpers ----------
+  pById(id) { return this.PEOPLE.find(p => p.id === id); }
+  plById(id) { return this.PLACES.find(p => p.id === id); }
+  peopleAt(placeId) { return this.PEOPLE.filter(p => p.place === placeId); }
+
+  select(kind, id) {
+    this.setState({ selected: { kind, id }, tab: 'overview', archiveOpen: false });
+    setTimeout(() => this.fitNetwork(), 40);
+  }
+  closeDetail() { this.setState({ selected: null }); }
+
+  toggleLayer(k) { this.setState(s => ({ layers: { ...s.layers, [k]: !s.layers[k] } })); }
+  setLayout(l) { this.setState({ layout: l }); }
+
+  zoomIn() { if (this._map) this._map.zoomIn(); }
+  zoomOut() { if (this._map) this._map.zoomOut(); }
+  resetView() { if (this._map) this._map.flyToBounds(this._home, { ...this._fitOpts, duration: 0.6 }); }
+
+  openArchive() { this.setState({ archiveOpen: true }); }
+  closeArchive() { this.setState({ archiveOpen: false }); }
+
+  // ---------- render ----------
+  renderVals() {
+    const s = this.state;
+    const ds = (id) => this.RES[id];
+
+    // ----- layout buttons -----
+    const layoutOptions = [
+      { key: 'atlas', label: '지도 중심' },
+      { key: 'split', label: '분할 뷰' },
+    ].map(o => ({
+      label: o.label,
+      onClick: () => this.setLayout(o.key),
+      style: `padding:7px 16px;border:none;border-radius:99px;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;transition:all .18s ease;white-space:nowrap;${s.layout === o.key ? 'background:var(--grad-dream);color:#fff;box-shadow:0 2px 10px rgba(0,167,225,.4);' : 'background:transparent;color:rgba(225,244,252,.65);'}`,
+    }));
+
+    const archiveBtnStyle = 'display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:#fff;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;';
+
+    // ----- layers / legend -----
+    const counts = {
+      port: this.PLACES.filter(p => p.cat === 'port').length,
+      origin: this.PLACES.filter(p => p.cat === 'origin').length,
+      site: this.PLACES.filter(p => p.cat === 'site').length,
+      person: this.PEOPLE.length,
+    };
+    const layerChips = Object.keys(this.CAT).map(k => {
+      const on = s.layers[k]; const c = this.CAT[k];
+      return {
+        label: c.label, count: counts[k], glyph: c.glyph,
+        onClick: () => this.toggleLayer(k),
+        style: `display:flex;align-items:center;gap:9px;width:100%;padding:7px 9px;border-radius:11px;border:1px solid ${on ? 'rgba(255,255,255,.14)' : 'transparent'};background:${on ? 'rgba(255,255,255,.07)' : 'transparent'};color:${on ? '#fff' : 'rgba(225,244,252,.4)'};font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .16s ease;`,
+        swatch: `flex:0 0 auto;width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;background:${c.color}22;color:${c.color};border:1px solid ${c.color}55;${on ? '' : 'filter:grayscale(1);opacity:.5;'}`,
+      };
+    });
+
+    // ----- relationship legend -----
+    const relLegend = Object.keys(this.REL_TYPES).map(k => {
+      const r = this.REL_TYPES[k];
+      return { label: r.label, swatchStyle: `flex:0 0 auto;width:22px;border-top:3px ${r.dash ? 'dashed' : 'solid'} ${r.color};border-radius:2px;` };
+    });
+
+    // ----- detail -----
+    let detail = null;
+    let tabOverview = false, tabTimeline = false, tabVideo = false, tabDocs = false;
+    let detailTabs = [];
+    if (s.selected) {
+      const isP = s.selected.kind === 'person';
+      const baseTabs = isP
+        ? [['overview','개요'],['timeline','연표'],['video','영상'],['docs','자료']]
+        : [['overview','개요'],['docs','자료']];
+      detailTabs = baseTabs.map(([k, label]) => ({
+        label, onClick: () => this.setState({ tab: k }),
+        style: `padding:13px 14px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;border-bottom:2.5px solid ${s.tab === k ? 'var(--sky-500)' : 'transparent'};color:${s.tab === k ? 'var(--sky-600)' : 'var(--ink-400)'};transition:all .16s ease;`,
+      }));
+      const curTab = baseTabs.some(t => t[0] === s.tab) ? s.tab : 'overview';
+      tabOverview = curTab === 'overview'; tabTimeline = curTab === 'timeline'; tabVideo = curTab === 'video'; tabDocs = curTab === 'docs';
+
+      if (isP) {
+        const p = this.pById(s.selected.id);
+        const mutual = { partner: 1, family: 1, mentor: 1 };
+        const rels = this.REL.filter(([a, b]) => a === p.id || b === p.id).map(([a, b, t, note]) => {
+          const otherId = a === p.id ? b : a; const op = this.pById(otherId); const rt = this.REL_TYPES[t];
+          const arrow = mutual[t] ? '↔' : (a === p.id ? '→' : '←');
+          return { id: otherId, name: op ? op.name : otherId, glyph: op ? op.glyph : '◆', note, color: rt.color, relabel: `${arrow} ${rt.label}`, onClick: () => this.select('person', otherId) };
+        });
+        detail = {
+          kind: 'person', kindLabel: '선교사 인물', glyph: p.glyph, name: p.name,
+          sub: `${p.en} · ${p.life}`, heroBg: 'linear-gradient(135deg,#5742D4,#6C5CE7)',
+          summary: p.summary,
+          facts: p.facts.map(([k, v]) => ({ k, v })),
+          hasPeople: false, people: [],
+          hasRelations: rels.length > 0, relations: rels,
+          timeline: p.timeline.map(([year, event]) => ({ year, event })),
+          videoTitle: p.video,
+          docs: p.docs.map(i => ({ title: ds(i).t, author: ds(i).a, color: ds(i).c })),
+          photos: p.photos, interview: p.interview,
+        };
+      } else {
+        const pl = this.plById(s.selected.id);
+        const ppl = this.peopleAt(pl.id);
+        const subList = (pl.sub || []).map(x => ({ glyph: '◦', name: x.name, sub: x.note, onClick: () => {} }));
+        const pplCards = ppl.map(p => ({ glyph: p.glyph, name: p.name, sub: `${p.org} · ${p.role}`, onClick: () => this.select('person', p.id) }));
+        const docIds = Array.from(new Set(ppl.flatMap(p => p.docs)));
+        const docs = docIds.length ? docIds : [0, 4];
+        detail = {
+          kind: 'place', kindLabel: this.CAT[pl.cat].label, glyph: this.CAT[pl.cat].glyph, name: pl.name,
+          sub: pl.facts[0] ? pl.facts.map(f => f[1]).slice(0, 1)[0] : '',
+          heroBg: pl.cat === 'port' ? 'linear-gradient(135deg,#E0A21B,#FFD166)' : pl.cat === 'origin' ? 'linear-gradient(135deg,#138C87,#29C3BC)' : 'linear-gradient(135deg,#0089C2,#00A7E1)',
+          summary: pl.summary,
+          facts: pl.facts.map(([k, v]) => ({ k, v })),
+          hasPeople: (pplCards.length + subList.length) > 0,
+          people: [...subList, ...pplCards],
+          hasRelations: false, relations: [],
+          timeline: [], videoTitle: '',
+          docs: docs.map(i => ({ title: ds(i).t, author: ds(i).a, color: ds(i).c })),
+          photos: [`${pl.name} 일대 (당시)`, '관련 기록물'], interview: null,
+        };
+      }
+    }
+
+    // ----- layout styles -----
+    const split = s.layout === 'split';
+    const hasDetail = !!detail;
+    const mapWrapStyle = split && hasDetail
+      ? 'position:relative;flex:1 1 auto;min-width:0;'
+      : 'position:absolute;inset:0;';
+    const detailWrapStyle = split
+      ? `position:relative;flex:0 0 ${hasDetail ? 420 : 0}px;width:420px;height:100%;border-left:1px solid var(--border-soft);box-shadow:-8px 0 30px rgba(8,18,28,.3);z-index:30;animation:panelIn .35s cubic-bezier(.22,1,.36,1) both;`
+      : 'position:absolute;top:0;right:0;width:min(440px,46%);height:100%;box-shadow:-12px 0 40px rgba(8,18,28,.4);z-index:30;animation:panelIn .35s cubic-bezier(.22,1,.36,1) both;';
+
+    // ----- archive -----
+    const q = s.search.trim().toLowerCase();
+    const af = s.archiveFilter;
+    let items = [];
+    if (af === 'all' || af === 'person') {
+      this.PEOPLE.forEach(p => items.push({ type: 'person', id: p.id, name: p.name, sub: `${p.org} · ${p.role}`, glyph: p.glyph, tag: '인물', bg: 'linear-gradient(135deg,#5742D4,#6C5CE7)', hay: `${p.name} ${p.en} ${p.org} ${p.role} ${p.country}` }));
+    }
+    if (af === 'all' || af === 'place') {
+      this.PLACES.forEach(pl => items.push({ type: 'place', id: pl.id, name: pl.name, sub: this.CAT[pl.cat].label, glyph: this.CAT[pl.cat].glyph, tag: this.CAT[pl.cat].label, bg: pl.cat === 'port' ? 'linear-gradient(135deg,#E0A21B,#FFD166)' : pl.cat === 'origin' ? 'linear-gradient(135deg,#138C87,#29C3BC)' : 'linear-gradient(135deg,#0089C2,#00A7E1)', hay: `${pl.name} ${pl.summary}` }));
+    }
+    if (af === 'all' || af === 'doc') {
+      this.RES.forEach((r, i) => items.push({ type: 'doc', id: i, name: r.t, sub: r.a, glyph: '▤', tag: '문헌', bg: `linear-gradient(135deg,${r.c},${r.c}cc)`, hay: `${r.t} ${r.a}` }));
+    }
+    if (q) items = items.filter(it => it.hay.toLowerCase().includes(q));
+    const archiveResults = items.map(it => ({
+      name: it.name, sub: it.sub, glyph: it.glyph, tag: it.tag, bg: it.bg,
+      onClick: () => { if (it.type === 'doc') { this.setState({ archiveOpen: false }); } else { this.select(it.type, it.id); } },
+    }));
+    const archiveEmpty = items.length === 0;
+    const archiveFilters = [['all','전체'],['person','인물'],['place','장소'],['doc','문헌']].map(([k, label]) => ({
+      label, onClick: () => this.setState({ archiveFilter: k }),
+      style: `padding:8px 14px;border-radius:99px;border:1px solid ${af === k ? 'var(--sky-500)' : 'var(--border-soft)'};background:${af === k ? 'var(--sky-500)' : '#fff'};color:${af === k ? '#fff' : 'var(--ink-600)'};font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;transition:all .16s ease;`,
+    }));
+
+    return {
+      layoutOptions, archiveBtnStyle, openArchive: () => this.openArchive(),
+      layerChips, relLegend, mapRef: this.mapRef,
+      mapWrapStyle, detailWrapStyle,
+      zoomIn: () => this.zoomIn(), zoomOut: () => this.zoomOut(), resetView: () => this.resetView(),
+      year: s.year, onYear: (e) => this.setState({ year: +e.target.value }),
+      detail, detailTabs, tabOverview, tabTimeline, tabVideo, tabDocs,
+      closeDetail: () => this.closeDetail(), noop: () => {},
+      archiveOpen: s.archiveOpen, closeArchive: () => this.closeArchive(),
+      search: s.search, onSearch: (e) => this.setState({ search: e.target.value }),
+      archiveFilters, archiveResults, archiveEmpty,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+/* Dreamy School — Webfonts
+   NOTE: The brand wordmark uses a custom rounded geometric sans. Pending the real
+   brand font files, we substitute Nunito (display/headings) + Nunito Sans (body) —
+   both rounded, friendly, highly legible for an education audience. */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,600&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,400&display=swap');

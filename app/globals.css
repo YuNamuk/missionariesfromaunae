@@ -1,0 +1,108 @@
+/* Webfont import must precede all other rules (CSS @import ordering). */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,600&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,400&display=swap');
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Dreamy School design tokens (ported from _ds). Cool, dreamy education brand
+   anchored on Sky #00A7E1. Kept as CSS vars so component styles read straight
+   from the source palette; key scales are also exposed to Tailwind via @theme.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Sky (brand primary → warm terracotta) */
+  --sky-50:#FBF3EE; --sky-100:#F4E0D6; --sky-200:#E8C3B3; --sky-300:#D89E86;
+  --sky-400:#C06A4A; --sky-500:#9B3D2D; --sky-600:#84321F; --sky-700:#6D2917;
+  --sky-800:#5A2414; --sky-900:#4A1F12;
+  /* Iris (secondary → warm plum) */
+  --iris-50:#F5F0F7; --iris-100:#ECE2F0; --iris-200:#D9C5E0; --iris-300:#BFA0CC;
+  --iris-400:#A37BB3; --iris-500:#7E5C99; --iris-600:#684A80; --iris-700:#553E69;
+  --iris-800:#453256; --iris-900:#382947;
+  /* Aqua (accent → warm teal) */
+  --aqua-50:#EEF5F7; --aqua-100:#D5E6EC; --aqua-300:#8FB6C2; --aqua-500:#1F6F8B; --aqua-700:#155267;
+  /* Soft pops (warm) */
+  --lavender:#C9B7D6; --blush:#E5A8A0; --sun:#E8B04A; --peach:#D98E6B;
+  /* Ink / warm neutrals */
+  --ink-900:#251C14; --ink-800:#36281C; --ink-700:#4A3A28; --ink-600:#6B5E4B;
+  --ink-500:#8A7A63; --ink-400:#A89A80; --ink-300:#CBBEA4; --ink-200:#E2D7C0;
+  --ink-100:#EFE6D4; --ink-50:#F8F2E6; --white:#FFFFFF; --cloud:#F6EFE1;
+  /* Status */
+  --success:#3F7F4B; --warning:#BF6B22; --danger:#9B3D2D;
+  /* Gradients */
+  --grad-dream:linear-gradient(135deg,#9B3D2D 0%,#BF6B22 100%);
+  --grad-sky:linear-gradient(135deg,#C06A4A 0%,#9B3D2D 100%);
+  --grad-haze:linear-gradient(135deg,#F4E0D6 0%,#ECE2F0 100%);
+  --grad-aqua:linear-gradient(135deg,#1F6F8B 0%,#3F7F4B 100%);
+  --grad-dawn:linear-gradient(135deg,#C9B7D6 0%,#D89E86 60%,#8FB6C2 100%);
+
+  /* Type */
+  --font-display:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Nunito Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+
+  /* Radii */
+  --radius-sm:10px; --radius-md:16px; --radius-lg:24px; --radius-xl:32px; --radius-pill:999px;
+
+  /* Shadows — soft warm-tinted */
+  --shadow-xs:0 1px 2px rgba(46,28,14,0.07);
+  --shadow-sm:0 2px 8px rgba(46,28,14,0.09);
+  --shadow-md:0 8px 24px rgba(46,28,14,0.11);
+  --shadow-lg:0 18px 44px rgba(46,28,14,0.14);
+  --shadow-xl:0 30px 70px rgba(46,28,14,0.18);
+  --shadow-sky:0 14px 34px rgba(155,61,45,0.24);
+  --shadow-iris:0 14px 34px rgba(126,92,153,0.22);
+
+  /* Motion */
+  --ease-soft:cubic-bezier(0.22,0.61,0.36,1);
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+  --ease-float:cubic-bezier(0.34,1.30,0.64,1);
+}
+
+/* Expose core scales to Tailwind utilities (bg-sky-500, text-ink-700, …) */
+@theme inline {
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  --color-sky-50: var(--sky-50);   --color-sky-100: var(--sky-100);
+  --color-sky-200: var(--sky-200); --color-sky-300: var(--sky-300);
+  --color-sky-400: var(--sky-400); --color-sky-500: var(--sky-500);
+  --color-sky-600: var(--sky-600); --color-sky-700: var(--sky-700);
+  --color-sky-800: var(--sky-800); --color-sky-900: var(--sky-900);
+
+  --color-iris-100: var(--iris-100); --color-iris-200: var(--iris-200);
+  --color-iris-300: var(--iris-300); --color-iris-400: var(--iris-400);
+  --color-iris-500: var(--iris-500); --color-iris-600: var(--iris-600);
+  --color-iris-700: var(--iris-700);
+
+  --color-aqua-300: var(--aqua-300); --color-aqua-500: var(--aqua-500); --color-aqua-700: var(--aqua-700);
+
+  --color-ink-50: var(--ink-50);   --color-ink-100: var(--ink-100);
+  --color-ink-200: var(--ink-200); --color-ink-300: var(--ink-300);
+  --color-ink-400: var(--ink-400); --color-ink-500: var(--ink-500);
+  --color-ink-600: var(--ink-600); --color-ink-700: var(--ink-700);
+  --color-ink-800: var(--ink-800); --color-ink-900: var(--ink-900);
+  --color-cloud: var(--cloud);
+
+  --color-sun: var(--sun); --color-blush: var(--blush); --color-lavender: var(--lavender);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  font-family: var(--font-body);
+  color: var(--ink-900);
+  background: var(--cloud);
+  -webkit-font-smoothing: antialiased;
+}
+main { width: 100%; }
+
+.font-display { font-family: var(--font-display); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(14,36,56,0.18); border-radius: 99px;
+  border: 2px solid transparent; background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(14,36,56,0.32); background-clip: content-box; }
