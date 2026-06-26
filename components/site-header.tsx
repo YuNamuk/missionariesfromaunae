@@ -25,6 +25,7 @@ function HeaderDrop({
   setOpen,
   active,
   onPick,
+  onAll,
 }: {
   id: string;
   label: string;
@@ -34,8 +35,10 @@ function HeaderDrop({
   setOpen: (v: string | null) => void;
   active: string[];
   onPick: (key: string) => void;
+  onAll?: (keys: string[]) => void;
 }) {
   const isOpen = open === id;
+  const allOn = items.length > 0 && items.every((it) => active.includes(it.key));
   return (
     <div
       className="relative"
@@ -62,6 +65,16 @@ function HeaderDrop({
           className="max-h-[60vh] overflow-y-auto rounded-xl border p-1.5 shadow-xl"
           style={{ background: "rgba(255,250,237,.99)", borderColor: "rgba(77,56,34,.18)" }}
         >
+          {axis && onAll && (
+            <button
+              onClick={() => onAll(allOn ? [] : items.map((it) => it.key))}
+              className="mb-1 flex w-full items-center justify-between gap-2 rounded-lg border-b px-2.5 py-2 text-left text-[12px] font-extrabold"
+              style={{ color: allOn ? "#9b3d2d" : "#80603b", borderColor: "rgba(77,56,34,.12)" }}
+            >
+              <span>{allOn ? "전체 해제" : "전체 선택"}</span>
+              <span className="text-[10px] opacity-70">{active.length}/{items.length}</span>
+            </button>
+          )}
           {items.map((it) => {
             const on = active.includes(it.key);
             return (
@@ -120,6 +133,13 @@ export function SiteHeader() {
     router.push(`/?${params.toString()}`);
     setOpen(null);
   };
+  // 전체 선택/해제: 한 축의 모든 키를 한 번에 설정하거나 비운다.
+  const setAll = (key: string, vals: string[]) => {
+    const params = new URLSearchParams(Array.from(sp.entries()));
+    if (vals.length) params.set(key, vals.join(",")); else params.delete(key);
+    router.push(`/?${params.toString()}`);
+    setOpen(null);
+  };
 
   return (
     <header
@@ -144,12 +164,12 @@ export function SiteHeader() {
       </Link>
 
       <nav className="flex items-center gap-0.5">
-        <HeaderDrop id="era" label="선교 연혁" axis="era" items={ERAS.map((e) => ({ key: e.key, label: e.label }))} open={open} setOpen={setOpen} active={csv("era")} onPick={(k) => { const e = ERAS.find((x) => x.key === k); toggle("era", k, e ? { y: String(Math.round((e.from + e.to) / 2)) } : undefined); }} />
+        <HeaderDrop id="era" label="선교 연혁" axis="era" items={ERAS.map((e) => ({ key: e.key, label: e.label }))} open={open} setOpen={setOpen} active={csv("era")} onPick={(k) => { const e = ERAS.find((x) => x.key === k); toggle("era", k, e ? { y: String(Math.round((e.from + e.to) / 2)) } : undefined); }} onAll={(keys) => setAll("era", keys)} />
         <HeaderDrop id="cem" label="선교 묘역" items={CEMETERIES.map((c) => ({ key: c.id, label: c.name }))} open={open} setOpen={setOpen} active={[]} onPick={goFocus} />
-        <HeaderDrop id="denom" label="교단" axis="denom" items={DENOM_LIST} open={open} setOpen={setOpen} active={csv("denom")} onPick={(k) => toggle("denom", k)} />
-        <HeaderDrop id="country" label="나라" axis="country" items={COUNTRIES.map((c) => ({ key: c, label: c }))} open={open} setOpen={setOpen} active={csv("country")} onPick={(k) => toggle("country", k)} />
-        <HeaderDrop id="role" label="사역 분야" axis="role" items={ROLE_LIST} open={open} setOpen={setOpen} active={csv("role")} onPick={(k) => toggle("role", k)} />
-        <HeaderDrop id="region" label="지역" axis="region" items={REGIONS} open={open} setOpen={setOpen} active={csv("region")} onPick={(k) => toggle("region", k)} />
+        <HeaderDrop id="denom" label="교단" axis="denom" items={DENOM_LIST} open={open} setOpen={setOpen} active={csv("denom")} onPick={(k) => toggle("denom", k)} onAll={(keys) => setAll("denom", keys)} />
+        <HeaderDrop id="country" label="나라" axis="country" items={COUNTRIES.map((c) => ({ key: c, label: c }))} open={open} setOpen={setOpen} active={csv("country")} onPick={(k) => toggle("country", k)} onAll={(keys) => setAll("country", keys)} />
+        <HeaderDrop id="role" label="사역 분야" axis="role" items={ROLE_LIST} open={open} setOpen={setOpen} active={csv("role")} onPick={(k) => toggle("role", k)} onAll={(keys) => setAll("role", keys)} />
+        <HeaderDrop id="region" label="지역" axis="region" items={REGIONS} open={open} setOpen={setOpen} active={csv("region")} onPick={(k) => toggle("region", k)} onAll={(keys) => setAll("region", keys)} />
 
         <span className="mx-1.5 h-5 w-px bg-white/15" />
 

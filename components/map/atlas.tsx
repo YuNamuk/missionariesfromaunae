@@ -382,6 +382,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showGeo, setShowGeo] = useState(false); // 시대별 정세(역사 국경) 오버레이
   const toggleFacet = (axis: keyof typeof filters, key: string) =>
     setFilters((f) => ({ ...f, [axis]: f[axis].includes(key) ? f[axis].filter((k) => k !== key) : [...f[axis], key] }));
+  const setFacet = (axis: keyof typeof filters, keys: string[]) => setFilters((f) => ({ ...f, [axis]: keys }));
   const clearFilters = () => setFilters({ denom: [], region: [], era: [], role: [], country: [] });
   const facetCount = filters.denom.length + filters.region.length + filters.era.length + filters.role.length + filters.country.length;
   // 파송 나라 목록(데이터에서 도출)
@@ -717,15 +718,22 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             ["파송 나라", "country", COUNTRIES.map((c) => ({ key: c, label: c }))],
             ["사역 분야", "role", ROLE_LIST],
             ["지역", "region", REGIONS],
-          ] as const).map(([title, axis, items]) => (
+          ] as const).map(([title, axis, items]) => {
+            const ax = axis as "era" | "denom" | "country" | "role" | "region";
+            const allKeys = items.map((it) => it.key);
+            const allOn = allKeys.length > 0 && allKeys.every((k) => filters[ax].includes(k));
+            return (
             <div key={axis} style={{ marginBottom: 6 }}>
-              <div style={{ ...hdr, margin: "6px 6px 2px" }}>{title}</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "6px 6px 2px" }}>
+                <span style={hdr}>{title}</span>
+                <button onClick={() => setFacet(ax, allOn ? [] : allKeys)} style={{ border: 0, background: "transparent", color: allOn ? "#9b3d2d" : "#80603b", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{allOn ? "전체 해제" : "전체 선택"}</button>
+              </div>
               {items.map((it) => (
                 <FacetRow key={it.key} label={it.label} on={filters[axis as "era" | "denom" | "country" | "role" | "region"].includes(it.key)}
-                  onClick={() => { toggleFacet(axis as "era" | "denom" | "country" | "role" | "region", it.key); if (axis === "era") { const e = ERAS.find((x) => x.key === it.key); if (e) { setYear(Math.round((e.from + e.to) / 2)); setSnapshot(true); } } }} />
+                  onClick={() => { toggleFacet(ax, it.key); if (axis === "era") { const e = ERAS.find((x) => x.key === it.key); if (e) { setYear(Math.round((e.from + e.to) / 2)); setSnapshot(true); } } }} />
               ))}
             </div>
-          ))}
+          );})}
           {cemeteries.length > 0 && (
             <div style={{ marginBottom: 6 }}>
               <div style={{ ...hdr, margin: "6px 6px 2px" }}>선교 묘역 이동</div>
