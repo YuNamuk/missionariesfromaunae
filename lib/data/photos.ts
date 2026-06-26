@@ -54,11 +54,11 @@ export const PHOTOS: Record<string, PersonPhoto> = {
   hhunderwood: { qid: "Q12625227", photo: null, wiki: "https://ko.wikipedia.org/wiki/호러스_호턴_언더우드", source: "한국어 위키백과" },
   linton: { qid: "", photo: null, wiki: "https://ko.wikipedia.org/wiki/윌리엄_린튼", namu: "https://namu.wiki/w/윌리엄_린튼", source: "한국어 위키백과" },
   // 묘역별 대표 선교사(보강).
-  shepping: { qid: "", photo: null, wiki: "https://ko.wikipedia.org/wiki/서서평", wikiEn: "https://en.wikipedia.org/wiki/Elisabeth_Shepping", namu: "https://namu.wiki/w/서서평", source: "한국어 위키백과" },
+  shepping: { qid: "", photo: "/portraits/shepping.jpg", wiki: "https://ko.wikipedia.org/wiki/서서평", wikiEn: "https://en.wikipedia.org/wiki/Elisabeth_Shepping", namu: "https://namu.wiki/w/서서평", source: "The Korea Mission Field 1918.12(세브란스 간호졸업) · Internet Archive" },
   owen: { qid: "", photo: null, wiki: "", source: "" },
   preston: { qid: "", photo: null, wiki: "", source: "" },
   bruen_martha: { qid: "", photo: null, wiki: "", source: "" },
-  switzer: { qid: "", photo: null, wiki: "", source: "" },
+  switzer: { qid: "", photo: "/portraits/switzer.png", wiki: "", source: "대구 근대여성 인물 아카이브(연령 PD)" },
   davis: { qid: "", photo: "/portraits/davis.jpg", wiki: "", source: "Nisbet, Day In and Day Out in Korea(1919) · Internet Archive" },
   rankin: { qid: "", photo: null, wiki: "", source: "" },
 };
