@@ -56,8 +56,10 @@ function HeaderDrop({
         <span className="text-[8px] opacity-70">▾</span>
       </button>
       {isOpen && (
+        // top-full + 위쪽 패딩으로 버튼↔패널 사이 틈을 메워(호버 브리지) 세부 항목 클릭 가능
+        <div className="absolute right-0 top-full z-50 w-60 pt-2">
         <div
-          className="absolute right-0 top-9 z-50 max-h-[60vh] w-60 overflow-y-auto rounded-xl border p-1.5 shadow-xl"
+          className="max-h-[60vh] overflow-y-auto rounded-xl border p-1.5 shadow-xl"
           style={{ background: "rgba(255,250,237,.99)", borderColor: "rgba(77,56,34,.18)" }}
         >
           {items.map((it) => {
@@ -81,6 +83,7 @@ function HeaderDrop({
               </button>
             );
           })}
+        </div>
         </div>
       )}
     </div>
