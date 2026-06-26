@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import Link from "next/link";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Search, X, ArrowRight, Settings, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-react";
 import type { AtlasData, MapPerson, MapPlace } from "./types";
 import { isFeatured, regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleTagsOf, ROLE_LIST, peakYear } from "@/lib/data/meta";
@@ -357,7 +357,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       const first = data.places.find((pl) => names.has(pl.name));
       return first ? { kind: "place", id: first.id } : null;
     }
-    return { kind: "person", id: "appenzeller" };
+    // 홈(people)은 자동 선택 없이 '조선 선교의 흐름' 내러티브로 진입.
+    return null;
   });
   const [showSettings, setShowSettings] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
@@ -414,35 +415,19 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     try { window.localStorage.setItem("atlas-view", JSON.stringify({ year, snapshot })); } catch {}
   }, [year, snapshot]);
 
-  // 헤더 메뉴/URL ↔ 필터 양방향 동기화 (loop 방지용 ref)
+  // 헤더 메뉴 = 내비게이션(인물·묘역·연도)만 URL로 전달. 필터는 아래 패널의
+  // 클라이언트 상태가 전담(즉시 반응) → 필터를 URL과 동기화하지 않아 빠르다.
   const sp = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-  const lastSync = useRef<string>("");
+  const navSig = `${sp.get("person") ?? ""}|${sp.get("focus") ?? ""}|${sp.get("y") ?? ""}`;
   useEffect(() => {
-    const str = sp.toString();
-    if (str === lastSync.current) return; // 우리가 쓴 값이면 무시
-    lastSync.current = str;
-    const csv = (k: string) => { const v = sp.get(k); return v ? v.split(",").filter(Boolean) : []; };
-    setFilters({ denom: csv("denom"), region: csv("region"), era: csv("era"), role: csv("role"), country: csv("country") });
-    if (sp.has("feat")) setFeaturedOnly(sp.get("feat") !== "0");
+    const person = sp.get("person");
     const focus = sp.get("focus");
-    if (focus) setSelected({ kind: "place", id: focus });
     const y = sp.get("y");
+    if (person) setSelected({ kind: "person", id: person });
+    else if (focus) setSelected({ kind: "place", id: focus });
     if (y) { setYear(Number(y)); setSnapshot(true); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sp]);
-  useEffect(() => {
-    if (!restored.current) return;
-    const params = new URLSearchParams();
-    (["denom", "region", "era", "role", "country"] as const).forEach((k) => { if (filters[k].length) params.set(k, filters[k].join(",")); });
-    if (!featuredOnly) params.set("feat", "0");
-    const str = params.toString();
-    if (str === lastSync.current) return;
-    lastSync.current = str;
-    router.replace(str ? `${pathname}?${str}` : pathname, { scroll: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, featuredOnly]);
+  }, [navSig]);
   const setYearSnapshot = (y: number) => { setYear(y); setSnapshot(true); };
   // 조선 사역 구간(다중 구간 포함) 안에 들어와야 그 시점에 표시
   const yearOK = (p: MapPerson) => !snapshot || p.active.some(([s, e]) => s <= year && year <= e);
@@ -459,6 +444,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     (!filters.era.length || erasOf(p.active).some((e) => filters.era.includes(e))) &&
     (!filters.role.length || roleTagsOf(p.role).some((r) => filters.role.includes(r))) &&
     (!filters.country.length || filters.country.includes(p.country));
+  // 랜딩(홈 첫 진입·미선택·미검색·미필터): 거점(항구·묘역)이 주인공, 인물은 흐리게.
+  const landing = lens === "people" && !selected && q === "" && facetCount === 0;
 
   const visiblePeople = useMemo(
     () => data.people.filter((p) => yearOK(p) && matchPerson(p) && facetMatch(p)),
@@ -912,7 +899,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               const dim = (!!selPerson && selPerson.place !== p.id) || (!!selEvent && selEvent.placeId !== p.id);
               // 장소는 인물보다 항상 아래에 깔리도록 음수 오프셋(선택된 장소만 살짝 위)
               return (
-                <Marker key={p.id} position={[p.lat, p.lng]} icon={placeIcon(p, sel, dim)} zIndexOffset={sel ? -120 : -600} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
+                <Marker key={p.id} position={[p.lat, p.lng]} icon={placeIcon(p, sel, landing ? false : dim)} zIndexOffset={landing ? 200 : sel ? -120 : -600} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
               );
             })}
 
@@ -924,7 +911,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               const second = secondDeg.has(p.id);
               const dimActive = !!selPerson || !!selEvent;
               // 선택 시: 본인·1차 선명 / 2차 흐리게 / 그 외 더 흐리게
-              const opacity = !dimActive || sel || first ? 1 : second ? 0.55 : 0.22;
+              const opacity = landing ? 0.28 : !dimActive || sel || first ? 1 : second ? 0.55 : 0.22;
               return (
                 <Marker key={p.id} position={ll} icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
               );
@@ -1206,9 +1193,41 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         )}
 
         {!selPerson && !selPlace && !selEvent && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", color: C.muted, padding: 24, textAlign: "center" }}>
-            <X size={20} />
-            <p style={{ marginTop: 8, fontSize: 13 }}>지도에서 인물·장소를 선택하세요.</p>
+          <div style={{ padding: "24px 22px 28px", overflowY: "auto", height: "100%" }}>
+            <span style={pill("rgba(191,107,34,.9)")}>조선 선교의 흐름</span>
+            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "12px 0 8px", letterSpacing: "-.03em", color: "#3e2c1d" }}>복음이 들어온 길</h2>
+            <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.75, color: "#5f4d39" }}>
+              1882년 만주·일본에서 옮겨진 성경이 먼저 이 땅에 닿았고, 1884–85년 <b>제물포</b>를 통해 의료·교육 선교사들이 들어왔습니다. 서울·평양·호남·대구로 퍼져 간 선교의 거점과, 이 땅에 묻힌 이들의 <b>묘역</b>을 따라가 보세요.
+            </p>
+
+            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>입국·거점 항구</h3>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {data.places.filter((p) => p.cat === "port").map((p) => (
+                <button key={p.id} onClick={() => setSelected({ kind: "place", id: p.id })} style={{ ...pill("#0d3b66"), border: 0, cursor: "pointer" }}>⚓ {p.name}</button>
+              ))}
+            </div>
+
+            {cemeteries.length > 0 && (<>
+              <h3 style={{ ...hdr, margin: "20px 0 8px" }}>선교 묘역</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                {cemeteries.map((c) => (
+                  <button key={c.id} onClick={() => setSelected({ kind: "place", id: c.id })} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 11, padding: "9px 12px", background: "rgba(255,255,255,.55)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800 }}>
+                    <span>♰ {c.name}</span><span style={{ color: C.muted, fontWeight: 600 }}>{buriedAt(c.name).length}명</span>
+                  </button>
+                ))}
+              </div>
+            </>)}
+
+            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>시대의 흐름</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              {ERAS.map((e) => (
+                <button key={e.key} onClick={() => setYearSnapshot(Math.round((e.from + e.to) / 2))} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 11, padding: "9px 12px", background: "rgba(255,255,255,.55)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800 }}>
+                  <span>{e.label}</span><span style={{ color: "#9b3d2d" }}>→</span>
+                </button>
+              ))}
+            </div>
+
+            <p style={{ margin: "20px 0 0", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>위 검색창·「필터」로 인물을 찾거나, 지도에서 거점을 눌러 흐름을 따라가세요. 상단 메뉴(교단·나라·사역·지역)에서 인물을 바로 고를 수도 있습니다.</p>
           </div>
         )}
       </article>

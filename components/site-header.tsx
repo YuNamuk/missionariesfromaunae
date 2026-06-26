@@ -2,101 +2,89 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { clsx } from "clsx";
-import { PLACES, BURIAL, PEOPLE } from "@/lib/data";
-import { ERAS, DENOM_LIST, ROLE_LIST, REGIONS } from "@/lib/data/meta";
+import { PEOPLE, PLACES, BURIAL } from "@/lib/data";
+import { ERAS, DENOM_LIST, ROLE_LIST, REGIONS, denomOf, regionOf, roleTagsOf } from "@/lib/data/meta";
 
-// Data-derived dropdown sources (static at module load).
+// ── 정적 디렉터리 데이터(카테고리별 인물). 헤더는 '필터'가 아니라 '표기·탐색'. ──
+const SORTED = [...PEOPLE].sort((a, b) => a.year - b.year);
+type Group = { key: string; label: string; people: { id: string; name: string; year: number }[] };
+const slim = (p: (typeof PEOPLE)[number]) => ({ id: p.id, name: p.name, year: p.year });
+function build(list: { key: string; label: string }[], keyOf: (p: (typeof PEOPLE)[number]) => string | string[]): Group[] {
+  return list
+    .map(({ key, label }) => ({ key, label, people: SORTED.filter((p) => { const k = keyOf(p); return Array.isArray(k) ? k.includes(key) : k === key; }).map(slim) }))
+    .filter((g) => g.people.length > 0);
+}
+const DENOM_GROUPS = build(DENOM_LIST, (p) => denomOf(p.org));
+const ROLE_GROUPS = build(ROLE_LIST, (p) => roleTagsOf(p.role));
+const REGION_GROUPS = build(REGIONS, (p) => regionOf(p.place));
+const COUNTRY_GROUPS: Group[] = [...new Set(PEOPLE.map((p) => p.country).filter(Boolean))]
+  .map((c) => ({ key: c, label: c, people: SORTED.filter((p) => p.country === c).map(slim) }));
 const CEMETERIES = [...new Set(Object.values(BURIAL))]
   .map((id) => PLACES.find((p) => p.id === id))
   .filter((p): p is NonNullable<typeof p> => !!p);
-const COUNTRIES = [...new Set(PEOPLE.map((p) => p.country).filter(Boolean))];
 
-type Item = { key: string; label: string };
+const PANEL = "rgba(255,250,237,.99)";
+const LINE = "rgba(77,56,34,.18)";
 
-/** A hover dropdown on the dark header that drives the map via URL params. */
-function HeaderDrop({
-  id,
-  label,
-  items,
-  axis,
-  open,
-  setOpen,
-  active,
-  onPick,
-  onAll,
-}: {
-  id: string;
-  label: string;
-  items: Item[];
-  axis?: string;
-  open: string | null;
-  setOpen: (v: string | null) => void;
-  active: string[];
-  onPick: (key: string) => void;
-  onAll?: (keys: string[]) => void;
+/** 카테고리별 인물 디렉터리 드롭다운 — 클릭하면 그 인물로 지도 이동(필터 아님). */
+function DirectoryDrop({ id, label, groups, open, setOpen, onPickPerson }: {
+  id: string; label: string; groups: Group[]; open: string | null; setOpen: (v: string | null) => void; onPickPerson: (pid: string) => void;
 }) {
   const isOpen = open === id;
-  const allOn = items.length > 0 && items.every((it) => active.includes(it.key));
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setOpen(id)}
-      onMouseLeave={() => setOpen(isOpen ? null : open)}
-    >
-      <button
-        onClick={() => setOpen(isOpen ? null : id)}
-        className={clsx(
-          "flex items-center gap-1 rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors",
-          isOpen || active.length ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/10 hover:text-white",
-        )}
-      >
-        {label}
-        {active.length > 0 && (
-          <span className="rounded-full bg-[#bf6b22] px-1.5 text-[10px] font-extrabold text-white">{active.length}</span>
-        )}
-        <span className="text-[8px] opacity-70">▾</span>
+    <div className="relative" onMouseEnter={() => setOpen(id)} onMouseLeave={() => setOpen(isOpen ? null : open)}>
+      <button onClick={() => setOpen(isOpen ? null : id)}
+        className={clsx("flex items-center gap-1 rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors", isOpen ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/10 hover:text-white")}>
+        {label}<span className="text-[8px] opacity-70">▾</span>
       </button>
       {isOpen && (
-        // top-full + 위쪽 패딩으로 버튼↔패널 사이 틈을 메워(호버 브리지) 세부 항목 클릭 가능
-        <div className="absolute right-0 top-full z-50 w-60 pt-2">
-        <div
-          className="max-h-[60vh] overflow-y-auto rounded-xl border p-1.5 shadow-xl"
-          style={{ background: "rgba(255,250,237,.99)", borderColor: "rgba(77,56,34,.18)" }}
-        >
-          {axis && onAll && (
-            <button
-              onClick={() => onAll(allOn ? [] : items.map((it) => it.key))}
-              className="mb-1 flex w-full items-center justify-between gap-2 rounded-lg border-b px-2.5 py-2 text-left text-[12px] font-extrabold"
-              style={{ color: allOn ? "#9b3d2d" : "#80603b", borderColor: "rgba(77,56,34,.12)" }}
-            >
-              <span>{allOn ? "전체 해제" : "전체 선택"}</span>
-              <span className="text-[10px] opacity-70">{active.length}/{items.length}</span>
-            </button>
-          )}
-          {items.map((it) => {
-            const on = active.includes(it.key);
-            return (
-              <button
-                key={it.key}
-                onClick={() => onPick(it.key)}
-                className="flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[12.5px] transition-colors hover:bg-[#f2e3c8]"
-                style={{ color: "#4a3a28", background: on ? "#f2e3c8" : "transparent", fontWeight: on ? 800 : 600 }}
-              >
-                <span>{it.label}</span>
-                {axis && (
-                  <span
-                    className="flex h-[15px] w-[15px] flex-none items-center justify-center rounded text-[11px] text-white"
-                    style={{ border: `1.5px solid ${on ? "#9b3d2d" : "rgba(77,56,34,.25)"}`, background: on ? "#9b3d2d" : "transparent" }}
-                  >
-                    {on ? "✓" : ""}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        <div className="absolute right-0 top-full z-50 w-64 pt-2">
+          <div className="max-h-[68vh] overflow-y-auto rounded-xl border p-1.5 shadow-xl" style={{ background: PANEL, borderColor: LINE }}>
+            {groups.map((g) => (
+              <div key={g.key} className="mb-1.5">
+                <div className="px-2 pb-0.5 pt-1 text-[10.5px] font-extrabold uppercase tracking-wider" style={{ color: "#80603b" }}>
+                  {g.label} <span className="opacity-60">{g.people.length}</span>
+                </div>
+                {g.people.map((p) => (
+                  <button key={p.id} onClick={() => onPickPerson(p.id)}
+                    className="flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left text-[12.5px] font-semibold transition-colors hover:bg-[#f2e3c8]"
+                    style={{ color: "#3e2c1d" }}>
+                    <span className="truncate">{p.name}</span>
+                    <span className="text-[10.5px] opacity-50">{p.year}</span>
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+/** 단순 내비게이션 드롭다운(시기·묘역) — 항목 클릭 시 지도 이동. */
+function NavDrop({ id, label, items, open, setOpen, onPick }: {
+  id: string; label: string; items: { key: string; label: string; sub?: string }[]; open: string | null; setOpen: (v: string | null) => void; onPick: (key: string) => void;
+}) {
+  const isOpen = open === id;
+  return (
+    <div className="relative" onMouseEnter={() => setOpen(id)} onMouseLeave={() => setOpen(isOpen ? null : open)}>
+      <button onClick={() => setOpen(isOpen ? null : id)}
+        className={clsx("flex items-center gap-1 rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors", isOpen ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/10 hover:text-white")}>
+        {label}<span className="text-[8px] opacity-70">▾</span>
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-full z-50 w-60 pt-2">
+          <div className="max-h-[60vh] overflow-y-auto rounded-xl border p-1.5 shadow-xl" style={{ background: PANEL, borderColor: LINE }}>
+            {items.map((it) => (
+              <button key={it.key} onClick={() => onPick(it.key)}
+                className="flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-2 text-left text-[12.5px] font-semibold transition-colors hover:bg-[#f2e3c8]" style={{ color: "#3e2c1d" }}>
+                <span>{it.label}</span>{it.sub && <span className="text-[10.5px] opacity-55">{it.sub}</span>}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -113,50 +101,19 @@ const PAGES = [
 export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
-  const sp = useSearchParams();
   const [open, setOpen] = useState<string | null>(null);
 
-  const csv = (k: string) => { const v = sp.get(k); return v ? v.split(",").filter(Boolean) : []; };
-  // Build "/?..." from the current params, toggling one facet value.
-  const toggle = (key: string, val: string, extra?: Record<string, string>) => {
-    const params = new URLSearchParams(Array.from(sp.entries()));
-    const cur = (params.get(key) ?? "").split(",").filter(Boolean);
-    const next = cur.includes(val) ? cur.filter((x) => x !== val) : [...cur, val];
-    if (next.length) params.set(key, next.join(",")); else params.delete(key);
-    if (extra) for (const [k, v] of Object.entries(extra)) params.set(k, v);
-    router.push(`/?${params.toString()}`);
-    setOpen(null);
-  };
-  const goFocus = (id: string) => {
-    const params = new URLSearchParams(Array.from(sp.entries()));
-    params.set("focus", id);
-    router.push(`/?${params.toString()}`);
-    setOpen(null);
-  };
-  // 전체 선택/해제: 한 축의 모든 키를 한 번에 설정하거나 비운다.
-  const setAll = (key: string, vals: string[]) => {
-    const params = new URLSearchParams(Array.from(sp.entries()));
-    if (vals.length) params.set(key, vals.join(",")); else params.delete(key);
-    router.push(`/?${params.toString()}`);
-    setOpen(null);
-  };
+  const goPerson = (pid: string) => { router.push(`/?person=${pid}`); setOpen(null); };
+  const goFocus = (placeId: string) => { router.push(`/?focus=${placeId}`); setOpen(null); };
+  const goYear = (y: number) => { router.push(`/?y=${y}`); setOpen(null); };
 
   return (
     <header
       className="sticky top-0 z-[1000] flex h-16 items-center justify-between gap-4 px-5 sm:px-7"
-      style={{
-        background: "linear-gradient(180deg,#3a2a1c 0%,#2e2218 100%)",
-        borderBottom: "1px solid rgba(255,248,236,0.08)",
-        boxShadow: "0 4px 20px rgba(38,25,10,0.35)",
-      }}
+      style={{ background: "linear-gradient(180deg,#3a2a1c 0%,#2e2218 100%)", borderBottom: "1px solid rgba(255,248,236,0.08)", boxShadow: "0 4px 20px rgba(38,25,10,0.35)" }}
     >
       <Link href="/" className="flex min-w-0 flex-none items-center gap-3">
-        <span
-          className="font-display flex h-9 w-9 flex-none items-center justify-center rounded-[11px] text-[22px] font-black leading-none text-white"
-          style={{ background: "var(--grad-dream)", boxShadow: "var(--shadow-sky)" }}
-        >
-          Ð
-        </span>
+        <span className="font-display flex h-9 w-9 flex-none items-center justify-center rounded-[11px] text-[22px] font-black leading-none text-white" style={{ background: "var(--grad-dream)", boxShadow: "var(--shadow-sky)" }}>Ð</span>
         <span className="hidden min-w-0 sm:block">
           <span className="font-display block truncate text-[15px] font-extrabold tracking-tight text-white">조선 선교사 온라인 자료실</span>
           <span className="hidden text-[10px] font-bold uppercase tracking-[0.16em] text-sky-300 lg:block">Missionaries from Aunae · 1882–1960</span>
@@ -164,26 +121,23 @@ export function SiteHeader() {
       </Link>
 
       <nav className="flex items-center gap-0.5">
-        <HeaderDrop id="era" label="선교 연혁" axis="era" items={ERAS.map((e) => ({ key: e.key, label: e.label }))} open={open} setOpen={setOpen} active={csv("era")} onPick={(k) => { const e = ERAS.find((x) => x.key === k); toggle("era", k, e ? { y: String(Math.round((e.from + e.to) / 2)) } : undefined); }} onAll={(keys) => setAll("era", keys)} />
-        <HeaderDrop id="cem" label="선교 묘역" items={CEMETERIES.map((c) => ({ key: c.id, label: c.name }))} open={open} setOpen={setOpen} active={[]} onPick={goFocus} />
-        <HeaderDrop id="denom" label="교단" axis="denom" items={DENOM_LIST} open={open} setOpen={setOpen} active={csv("denom")} onPick={(k) => toggle("denom", k)} onAll={(keys) => setAll("denom", keys)} />
-        <HeaderDrop id="country" label="나라" axis="country" items={COUNTRIES.map((c) => ({ key: c, label: c }))} open={open} setOpen={setOpen} active={csv("country")} onPick={(k) => toggle("country", k)} onAll={(keys) => setAll("country", keys)} />
-        <HeaderDrop id="role" label="사역 분야" axis="role" items={ROLE_LIST} open={open} setOpen={setOpen} active={csv("role")} onPick={(k) => toggle("role", k)} onAll={(keys) => setAll("role", keys)} />
-        <HeaderDrop id="region" label="지역" axis="region" items={REGIONS} open={open} setOpen={setOpen} active={csv("region")} onPick={(k) => toggle("region", k)} onAll={(keys) => setAll("region", keys)} />
+        <NavDrop id="era" label="선교 연혁" open={open} setOpen={setOpen}
+          items={ERAS.map((e) => ({ key: e.key, label: e.label, sub: `${Math.round((e.from + e.to) / 2)}년` }))}
+          onPick={(k) => { const e = ERAS.find((x) => x.key === k); if (e) goYear(Math.round((e.from + e.to) / 2)); }} />
+        <NavDrop id="cem" label="선교 묘역" open={open} setOpen={setOpen}
+          items={CEMETERIES.map((c) => ({ key: c.id, label: c.name }))} onPick={goFocus} />
+        <DirectoryDrop id="denom" label="교단" groups={DENOM_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
+        <DirectoryDrop id="country" label="나라" groups={COUNTRY_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
+        <DirectoryDrop id="role" label="사역 분야" groups={ROLE_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
+        <DirectoryDrop id="region" label="지역" groups={REGION_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
 
         <span className="mx-1.5 h-5 w-px bg-white/15" />
 
         {PAGES.map((item) => {
           const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={clsx(
-                "rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors",
-                active ? "bg-white/12 text-white" : "text-white/55 hover:bg-white/8 hover:text-white",
-              )}
-            >
+            <Link key={item.href} href={item.href}
+              className={clsx("rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors", active ? "bg-white/12 text-white" : "text-white/55 hover:bg-white/8 hover:text-white")}>
               {item.label}
             </Link>
           );
