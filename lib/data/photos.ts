@@ -7,8 +7,12 @@ export interface PersonPhoto {
   qid: string;
   /** Commons thumbnail URL, or null when no portrait exists yet */
   photo: string | null;
-  /** Korean Wikipedia article */
+  /** Korean Wikipedia article (verified to be this missionary) */
   wiki: string;
+  /** Verified 나무위키 article URL ("" if none / mismatched) */
+  namu?: string;
+  /** Verified English Wikipedia URL ("" if none / mismatched) */
+  wikiEn?: string;
   source: string;
 }
 

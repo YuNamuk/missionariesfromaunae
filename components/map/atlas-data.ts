@@ -62,6 +62,8 @@ export async function buildAtlasData(): Promise<AtlasData> {
       interview: p.interview,
       photo: o && "photo" in o ? o.photo ?? null : PHOTOS[p.id]?.photo ?? null,
       wiki: (o?.wiki ?? PHOTOS[p.id]?.wiki) ?? "",
+      namu: PHOTOS[p.id]?.namu ?? "",
+      wikiEn: PHOTOS[p.id]?.wikiEn ?? "",
       photoSource: PHOTOS[p.id]?.source ?? "",
       burial: o && "burial_place_id" in o ? (o.burial_place_id ? placeName(o.burial_place_id) : "") : burialId ? placeName(burialId) : "",
       active: o?.active_periods?.length ? o.active_periods : activePeriods(p),

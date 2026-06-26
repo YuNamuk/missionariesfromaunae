@@ -30,6 +30,8 @@ export interface MapPerson {
   interview: string;
   photo: string | null;
   wiki: string;
+  /** 검증된 나무위키 URL (없으면 "") */ namu: string;
+  /** 검증된 영문 위키백과 URL (없으면 "") */ wikiEn: string;
   photoSource: string;
   burial: string;
   active: [number, number][];
