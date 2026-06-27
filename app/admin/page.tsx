@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { browserSupabase } from "@/lib/db/browser";
+import { PEOPLE } from "@/lib/data";
+import { profileFor } from "@/lib/data/profiles";
 
 const C = { ink: "#251c14", muted: "#6b5e4b", line: "rgba(77,56,34,.2)", accent: "#9b3d2d" };
 
@@ -36,6 +38,8 @@ export default function AdminPage() {
   const [draft, setDraft] = useState<PersonRow | null>(null);
   const [activeText, setActiveText] = useState("");
   const [saving, setSaving] = useState(false);
+  // 상세 페이지 카드 글(스토리텔링 등) 편집 — content.person.<id> 오버레이로 저장.
+  const [cd, setCd] = useState<Record<string, string>>({});
 
   useEffect(() => {
     sb.auth.getSession().then(({ data }) => { setSession(data.session); setReady(true); });
@@ -63,7 +67,25 @@ export default function AdminPage() {
     const p = people.find((x) => x.id === sel) ?? null;
     setDraft(p ? { ...p } : null);
     setActiveText(p?.active_periods?.map((a) => `${a[0]}-${a[1]}`).join("; ") ?? "");
-  }, [sel, people]);
+    // 카드 글: 저장된 오버레이 ?? 코드 기본값으로 초기화
+    if (sel) {
+      const base = profileFor(sel);
+      const tsPerson = PEOPLE.find((x) => x.id === sel);
+      const ovStored = (settings[`content.person.${sel}`] ?? {}) as {
+        summary?: string; story?: string[]; journey?: string; ministry?: string[]; influence?: string; beauty?: string; quote?: { text: string; source: string };
+      };
+      setCd({
+        summary: ovStored.summary ?? tsPerson?.summary ?? "",
+        story: (ovStored.story ?? base?.story ?? []).join("\n\n"),
+        journey: ovStored.journey ?? base?.journey ?? "",
+        ministry: (ovStored.ministry ?? base?.ministry ?? []).join("\n"),
+        influence: ovStored.influence ?? base?.influence ?? "",
+        beauty: ovStored.beauty ?? base?.beauty ?? "",
+        quoteText: ovStored.quote?.text ?? base?.quote?.text ?? "",
+        quoteSource: ovStored.quote?.source ?? base?.quote?.source ?? "",
+      });
+    } else setCd({});
+  }, [sel, people, settings]);
 
   async function login(e: React.FormEvent) {
     e.preventDefault();
@@ -108,6 +130,26 @@ export default function AdminPage() {
     if (!err) loadData();
   }
 
+  async function saveContent() {
+    if (!sel) return;
+    setSaving(true); setMsg("");
+    const value: Record<string, unknown> = {};
+    const t = (s?: string) => (s ?? "").trim();
+    if (t(cd.summary)) value.summary = t(cd.summary);
+    const story = (cd.story ?? "").split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+    if (story.length) value.story = story;
+    if (t(cd.journey)) value.journey = t(cd.journey);
+    const ministry = (cd.ministry ?? "").split(/\n/).map((s) => s.trim()).filter(Boolean);
+    if (ministry.length) value.ministry = ministry;
+    if (t(cd.influence)) value.influence = t(cd.influence);
+    if (t(cd.beauty)) value.beauty = t(cd.beauty);
+    if (t(cd.quoteText)) value.quote = { text: t(cd.quoteText), source: t(cd.quoteSource) };
+    const err = await post({ kind: "settings", settings: { [`content.person.${sel}`]: value } });
+    setSaving(false);
+    setMsg(err ? "저장 실패: " + err : "✓ 카드 글 저장됨 (상세 페이지에 곧 반영)");
+    if (!err) loadData();
+  }
+
   async function saveSettings() {
     setSaving(true); setMsg("");
     const err = await post({ kind: "settings", settings });
@@ -117,6 +159,7 @@ export default function AdminPage() {
 
   const set = (k: string, v: unknown) => setSettings((s) => ({ ...s, [k]: v }));
   const upd = (k: keyof PersonRow, v: string) => setDraft((d) => (d ? { ...d, [k]: v } : d));
+  const cdu = (k: string, v: string) => setCd((s) => ({ ...s, [k]: v }));
 
   if (!ready) return <div style={{ padding: 40, fontFamily: "var(--font-body)" }}>로딩…</div>;
 
@@ -189,7 +232,26 @@ export default function AdminPage() {
               <div><label style={label}>사진 URL</label><input style={input} value={draft.photo ?? ""} onChange={(e) => upd("photo", e.target.value)} /></div>
               <div><label style={label}>위키 링크</label><input style={input} value={draft.wiki ?? ""} onChange={(e) => upd("wiki", e.target.value)} /></div>
               <div><label style={label}>조선 사역 구간 (예: 1885-1902; 1949-1949)</label><input style={input} value={activeText} onChange={(e) => setActiveText(e.target.value)} /></div>
-              <button onClick={savePerson} disabled={saving} style={{ ...btn, justifySelf: "start", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "저장"}</button>
+              <button onClick={savePerson} disabled={saving} style={{ ...btn, justifySelf: "start", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "기본 정보 저장 (지도)"}</button>
+
+              {/* 상세 페이지 카드 글 편집 — content.person.<id> 오버레이 */}
+              <div style={{ marginTop: 10, paddingTop: 16, borderTop: `1px solid ${C.line}` }}>
+                <h3 className="font-display" style={{ fontWeight: 900, fontSize: 16, margin: "0 0 4px" }}>상세 페이지 카드 글</h3>
+                <p style={{ margin: "0 0 14px", fontSize: 11.5, color: C.muted }}>인물 상세(/people/{sel}) 페이지의 카드. 비우면 기본값으로 되돌아갑니다. 저장 후 잠시 뒤 반영.</p>
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div><label style={label}>상세 요약</label><textarea style={{ ...input, minHeight: 70, resize: "vertical" }} value={cd.summary ?? ""} onChange={(e) => cdu("summary", e.target.value)} /></div>
+                  <div><label style={label}>이야기 (서사) — 문단은 빈 줄로 구분</label><textarea style={{ ...input, minHeight: 200, resize: "vertical", lineHeight: 1.6 }} value={cd.story ?? ""} onChange={(e) => cdu("story", e.target.value)} /></div>
+                  <div><label style={label}>큰 흐름 속 여정 (이야기가 비면 표시)</label><textarea style={{ ...input, minHeight: 70, resize: "vertical" }} value={cd.journey ?? ""} onChange={(e) => cdu("journey", e.target.value)} /></div>
+                  <div><label style={label}>걸어온 사역 — 한 줄에 하나</label><textarea style={{ ...input, minHeight: 90, resize: "vertical" }} value={cd.ministry ?? ""} onChange={(e) => cdu("ministry", e.target.value)} /></div>
+                  <div><label style={label}>남긴 열매</label><textarea style={{ ...input, minHeight: 70, resize: "vertical" }} value={cd.influence ?? ""} onChange={(e) => cdu("influence", e.target.value)} /></div>
+                  <div><label style={label}>이 삶에서 아름다운 것 · 치른 값 (선택)</label><textarea style={{ ...input, minHeight: 60, resize: "vertical" }} value={cd.beauty ?? ""} onChange={(e) => cdu("beauty", e.target.value)} /></div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div><label style={label}>1차 자료 인용</label><textarea style={{ ...input, minHeight: 60, resize: "vertical" }} value={cd.quoteText ?? ""} onChange={(e) => cdu("quoteText", e.target.value)} /></div>
+                    <div><label style={label}>인용 출처</label><textarea style={{ ...input, minHeight: 60, resize: "vertical" }} value={cd.quoteSource ?? ""} onChange={(e) => cdu("quoteSource", e.target.value)} /></div>
+                  </div>
+                  <button onClick={saveContent} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "카드 글 저장 (상세 페이지)"}</button>
+                </div>
+              </div>
             </div>
           ) : <p style={{ color: C.muted, fontSize: 13 }}>왼쪽에서 선교사를 선택하세요.</p>}
         </div>

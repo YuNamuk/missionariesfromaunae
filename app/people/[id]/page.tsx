@@ -12,6 +12,10 @@ import {
 } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 import { profileFor } from "@/lib/data/profiles";
+import { fetchPersonContent } from "@/lib/db/editable";
+
+// 관리자 카드 편집(DB 오버레이)을 반영하기 위해 ISR. /admin 저장 시 revalidate로 즉시 반영.
+export const revalidate = 300;
 
 export function generateStaticParams() {
   return PEOPLE.map((p) => ({ id: p.id }));
@@ -71,6 +75,19 @@ export default async function PersonPage({
   const profile = profileFor(person.id);
   const burialPlace = BURIAL[person.id] ? getPlace(BURIAL[person.id]) : null;
 
+  // 관리자 카드 편집 오버레이 병합(없으면 코드 기본값).
+  const ov = await fetchPersonContent(person.id);
+  const c = {
+    summary: ov?.summary ?? person.summary,
+    story: ov?.story ?? profile?.story,
+    journey: ov?.journey ?? profile?.journey,
+    ministry: ov?.ministry ?? profile?.ministry ?? [],
+    influence: ov?.influence ?? profile?.influence,
+    beauty: ov?.beauty ?? profile?.beauty,
+    quote: ov?.quote ?? profile?.quote,
+  };
+  const hasNarrative = !!(c.story?.length || c.journey || c.ministry.length || c.influence || c.beauty);
+
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://missionaries-khaki.vercel.app";
   const [birth, death] = (person.life.match(/(\d{4})\D+(\d{4})/)?.slice(1) ?? []) as (string | undefined)[];
   const jsonLd = {
@@ -78,7 +95,7 @@ export default async function PersonPage({
     "@type": "Person",
     name: person.name,
     alternateName: person.en,
-    description: person.summary,
+    description: c.summary,
     nationality: person.country,
     affiliation: person.org,
     ...(birth ? { birthDate: birth } : {}),
@@ -147,55 +164,55 @@ export default async function PersonPage({
         </div>
       </div>
 
-      {/* 그 사람의 말로 페이지를 연다 — 검증된 1차 자료 인용(있을 때만) */}
-      {profile?.quote && (
+      {/* 그 사람의 말로 페이지를 연다 — 1차 자료 인용(있을 때만) */}
+      {c.quote && (
         <figure className="mt-8 border-l-4 pl-5 sm:pl-6" style={{ borderColor: "#bf6b22" }}>
           <blockquote className="font-serif text-[22px] leading-[1.8] text-ink-800 sm:text-[27px]">
-            &ldquo;{profile.quote.text}&rdquo;
+            &ldquo;{c.quote.text}&rdquo;
           </blockquote>
-          <figcaption className="mt-3 text-[12.5px] leading-relaxed text-ink-400">— {profile.quote.source}</figcaption>
+          <figcaption className="mt-3 text-[12.5px] leading-relaxed text-ink-400">— {c.quote.source}</figcaption>
         </figure>
       )}
 
-      <p className="font-serif mt-7 text-[18px] leading-[2.05] text-ink-700 sm:text-[19px]">{person.summary}</p>
+      <p className="font-serif mt-7 text-[18px] leading-[2.05] text-ink-700 sm:text-[19px]">{c.summary}</p>
 
-      {/* 서정적 서술: 큰 흐름 속 여정(중심) · 걸어온 사역 · 남긴 열매 */}
-      {profile && (
+      {/* 서정적 서술: 이야기(중심) · 치른 값 · 걸어온 사역 · 남긴 열매 */}
+      {hasNarrative && (
         <div className="mt-12 space-y-12">
           {/* 잔잔한 스토리텔링 서사가 있으면 그것이 지면의 중심, 없으면 '큰 흐름 속 여정' */}
-          {profile.story ? (
+          {c.story?.length ? (
             <section>
               <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">이야기</div>
               <div className="mt-5 space-y-6">
-                {profile.story.map((para, i) => (
+                {c.story.map((para, i) => (
                   <p key={i} className="font-serif text-[17px] leading-[2.1] text-ink-800 sm:text-[18.5px]">{para}</p>
                 ))}
               </div>
             </section>
-          ) : (
+          ) : c.journey ? (
             <section className="relative">
               <span aria-hidden className="font-serif block select-none text-[64px] leading-[0.6] text-rust" style={{ color: "rgba(155,61,45,.16)" }}>
                 &ldquo;
               </span>
               <div className="pl-1">
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">한국 선교의 큰 흐름 속에서</div>
-                <p className="font-serif mt-4 text-[21px] leading-[2.0] text-ink-800 sm:text-[23px]">{profile.journey}</p>
+                <p className="font-serif mt-4 text-[21px] leading-[2.0] text-ink-800 sm:text-[23px]">{c.journey}</p>
               </div>
             </section>
-          )}
+          ) : null}
 
-          {profile.beauty && (
+          {c.beauty && (
             <section>
               <div className="text-[11px] font-extrabold uppercase tracking-[0.2em]" style={{ color: "#9b3d2d" }}>이 삶에서 아름다운 것 · 치른 값</div>
-              <p className="font-serif mt-4 text-[16.5px] leading-[2.0] text-ink-700">{profile.beauty}</p>
+              <p className="font-serif mt-4 text-[16.5px] leading-[2.0] text-ink-700">{c.beauty}</p>
             </section>
           )}
 
-          {profile.ministry.length > 0 && (
+          {c.ministry.length > 0 && (
             <section>
               <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">걸어온 사역</div>
               <ul className="mt-4 space-y-3.5">
-                {profile.ministry.map((m, i) => (
+                {c.ministry.map((m, i) => (
                   <li key={i} className="font-serif flex gap-3.5 text-[15.5px] leading-[1.85] text-ink-700">
                     <span className="mt-2.5 h-1.5 w-1.5 flex-none rounded-full" style={{ background: "#bf6b22" }} />
                     <span>{m}</span>
@@ -205,10 +222,12 @@ export default async function PersonPage({
             </section>
           )}
 
-          <section className="rounded-3xl p-7 sm:p-8" style={{ borderLeft: "4px solid var(--aqua-500)", background: "var(--aqua-50)" }}>
-            <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-aqua-700">남긴 열매</div>
-            <p className="font-serif mt-3 text-[16.5px] leading-[2.0] text-ink-800">{profile.influence}</p>
-          </section>
+          {c.influence && (
+            <section className="rounded-3xl p-7 sm:p-8" style={{ borderLeft: "4px solid var(--aqua-500)", background: "var(--aqua-50)" }}>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-aqua-700">남긴 열매</div>
+              <p className="font-serif mt-3 text-[16.5px] leading-[2.0] text-ink-800">{c.influence}</p>
+            </section>
+          )}
         </div>
       )}
 
