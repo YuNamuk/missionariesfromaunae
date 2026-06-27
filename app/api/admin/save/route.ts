@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServiceSupabase } from "@/lib/db/supabase";
+
+// 편집 저장 후 ISR 캐시를 즉시 무효화 → 변경이 바로 반영(헤더 속도용 캐시와 양립).
+function revalidateSite() {
+  revalidatePath("/", "layout");
+}
 
 // 허용된 선교사 편집 컬럼만 화이트리스트
 const PERSON_COLS = ["name", "name_en", "life", "org", "role", "summary", "photo", "wiki", "burial_place_id", "active_periods"];
@@ -31,12 +37,14 @@ export async function POST(req: Request) {
       for (const c of PERSON_COLS) if (c in body.person) update[c] = body.person[c];
       const { error } = await db.from("people").update(update).eq("id", body.person.id);
       if (error) throw error;
+      revalidateSite();
       return NextResponse.json({ ok: true });
     }
     if (body.kind === "settings" && body.settings) {
       const rows = Object.entries(body.settings).map(([key, value]) => ({ key, value }));
       const { error } = await db.from("app_settings").upsert(rows, { onConflict: "key" });
       if (error) throw error;
+      revalidateSite();
       return NextResponse.json({ ok: true });
     }
     if (body.kind === "admins" && Array.isArray(body.admins)) {
