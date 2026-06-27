@@ -94,7 +94,8 @@ html, body {
   margin: 0;
   padding: 0;
   max-width: 100%;
-  overflow-x: hidden;
+  /* clip(not hidden): 가로 넘침은 막되 position:sticky 헤더가 깨지지 않게 */
+  overflow-x: clip;
   font-family: var(--font-body);
   color: var(--ink-900);
   background: var(--cloud);
