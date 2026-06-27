@@ -95,10 +95,10 @@ export default async function PersonPage({
           </span>
         )}
         <div className="min-w-0">
-          <h1 className="font-display text-3xl font-black tracking-tight text-ink-900 sm:text-4xl">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-ink-900 sm:text-[40px]">
             {person.name}
           </h1>
-          <p className="mt-1 text-[15px] font-semibold text-ink-500">
+          <p className="font-serif mt-1.5 text-[15px] text-ink-500">
             {person.en} · {person.life} · {person.country}
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -120,34 +120,40 @@ export default async function PersonPage({
         </div>
       </div>
 
-      <p className="mt-6 text-[16px] leading-relaxed text-ink-700">{person.summary}</p>
+      <p className="font-serif mt-7 text-[18px] leading-[2.05] text-ink-700 sm:text-[19px]">{person.summary}</p>
 
-      {/* 상세 서술: 사역 내역 · 큰 흐름 속 여정 · 영향 */}
+      {/* 서정적 서술: 큰 흐름 속 여정(중심) · 걸어온 사역 · 남긴 열매 */}
       {profile && (
-        <div className="mt-8 space-y-5">
+        <div className="mt-12 space-y-12">
+          {/* 큰 흐름 속 여정 — 이 지면의 서정적 중심 */}
+          <section className="relative">
+            <span aria-hidden className="font-serif block select-none text-[64px] leading-[0.6] text-rust" style={{ color: "rgba(155,61,45,.16)" }}>
+              &ldquo;
+            </span>
+            <div className="pl-1">
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">한국 선교의 큰 흐름 속에서</div>
+              <p className="font-serif mt-4 text-[21px] leading-[2.0] text-ink-800 sm:text-[23px]">{profile.journey}</p>
+            </div>
+          </section>
+
           {profile.ministry.length > 0 && (
-            <section className="rounded-3xl border border-ink-200 bg-white p-6">
-              <h2 className="font-display text-lg font-extrabold text-ink-900">사역 내역</h2>
-              <ul className="mt-3 space-y-2">
+            <section>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">걸어온 사역</div>
+              <ul className="mt-4 space-y-3.5">
                 {profile.ministry.map((m, i) => (
-                  <li key={i} className="flex gap-2.5 text-[14.5px] leading-relaxed text-ink-700">
-                    <span className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-sky-500" />
+                  <li key={i} className="font-serif flex gap-3.5 text-[15.5px] leading-[1.85] text-ink-700">
+                    <span className="mt-2.5 h-1.5 w-1.5 flex-none rounded-full" style={{ background: "#bf6b22" }} />
                     <span>{m}</span>
                   </li>
                 ))}
               </ul>
             </section>
           )}
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            <section className="rounded-3xl border p-6" style={{ borderColor: "var(--iris-200)", background: "var(--iris-50)" }}>
-              <h2 className="font-display text-lg font-extrabold text-iris-700">한국 선교의 큰 흐름 속에서</h2>
-              <p className="mt-3 text-[14.5px] leading-relaxed text-ink-700">{profile.journey}</p>
-            </section>
-            <section className="rounded-3xl border p-6" style={{ borderColor: "var(--aqua-300)", background: "var(--aqua-50)" }}>
-              <h2 className="font-display text-lg font-extrabold text-aqua-700">남긴 열매</h2>
-              <p className="mt-3 text-[14.5px] leading-relaxed text-ink-700">{profile.influence}</p>
-            </section>
-          </div>
+
+          <section className="rounded-3xl p-7 sm:p-8" style={{ borderLeft: "4px solid var(--aqua-500)", background: "var(--aqua-50)" }}>
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-aqua-700">남긴 열매</div>
+            <p className="font-serif mt-3 text-[16.5px] leading-[2.0] text-ink-800">{profile.influence}</p>
+          </section>
         </div>
       )}
 
@@ -160,7 +166,7 @@ export default async function PersonPage({
           <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-rust-600" style={{ color: "#9b3d2d" }}>
             Korea is home
           </div>
-          <p className="mt-2 text-[15px] leading-relaxed text-ink-800">
+          <p className="font-serif mt-2 text-[16px] leading-[1.95] text-ink-800">
             돌아갈 수도 있었지만, 이 땅을 집으로 삼았습니다.{" "}
             <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>
               {burialPlace.name}
@@ -197,7 +203,7 @@ export default async function PersonPage({
                 <div className="relative flex-1 pb-5">
                   <span className="absolute -left-[13px] top-1.5 h-2.5 w-2.5 rounded-full bg-sky-500 ring-4 ring-sky-100" />
                   <span className="absolute -left-[7px] top-3 h-full w-px bg-ink-200 last:hidden" />
-                  <p className="text-[14px] leading-relaxed text-ink-700">{text}</p>
+                  <p className="font-serif text-[14.5px] leading-[1.85] text-ink-700">{text}</p>
                 </div>
               </li>
             ))}
@@ -290,10 +296,10 @@ export default async function PersonPage({
         <div className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: "#e8a765" }}>
           잠시, 묻는 자리
         </div>
-        <p className="mx-auto mt-3 max-w-xl font-display text-[20px] font-extrabold leading-snug sm:text-[24px]">
+        <p className="mx-auto mt-3 max-w-xl font-serif text-[21px] font-bold leading-snug sm:text-[25px]">
           {person.name}의 삶에서, 당신은 무엇이 아름답다고 느꼈나요?
         </p>
-        <p className="mx-auto mt-3 max-w-xl text-[13.5px] leading-relaxed" style={{ color: "rgba(255,248,236,.75)" }}>
+        <p className="mx-auto mt-3 max-w-xl font-serif text-[14px] leading-relaxed" style={{ color: "rgba(255,248,236,.78)" }}>
           정답은 없습니다. 다만 이 질문을 가지고 가세요 — 나라면 무엇에 내 삶의 값을
           치르고 싶은가. 복음이라는 바통은 이제 당신의 손에 있습니다.
         </p>
