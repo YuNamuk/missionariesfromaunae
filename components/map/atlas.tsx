@@ -187,11 +187,12 @@ const ZOOM_PRESET: Record<string, { maxZoom: number; pad: number }> = {
 };
 
 /** Flies the camera to fit the current selection + its relationship network. */
-function FitToSelection({ targets, focusKey, fit, skipFirst }: { targets: [number, number][]; focusKey: string; fit: string; skipFirst: boolean }) {
+function FitToSelection({ targets, focusKey, fit, skipFirst, skipRef }: { targets: [number, number][]; focusKey: string; fit: string; skipFirst: boolean; skipRef?: React.MutableRefObject<boolean> }) {
   const map = useMap();
   const first = useRef(skipFirst);
   useEffect(() => {
     if (first.current) { first.current = false; return; } // 초기엔 넓은 지도 유지
+    if (skipRef?.current) { skipRef.current = false; return; } // 뒤로가기: 저장된 지도 상태 복원이 우선
     if (targets.length === 0) return;
     const { maxZoom, pad } = ZOOM_PRESET[fit] ?? ZOOM_PRESET.tight;
     if (targets.length === 1) {
@@ -201,6 +202,21 @@ function FitToSelection({ targets, focusKey, fit, skipFirst }: { targets: [numbe
     map.flyToBounds(L.latLngBounds(targets), { paddingTopLeft: [pad + 20, pad], paddingBottomRight: [pad + 20, pad + 50], maxZoom, duration: 0.5, easeLinearity: 0.25 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusKey, fit]);
+  return null;
+}
+
+type MapView = { center: [number, number]; zoom: number };
+/** Holds a ref to the map and tracks the last settled view (center+zoom) so the
+ *  detail-card back button can restore the previous map state, not just the card. */
+function MapBinder({ mapRef, viewRef }: { mapRef: React.MutableRefObject<L.Map | null>; viewRef: React.MutableRefObject<MapView | null> }) {
+  const map = useMap();
+  useEffect(() => {
+    mapRef.current = map;
+    const grab = () => { const c = map.getCenter(); viewRef.current = { center: [c.lat, c.lng], zoom: map.getZoom() }; };
+    grab();
+    map.on("moveend zoomend", grab);
+    return () => { map.off("moveend zoomend", grab); };
+  }, [map, mapRef, viewRef]);
   return null;
 }
 
@@ -386,25 +402,34 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     // 홈(people)은 자동 선택 없이 '조선 선교의 흐름' 내러티브로 진입.
     return null;
   });
-  // 상세 카드 뒤로가기: 선택 이력 스택. 새 선택은 push, 뒤로가기는 pop.
-  const [history, setHistory] = useState<Selected[]>([]);
+  // 상세 카드 뒤로가기: (선택 + 지도 상태) 이력 스택. 새 선택은 push, 뒤로가기는 pop.
+  type Hist = { sel: Selected; view: MapView | null };
+  const [history, setHistory] = useState<Hist[]>([]);
   const selKey = (s: Selected) => (s ? `${s.kind}:${s.id}` : "");
   const prevSelRef = useRef<Selected>(null);
   const goingBackRef = useRef(false);
   const firstSelRun = useRef(true);
+  const mapRef = useRef<L.Map | null>(null);
+  const viewRef = useRef<MapView | null>(null);
+  const skipFitRef = useRef(false);
   useEffect(() => {
     if (firstSelRun.current) { firstSelRun.current = false; prevSelRef.current = selected; return; }
     if (selKey(prevSelRef.current) !== selKey(selected)) {
       if (goingBackRef.current) goingBackRef.current = false;
-      else setHistory((h) => [...h, prevSelRef.current]);
+      // 직전 카드 + 그때의 지도 상태(현재 정착 뷰)를 함께 저장
+      else setHistory((h) => [...h, { sel: prevSelRef.current, view: viewRef.current }]);
     }
     prevSelRef.current = selected;
   }, [selected]);
   const goBack = () => {
     if (history.length === 0) return;
+    const entry = history[history.length - 1];
     goingBackRef.current = true;
-    setSelected(history[history.length - 1]); // null 이면 시작 내러티브로 복귀
+    skipFitRef.current = true; // 자동 줌 대신 저장된 지도 상태 복원
+    setSelected(entry.sel);
     setHistory((h) => h.slice(0, -1));
+    if (entry.view && mapRef.current) mapRef.current.flyTo(entry.view.center, entry.view.zoom, { duration: 0.5, easeLinearity: 0.25 });
+    else skipFitRef.current = false; // 저장된 뷰 없으면 자동 핏 허용
   };
   const [showSettings, setShowSettings] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
@@ -911,9 +936,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <SmoothWheelZoom />
             <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" subdomains="abcd" attribution="&copy; OpenStreetMap &copy; CARTO" />
             <HistoricalOverlay year={year} on={showGeo} />
+            <MapBinder mapRef={mapRef} viewRef={viewRef} />
             <InvalidateOnResize deps={[leftOpen, rightOpen]} />
             <MapControls />
-            <FitToSelection targets={focusTargets} focusKey={focusKey} fit={fit} skipFirst />
+            <FitToSelection targets={focusTargets} focusKey={focusKey} fit={fit} skipFirst skipRef={skipFitRef} />
             <OffscreenIndicators targets={farConnected} origin={selPerson ? coordOf(selPerson.id) : null} onPick={(id) => setSelected({ kind: "person", id })} />
 
             {networkEdges.map((e, i) => {
