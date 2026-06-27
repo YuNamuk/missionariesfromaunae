@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import Image from "next/image";
+import { CiteBox } from "@/components/cite-box";
 import {
   PEOPLE,
   getPerson,
@@ -107,20 +108,25 @@ export default async function PersonPage({
   return (
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-10 sm:px-7">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Link
-        href="/people"
-        className="inline-flex items-center gap-1.5 text-[13px] font-bold text-ink-500 hover:text-sky-600"
-      >
-        <ArrowLeft size={15} /> 인물 목록
-      </Link>
+      <nav aria-label="위치" className="flex flex-wrap items-center gap-1.5 text-[13px] font-bold text-ink-400">
+        <Link href="/" className="hover:text-sky-600">지도</Link>
+        <span aria-hidden className="text-ink-300">›</span>
+        <Link href="/dictionary" className="hover:text-sky-600">인명사전</Link>
+        <span aria-hidden className="text-ink-300">›</span>
+        <span className="text-ink-700">{person.name}</span>
+      </nav>
 
       {/* Header */}
       <div className="mt-5 flex flex-wrap items-start gap-5">
         {photo ? (
           <span className="flex-none">
-            <img
+            <Image
               src={photo}
-              alt={person.name}
+              alt={`${person.name} 초상`}
+              width={160}
+              height={208}
+              priority
+              sizes="(min-width: 640px) 144px, 112px"
               className="h-36 w-28 rounded-2xl object-cover sm:h-44 sm:w-36"
               style={{ boxShadow: "var(--shadow-sky)", background: "#efe1c3" }}
             />
@@ -424,6 +430,8 @@ export default async function PersonPage({
           )}
         </div>
       )}
+
+      <CiteBox name={person.name} en={person.en} life={person.life} url={`${SITE_URL}/people/${person.id}`} />
 
       {/* 묻는 자리 — 평가하지 않고 묻는다(학생 응답으로 이어지는 동선) */}
       <section
