@@ -919,7 +919,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <div style={{ display: "grid", gap: 8 }}>
               {cemeteries.map((c) => {
                 const on = selPlace?.id === c.id;
-                const n = buriedAt(c.name).length;
+                const n = buriedAt(c.name).length + (BURIED_EXTRA[c.id]?.length ?? 0);
                 return (
                   <button key={c.id} onClick={() => setSelected({ kind: "place", id: c.id })} style={{ border: `1px solid ${on ? "#9b3d2d" : C.line}`, borderRadius: 14, padding: "12px 13px", background: on ? "#2f2419" : "rgba(255,255,255,.55)", color: on ? "#fff8ed" : "#3f3022", cursor: "pointer", textAlign: "left" }}>
                     <span style={{ display: "block", fontSize: 14, fontWeight: 900 }}>🪦 {c.name}</span>
@@ -1375,7 +1375,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 {cemeteries.map((c) => (
                   <button key={c.id} onClick={() => setSelected({ kind: "place", id: c.id })} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 11, padding: "9px 12px", background: "rgba(255,255,255,.55)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800 }}>
-                    <span>♰ {c.name}</span><span style={{ color: C.muted, fontWeight: 600 }}>{buriedAt(c.name).length}명</span>
+                    <span>♰ {c.name}</span><span style={{ color: C.muted, fontWeight: 600 }}>{buriedAt(c.name).length + (BURIED_EXTRA[c.id]?.length ?? 0)}명</span>
                   </button>
                 ))}
               </div>
