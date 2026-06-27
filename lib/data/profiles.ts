@@ -16,6 +16,8 @@ export interface PersonProfile {
   /** 잔잔한 스토리텔링 서사(문단 배열) — 누가 불렀는지·조선에 닿는 과정·치른 값·
    *  특별한 영웅이 아니라 우리와 같은 한 사람이었음. 사실에 근거. 없으면 생략. */
   story?: string[];
+  /** 인물 관련 검증된 영상 링크. 없으면 생략. */
+  videos?: { url: string; title: string; source?: string }[];
 }
 
 export const PROFILES: Record<string, PersonProfile> = {
@@ -567,11 +569,16 @@ const STORIES: Record<string, string[]> = {
   ],
 };
 
+// 인물별 검증된 영상 링크(리서치로 확인된 것만 채운다).
+const VIDEOS: Record<string, { url: string; title: string; source?: string }[]> = {
+};
+
 export function profileFor(id: string): PersonProfile | undefined {
   const p = PROFILES[id];
   if (!p) return undefined;
   const merged: PersonProfile = { ...p };
   if (QUOTES[id]) merged.quote = QUOTES[id];
   if (STORIES[id]) merged.story = STORIES[id];
+  if (VIDEOS[id]) merged.videos = VIDEOS[id];
   return merged;
 }

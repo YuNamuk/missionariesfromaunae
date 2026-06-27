@@ -301,6 +301,29 @@ export default async function PersonPage({
             </div>
           )}
 
+          {profile?.videos && profile.videos.length > 0 && (
+            <div>
+              <h2 className="font-display text-lg font-extrabold text-ink-900">관련 영상</h2>
+              <div className="mt-3 space-y-2">
+                {profile.videos.map((v) => (
+                  <a
+                    key={v.url}
+                    href={v.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-start gap-2.5 rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300"
+                  >
+                    <span className="text-[15px] leading-none">▶</span>
+                    <span className="min-w-0">
+                      <span className="block text-[13px] font-bold text-ink-800">{v.title}</span>
+                      {v.source && <span className="block text-[11px] text-ink-400">{v.source}</span>}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div>
             <h2 className="font-display text-lg font-extrabold text-ink-900">자료</h2>
             <div className="mt-3 space-y-2 text-[13px]">
