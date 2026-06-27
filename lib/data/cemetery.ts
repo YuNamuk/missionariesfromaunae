@@ -16,6 +16,8 @@ export interface BuriedPerson {
   /** 한 줄 역할/직책 */ role?: string;
   /** 안장·신원 불확실 */ uncertain?: boolean;
   note?: string;
+  /** 초상 사진 URL(Commons/PD, 있으면) */ photo?: string;
+  /** 위키백과 등 인물 링크(있으면) */ wiki?: string;
 }
 
 /** cemeteryPlaceId → 안장자 명단(대표 roster 외 추가 인물 포함 전체). */

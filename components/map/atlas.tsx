@@ -371,7 +371,7 @@ function FacetRow({ label, sub, on, onClick }: { label: string; sub?: string; on
   );
 }
 
-type Selected = { kind: "place" | "person" | "event" | "heritage"; id: string } | null;
+type Selected = { kind: "place" | "person" | "event" | "heritage" | "buried"; id: string } | null;
 
 // 선교 유적지 유형별 색·글리프
 const HERITAGE_STYLE: Record<string, { color: string; glyph: string }> = {
@@ -562,6 +562,15 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     selected?.kind === "event" ? data.events[Number(selected.id)] ?? null : null;
   const selHeritage =
     selected?.kind === "heritage" ? HERITAGE.find((h) => h.id === selected.id) ?? null : null;
+  // 안장자 상세: id = "<cemeteryPlaceId>::<index>"
+  const selBuried = (() => {
+    if (selected?.kind !== "buried") return null;
+    const [cemId, idxs] = selected.id.split("::");
+    const b = BURIED_EXTRA[cemId]?.[Number(idxs)];
+    if (!b) return null;
+    const cem = data.places.find((p) => p.id === cemId);
+    return { ...b, cemId, cemName: cem?.name ?? cemId, cemLat: cem?.lat ?? 0, cemLng: cem?.lng ?? 0, srcs: BURIED_SOURCE[cemId] ?? [] };
+  })();
   const eventHi = useMemo(() => new Set(selEvent ? selEvent.people.map((x) => x.id) : []), [selEvent]);
 
   // 선택 인물 기준 1차/2차 관계망 (관계망 opacity·집중 모드용)
@@ -705,6 +714,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       selEvent.people.forEach((x) => pts.push(coordOf(x.id)));
     } else if (selHeritage) {
       pts.push([selHeritage.lat, selHeritage.lng]);
+    } else if (selBuried && selBuried.cemLat) {
+      pts.push([selBuried.cemLat, selBuried.cemLng]);
     }
     return pts.filter((x): x is [number, number] => !!x);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1063,7 +1074,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
       {/* ── RIGHT: detail + relationships ── */}
       <article style={{ gridColumn: 3, minWidth: 0, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", display: rightOpen ? "flex" : "none", flexDirection: "column", minHeight: 0, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
-        {(selPerson || selPlace || selEvent || selHeritage) && (
+        {(selPerson || selPlace || selEvent || selHeritage || selBuried) && (
           <button onClick={goBack} title="이전 선택으로" style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 44px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
             <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> 뒤로
           </button>
@@ -1158,15 +1169,18 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                           </span>
                         </button>
                       ))}
-                      {/* 추가 안장자 명단(개별 페이지 없는 인물) */}
+                      {/* 추가 안장자 명단 — 클릭 시 상세 카드 */}
                       {extra.map((b, i) => (
-                        <div key={`x${i}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 8px", borderRadius: 12, border: `1px dashed ${C.line}`, background: "rgba(255,255,255,.35)" }}>
-                          <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: "rgba(120,100,80,.18)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b5e4b", fontSize: 13, fontWeight: 800 }}>✝</span>
+                        <button key={`x${i}`} onClick={() => setSelected({ kind: "buried", id: `${selPlace.id}::${i}` })}
+                          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "6px 8px", borderRadius: 12, border: `1px dashed ${C.line}`, background: "rgba(255,255,255,.35)", cursor: "pointer" }}>
+                          {b.photo
+                            ? <img src={b.photo} alt="" style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, objectFit: "cover" }} />
+                            : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: "rgba(120,100,80,.18)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b5e4b", fontSize: 13, fontWeight: 800 }}>✝</span>}
                           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
                             <span style={{ fontSize: 13, fontWeight: 800, color: "#3e2c1d" }}>{b.nameKo || b.nameEn}{b.uncertain && <span style={{ color: C.faint, fontWeight: 600 }}> ?</span>}</span>
                             <span style={{ fontSize: 10.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[b.nameKo && b.nameEn, b.life, b.role].filter(Boolean).join(" · ")}</span>
                           </span>
-                        </div>
+                        </button>
                       ))}
                     </div>
                     {srcs.length > 0 && (
@@ -1369,7 +1383,41 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           </>
         )}
 
-        {!selPerson && !selPlace && !selEvent && !selHeritage && (
+        {selBuried && (
+          <>
+            <div style={{ background: "linear-gradient(145deg,#2e2218,#4a3a28)", color: "#fff8eb", padding: "22px 22px 20px", position: "relative" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 15 }}>
+                {selBuried.photo
+                  ? <img src={selBuried.photo} alt={selBuried.nameKo || selBuried.nameEn} style={{ width: 80, height: 80, flex: "0 0 auto", borderRadius: 18, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
+                  : <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 80, height: 80, flex: "0 0 auto", borderRadius: 18, background: "rgba(255,248,236,.14)", fontSize: 36 }}>✝</span>}
+                <div style={{ minWidth: 0 }}>
+                  <span style={pill("rgba(255,255,255,.16)")}>✝ 안장 선교사{selBuried.uncertain ? " · 확인 필요" : ""}</span>
+                  <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "10px 0 2px", letterSpacing: "-.03em" }}>{selBuried.nameKo || selBuried.nameEn}</h2>
+                  {selBuried.nameKo && selBuried.nameEn && <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.nameEn}</p>}
+                  {selBuried.life && <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.life}</p>}
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: "18px 20px 24px", overflowY: "auto" }}>
+              {selBuried.role && (
+                <section style={{ padding: 15, background: "#fff9ee", border: `1px solid ${C.line}`, borderRadius: 18, marginBottom: 12 }}>
+                  <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: "#594935" }}>{selBuried.role}</p>
+                </section>
+              )}
+              <button onClick={() => setSelected({ kind: "place", id: selBuried.cemId })} style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 12px", background: "rgba(255,255,255,.5)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800, marginBottom: 12 }}>♰ {selBuried.cemName} <span style={{ marginLeft: "auto", color: "#9b3d2d" }}>묘역 보기 →</span></button>
+              {selBuried.note && <p style={{ margin: "0 0 12px", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>※ {selBuried.note}</p>}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                {selBuried.wiki && <a href={selBuried.wiki} target="_blank" rel="noreferrer" style={{ display: "inline-flex", padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#84321f", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>위키백과 ↗</a>}
+                {selBuried.nameEn && <a href={`https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(selBuried.nameEn)}`} target="_blank" rel="noreferrer" style={{ display: "inline-flex", padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#5f4d39", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Wikipedia ↗</a>}
+              </div>
+              {selBuried.srcs.length > 0 && (
+                <p style={{ margin: "6px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>묘역 명단 출처: {selBuried.srcs.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" style={{ color: "#84321f" }}>[{i + 1}]</a>)}{selBuried.photo && " · 사진: Wikimedia(CC/PD)"}</p>
+              )}
+            </div>
+          </>
+        )}
+
+        {!selPerson && !selPlace && !selEvent && !selHeritage && !selBuried && (
           <div style={{ padding: "24px 22px 28px", overflowY: "auto", height: "100%" }}>
             <span style={pill("rgba(191,107,34,.9)")}>조선 선교의 흐름</span>
             <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "12px 0 8px", letterSpacing: "-.03em", color: "#3e2c1d" }}>복음이 들어온 길</h2>
