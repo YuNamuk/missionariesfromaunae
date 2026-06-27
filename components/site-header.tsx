@@ -99,6 +99,7 @@ function NavDrop({ id, label, items, open, setOpen, onPick }: {
 
 const PAGES = [
   { href: "/story", label: "들어가며" },
+  { href: "/journey", label: "우리의 여정" },
   { href: "/", label: "지도" },
   { href: "/people", label: "인물" },
   { href: "/network", label: "관계망" },
