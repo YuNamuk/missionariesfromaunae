@@ -809,7 +809,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   // 좌측 리스트 칸은 연혁·묘역·관계망에서만 필요(평소엔 지도 넓게)
   // 필터를 걸면(인물/시대 렌즈) 우측 상세 패널에 매칭 인물 목록(활동 시기 포함)을 띄운다.
   const filterActive = facetCount > 0 && (lens === "people" || lens === "era");
-  const showLeft = lens === "history" || lens === "cemetery" || lens === "network";
+  const showLeft = lens === "history" || lens === "cemetery";
   const hdr: React.CSSProperties = { fontSize: 11, fontWeight: 900, letterSpacing: ".1em", color: "#80603b", textTransform: "uppercase", marginBottom: 8 };
 
   return (
@@ -1023,19 +1023,6 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           </div>
         )}
 
-        {lens === "network" && (
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".1em", color: "#80603b", textTransform: "uppercase", marginBottom: 8 }}>관계 유형</div>
-            <ul style={{ display: "grid", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
-              {data.relTypes.map((l) => (
-                <li key={l.key} style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                  <svg width="32" height="8"><line x1="0" y1="4" x2="32" y2="4" stroke={l.color} strokeWidth="3" strokeDasharray={l.dash ?? undefined} /></svg>
-                  <span style={{ fontSize: 12.5, fontWeight: 800, color: "#5f4d39" }}>{l.label}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         {lens === "cemetery" && (
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingRight: 2 }}>
@@ -1169,6 +1156,21 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           <div style={{ position: "absolute", top: 24, left: "50%", transform: "translateX(-50%)", zIndex: 500, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.25, background: "rgba(40,26,14,.82)", color: "#fff8ec", padding: "7px 14px", borderRadius: 11, fontSize: 12.5, fontWeight: 800, textAlign: "center", pointerEvents: "none" }}>
             <span>{snapshot ? `${year}년` : `${nearestGeoYear(year)}년경`} · {koreaEra(year)}</span>
             <span style={{ fontSize: 9.5, fontWeight: 600, opacity: 0.7 }}>경계: historical-basemaps (ODbL)</span>
+          </div>
+        )}
+
+        {/* 관계 유형 범례 — 지도 안 작은 오버레이(관계망 렌즈) */}
+        {lens === "network" && (
+          <div style={{ position: "absolute", right: 24, bottom: 24, zIndex: 500, background: "rgba(40,26,14,.82)", color: "#fff8ec", padding: "8px 11px", borderRadius: 11, maxWidth: 210, backdropFilter: "blur(4px)" }}>
+            <div style={{ fontSize: 9.5, fontWeight: 900, letterSpacing: ".1em", textTransform: "uppercase", opacity: 0.7, marginBottom: 6 }}>관계 유형</div>
+            <div style={{ display: "grid", gap: 5 }}>
+              {data.relTypes.map((l) => (
+                <div key={l.key} style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <svg width="22" height="6" style={{ flex: "0 0 auto" }}><line x1="0" y1="3" x2="22" y2="3" stroke={l.color} strokeWidth="3" strokeDasharray={l.dash ?? undefined} /></svg>
+                  <span style={{ fontSize: 11, fontWeight: 700 }}>{l.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
