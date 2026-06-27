@@ -10,6 +10,7 @@ import { useSearchParams } from "next/navigation";
 import { Search, X, ArrowRight, Settings, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-react";
 import type { AtlasData, MapPerson, MapPlace } from "./types";
 import { isFeatured, regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleTagsOf, ROLE_LIST, peakYear } from "@/lib/data/meta";
+import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
 
 /* ── warm archival palette (scoped to this immersive view) ── */
 const C = {
@@ -338,7 +339,32 @@ function FacetRow({ label, sub, on, onClick }: { label: string; sub?: string; on
   );
 }
 
-type Selected = { kind: "place" | "person" | "event"; id: string } | null;
+type Selected = { kind: "place" | "person" | "event" | "heritage"; id: string } | null;
+
+// 선교 유적지 유형별 색·글리프
+const HERITAGE_STYLE: Record<string, { color: string; glyph: string }> = {
+  "교회": { color: "#7a4a9e", glyph: "✝" },
+  "학교": { color: "#2f7d6b", glyph: "✎" },
+  "병원": { color: "#b5482f", glyph: "✚" },
+  "선교부": { color: "#3a6ea5", glyph: "⌂" },
+  "사택·양관": { color: "#9c6b1f", glyph: "⌂" },
+  "기념관": { color: "#806040", glyph: "▣" },
+  "마을·구역": { color: "#5f7a2f", glyph: "❖" },
+};
+function heritageStyle(t: string) { return HERITAGE_STYLE[t] ?? { color: "#6b5e4b", glyph: "◆" }; }
+function heritageIcon(h: HeritageSite, sel: boolean, dim: boolean) {
+  const { color, glyph } = heritageStyle(h.type);
+  const size = sel ? 30 : 22;
+  return L.divIcon({
+    className: "",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    html: `<div style="position:relative;width:${size}px;height:${size}px;opacity:${dim ? 0.32 : 1};transition:opacity .2s;">
+      <div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:7px;background:${color};color:#fff8ec;font-size:${size * 0.5}px;font-weight:800;border:2px solid #fff8ec;box-shadow:0 3px 9px rgba(46,28,14,.4);${sel ? "outline:3px solid rgba(122,74,158,.4);outline-offset:2px;" : ""}">${glyph}</div>
+      ${labelHtml(h.name, size + 2, false)}
+    </div>`,
+  });
+}
 export type Lens = "people" | "era" | "cemetery" | "network" | "history";
 
 // 인물들이 가장 활발하던 시점 — 첫 진입 기본 연도(캐시 없을 때)
@@ -438,12 +464,14 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   // 헤더 메뉴 = 내비게이션(인물·묘역·연도)만 URL로 전달. 필터는 아래 패널의
   // 클라이언트 상태가 전담(즉시 반응) → 필터를 URL과 동기화하지 않아 빠르다.
   const sp = useSearchParams();
-  const navSig = `${sp.get("person") ?? ""}|${sp.get("focus") ?? ""}|${sp.get("y") ?? ""}`;
+  const navSig = `${sp.get("person") ?? ""}|${sp.get("focus") ?? ""}|${sp.get("heritage") ?? ""}|${sp.get("y") ?? ""}`;
   useEffect(() => {
     const person = sp.get("person");
     const focus = sp.get("focus");
+    const heritage = sp.get("heritage");
     const y = sp.get("y");
     if (person) setSelected({ kind: "person", id: person });
+    else if (heritage) setSelected({ kind: "heritage", id: heritage });
     else if (focus) setSelected({ kind: "place", id: focus });
     if (y) { setYear(Number(y)); setSnapshot(true); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -487,6 +515,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     selected?.kind === "place" ? data.places.find((p) => p.id === selected.id) ?? null : null;
   const selEvent =
     selected?.kind === "event" ? data.events[Number(selected.id)] ?? null : null;
+  const selHeritage =
+    selected?.kind === "heritage" ? HERITAGE.find((h) => h.id === selected.id) ?? null : null;
   const eventHi = useMemo(() => new Set(selEvent ? selEvent.people.map((x) => x.id) : []), [selEvent]);
 
   // 선택 인물 기준 1차/2차 관계망 (관계망 opacity·집중 모드용)
@@ -628,6 +658,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     } else if (selEvent) {
       pts.push([selEvent.lat, selEvent.lng]);
       selEvent.people.forEach((x) => pts.push(coordOf(x.id)));
+    } else if (selHeritage) {
+      pts.push([selHeritage.lat, selHeritage.lng]);
     }
     return pts.filter((x): x is [number, number] => !!x);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -923,6 +955,15 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               );
             })}
 
+            {/* 선교 유적지 레이어 (people·era 렌즈에서 표시) */}
+            {(lens === "people" || lens === "era") && HERITAGE.map((h) => {
+              const sel = selected?.kind === "heritage" && selected.id === h.id;
+              const dimActive = !!selPerson || !!selEvent || (selected?.kind === "heritage" && !sel) || selected?.kind === "place";
+              return (
+                <Marker key={h.id} position={[h.lat, h.lng]} icon={heritageIcon(h, sel, !sel && dimActive)} zIndexOffset={sel ? 800 : landing ? 160 : -400} eventHandlers={{ click: () => setSelected({ kind: "heritage", id: h.id }) }} />
+              );
+            })}
+
             {mapPeople.map((p) => {
               const ll = personPos.get(p.id);
               if (!ll) return null;
@@ -972,7 +1013,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
       {/* ── RIGHT: detail + relationships ── */}
       <article style={{ gridColumn: 3, minWidth: 0, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", display: rightOpen ? "flex" : "none", flexDirection: "column", minHeight: 0, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
-        {history.length > 0 && (selPerson || selPlace || selEvent) && (
+        {history.length > 0 && (selPerson || selPlace || selEvent || selHeritage) && (
           <button onClick={goBack} title="이전 선택으로" style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 44px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
             <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> 뒤로
           </button>
@@ -1217,7 +1258,51 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           </>
         )}
 
-        {!selPerson && !selPlace && !selEvent && (
+        {selHeritage && (
+          <>
+            <div style={{ background: `linear-gradient(145deg,#2e2218,${heritageStyle(selHeritage.type).color})`, color: "#fff8eb", padding: "22px 22px 20px" }}>
+              <span style={pill("rgba(255,255,255,.16)")}>{heritageStyle(selHeritage.type).glyph} 선교 유적지 · {selHeritage.type}</span>
+              <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, margin: "12px 0 4px", letterSpacing: "-.03em" }}>{selHeritage.name}</h2>
+              <p style={{ margin: 0, fontSize: 13, color: "rgba(255,248,235,.85)" }}>{selHeritage.city} · {selHeritage.region}{selHeritage.year ? ` · ${selHeritage.year}년` : ""}{selHeritage.coordUncertain ? " · 좌표 근사치" : ""}</p>
+            </div>
+            <div style={{ padding: "18px 20px 24px", overflowY: "auto" }}>
+              <section style={{ padding: 15, background: "#fff9ee", border: `1px solid ${C.line}`, borderRadius: 18, marginBottom: 14 }}>
+                <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.75, color: "#594935" }}>{selHeritage.summary}</p>
+              </section>
+              {selHeritage.unesco && (
+                <section style={{ marginBottom: 14, padding: "11px 13px", borderRadius: 14, background: "rgba(191,107,34,.1)", border: "1px solid rgba(191,107,34,.3)" }}>
+                  <div style={{ fontSize: 11, fontWeight: 900, color: "#a0641f", marginBottom: 3 }}>🏛 유네스코 등재 추진</div>
+                  <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: "#6b4a1f" }}>{selHeritage.unesco}</p>
+                </section>
+              )}
+              {selHeritage.people.length > 0 && (
+                <section style={{ marginBottom: 14 }}>
+                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>관련 인물</h3>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {selHeritage.people.map((nm) => {
+                      const pp = data.people.find((p) => nm.includes(p.name) || p.name.includes(nm.replace(/\(.*\)/, "").trim()));
+                      return pp
+                        ? <button key={nm} onClick={() => setSelected({ kind: "person", id: pp.id })} style={{ ...pill("rgba(135,93,167,.12)", "#5a3f72"), border: `1px solid ${C.line}`, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>{pp.photo ? <img src={pp.photo} alt="" style={{ width: 18, height: 18, borderRadius: 99, objectFit: "cover" }} /> : <span>{pp.glyph}</span>} {nm}</button>
+                        : <span key={nm} style={{ ...pill("rgba(120,100,80,.1)", "#6b5e4b"), border: `1px solid ${C.line}` }}>{nm}</span>;
+                    })}
+                  </div>
+                </section>
+              )}
+              {selHeritage.source.length > 0 && (
+                <section>
+                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>참고 출처</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    {selHeritage.source.map((u, i) => (
+                      <a key={i} href={u} target="_blank" rel="noreferrer" style={{ fontSize: 12, fontWeight: 700, color: "#84321f", textDecoration: "none", border: `1px solid ${C.line}`, borderRadius: 10, padding: "7px 10px", background: "rgba(255,255,255,.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.replace(/^https?:\/\//, "").slice(0, 46)} ↗</a>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
+          </>
+        )}
+
+        {!selPerson && !selPlace && !selEvent && !selHeritage && (
           <div style={{ padding: "24px 22px 28px", overflowY: "auto", height: "100%" }}>
             <span style={pill("rgba(191,107,34,.9)")}>조선 선교의 흐름</span>
             <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "12px 0 8px", letterSpacing: "-.03em", color: "#3e2c1d" }}>복음이 들어온 길</h2>
@@ -1252,7 +1337,17 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               ))}
             </div>
 
-            <p style={{ margin: "20px 0 0", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>위 검색창·「필터」로 인물을 찾거나, 지도에서 거점을 눌러 흐름을 따라가세요. 상단 메뉴(교단·나라·사역·지역)에서 인물을 바로 고를 수도 있습니다.</p>
+            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>선교 유적지 {HERITAGE.length}곳</h3>
+            <p style={{ margin: "0 0 8px", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>교회·학교·병원·선교부 등 전국 선교 유적을 지도 위에 모았습니다. 광주 양림동·대구 청라언덕·전주·순천 매산등 등은 <b>유네스코 세계유산 등재가 추진</b>되고 있습니다.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {["gwangju_wilson_house", "daegu_cheongna_houses", "jeonju_seomun_church", "suncheon_coit_house", "jeongdong_first_church"].map((id) => {
+                const h = HERITAGE.find((x) => x.id === id);
+                return h ? <button key={id} onClick={() => setSelected({ kind: "heritage", id })} style={{ ...pill(heritageStyle(h.type).color), border: 0, cursor: "pointer" }}>{heritageStyle(h.type).glyph} {h.city}</button> : null;
+              })}
+            </div>
+            <p style={{ margin: "8px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>유네스코 추진: (사)한국선교유적연구회(서만철)와 8개 지자체 ‘선교기지 세계유산 등재 지방정부협의회’(2025~). ※ 아직 등재·잠정목록 등재가 아닌 추진 단계입니다.</p>
+
+            <p style={{ margin: "20px 0 0", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>위 검색창·「필터」로 인물을 찾거나, 지도에서 거점을 눌러 흐름을 따라가세요. 상단 메뉴에서 선교 유적지·인물을 바로 고를 수도 있습니다.</p>
           </div>
         )}
       </article>

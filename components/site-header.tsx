@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { PEOPLE, PLACES, BURIAL } from "@/lib/data";
 import { ERAS, DENOM_LIST, ROLE_LIST, REGIONS, denomOf, regionOf, roleTagsOf } from "@/lib/data/meta";
+import { HERITAGE } from "@/lib/data/heritage";
 
 // ── 정적 디렉터리 데이터(카테고리별 인물). 헤더는 '필터'가 아니라 '표기·탐색'. ──
 const SORTED = [...PEOPLE].sort((a, b) => a.year - b.year);
@@ -24,6 +25,11 @@ const COUNTRY_GROUPS: Group[] = [...new Set(PEOPLE.map((p) => p.country).filter(
 const CEMETERIES = [...new Set(Object.values(BURIAL))]
   .map((id) => PLACES.find((p) => p.id === id))
   .filter((p): p is NonNullable<typeof p> => !!p);
+// 선교 유적지: 권역별 디렉터리
+const HERITAGE_REGION_ORDER = ["서울·경기", "인천·강화", "충청", "호남", "영남", "관북·서북(북한)", "제주"];
+const HERITAGE_GROUPS: Group[] = HERITAGE_REGION_ORDER
+  .map((r) => ({ key: r, label: r, people: HERITAGE.filter((h) => h.region === r).map((h) => ({ id: h.id, name: h.name, year: h.year ?? 0 })) }))
+  .filter((g) => g.people.length > 0);
 
 const PANEL = "rgba(255,250,237,.99)";
 const LINE = "rgba(77,56,34,.18)";
@@ -52,7 +58,7 @@ function DirectoryDrop({ id, label, groups, open, setOpen, onPickPerson }: {
                     className="flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-left text-[12.5px] font-semibold transition-colors hover:bg-[#f2e3c8]"
                     style={{ color: "#3e2c1d" }}>
                     <span className="truncate">{p.name}</span>
-                    <span className="text-[10.5px] opacity-50">{p.year}</span>
+                    {p.year > 0 && <span className="text-[10.5px] opacity-50">{p.year}</span>}
                   </button>
                 ))}
               </div>
@@ -106,6 +112,7 @@ export function SiteHeader() {
   const goPerson = (pid: string) => { router.push(`/?person=${pid}`); setOpen(null); };
   const goFocus = (placeId: string) => { router.push(`/?focus=${placeId}`); setOpen(null); };
   const goYear = (y: number) => { router.push(`/?y=${y}`); setOpen(null); };
+  const goHeritage = (hid: string) => { router.push(`/?heritage=${hid}`); setOpen(null); };
 
   return (
     <header
@@ -130,6 +137,7 @@ export function SiteHeader() {
         <DirectoryDrop id="country" label="나라" groups={COUNTRY_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
         <DirectoryDrop id="role" label="사역 분야" groups={ROLE_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
         <DirectoryDrop id="region" label="지역" groups={REGION_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
+        <DirectoryDrop id="heritage" label="선교 유적지" groups={HERITAGE_GROUPS} open={open} setOpen={setOpen} onPickPerson={goHeritage} />
 
         <span className="mx-1.5 h-5 w-px bg-white/15" />
 
