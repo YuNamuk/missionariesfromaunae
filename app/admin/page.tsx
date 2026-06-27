@@ -5,6 +5,7 @@ import type { Session } from "@supabase/supabase-js";
 import { browserSupabase } from "@/lib/db/browser";
 import { PEOPLE } from "@/lib/data";
 import { profileFor } from "@/lib/data/profiles";
+import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
 
 const C = { ink: "#251c14", muted: "#6b5e4b", line: "rgba(77,56,34,.2)", accent: "#9b3d2d" };
 
@@ -28,7 +29,8 @@ export default function AdminPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [tab, setTab] = useState<"people" | "settings" | "admins">("people");
+  const [tab, setTab] = useState<"people" | "pages" | "settings" | "admins">("people");
+  const [pc, setPc] = useState<{ story: Record<string, string>; journey: Record<string, string> }>({ story: {}, journey: {} });
   const [adminEmails, setAdminEmails] = useState<string[]>([]);
   const [newAdmin, setNewAdmin] = useState("");
   const [people, setPeople] = useState<PersonRow[]>([]);
@@ -130,6 +132,22 @@ export default function AdminPage() {
     if (!err) loadData();
   }
 
+  // 페이지 카피 드래프트 = 기본값 + 저장된 오버레이.
+  useEffect(() => {
+    setPc({
+      story: { ...STORY_COPY, ...((settings["content.page.story"] ?? {}) as Record<string, string>) },
+      journey: { ...JOURNEY_COPY, ...((settings["content.page.journey"] ?? {}) as Record<string, string>) },
+    });
+  }, [settings]);
+
+  async function savePage(page: "story" | "journey") {
+    setSaving(true); setMsg("");
+    const err = await post({ kind: "settings", settings: { [`content.page.${page}`]: pc[page] } });
+    setSaving(false);
+    setMsg(err ? "저장 실패: " + err : "✓ 페이지 글 저장됨 (잠시 뒤 반영)");
+    if (!err) loadData();
+  }
+
   async function saveContent() {
     if (!sel) return;
     setSaving(true); setMsg("");
@@ -198,9 +216,9 @@ export default function AdminPage() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {(["people", "settings", "admins"] as const).map((t) => (
+        {(["people", "pages", "settings", "admins"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} style={{ border: `1px solid ${tab === t ? "#2f2419" : C.line}`, borderRadius: 11, padding: "8px 16px", background: tab === t ? "#2f2419" : "transparent", color: tab === t ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
-            {t === "people" ? "선교사 정보" : t === "settings" ? "연도·용어 설정" : "관리자 계정"}
+            {t === "people" ? "선교사 정보" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : "관리자 계정"}
           </button>
         ))}
       </div>
@@ -254,6 +272,29 @@ export default function AdminPage() {
               </div>
             </div>
           ) : <p style={{ color: C.muted, fontSize: 13 }}>왼쪽에서 선교사를 선택하세요.</p>}
+        </div>
+      )}
+
+      {tab === "pages" && (
+        <div style={{ display: "grid", gap: 28, maxWidth: 680 }}>
+          {([
+            { page: "story" as const, title: "들어가며 (/story)", labels: { heroKicker: "상단 영문", heroQuestion: "히어로 질문 (줄바꿈 가능)", heroLead: "질문 소개", m1Title: "움직임 1 제목", costTitle: "‘값을 치른’ 제목", homeTitle: "‘Korea is home’ 제목", m2Title: "움직임 2 제목", nextRunner: "다음 주자 문구 (줄바꿈 가능)", closeTitle: "마무리 제목", closeLead: "마무리 글" } },
+            { page: "journey" as const, title: "우리의 여정 (/journey)", labels: { heroTitle: "히어로 제목", heroLead: "히어로 소개", lineageTitle: "복음의 계보 제목", lineageLead: "복음의 계보 소개", bookTitle: "학생들이 쓴 책 제목", bookLead: "학생들이 쓴 책 소개", tripTitle: "탐방의 기록 제목", tripLead: "탐방의 기록 소개", voicesTitle: "학생들의 목소리 제목" } },
+          ]).map(({ page, title, labels }) => (
+            <div key={page}>
+              <h3 className="font-display" style={{ fontWeight: 900, fontSize: 17, margin: "0 0 12px" }}>{title}</h3>
+              <div style={{ display: "grid", gap: 12 }}>
+                {Object.entries(labels).map(([k, lab]) => (
+                  <div key={k}>
+                    <label style={label}>{lab}</label>
+                    <textarea style={{ ...input, minHeight: k.endsWith("Lead") || k === "heroLead" || k === "closeLead" ? 70 : 44, resize: "vertical" }}
+                      value={pc[page][k] ?? ""} onChange={(e) => setPc((s) => ({ ...s, [page]: { ...s[page], [k]: e.target.value } }))} />
+                  </div>
+                ))}
+                <button onClick={() => savePage(page)} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : `${title.split(" ")[0]} 글 저장`}</button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

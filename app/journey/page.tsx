@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { STUDENT_VOICES } from "@/lib/data/voices";
+import { JOURNEY_COPY, mergeCopy } from "@/lib/data/page-copy";
+import { fetchPageContent } from "@/lib/db/editable";
 
 export const metadata: Metadata = {
   title: "우리의 여정 · 함께 걸어온 길",
   description:
     "한 사람의 삶을 만나고, 아름다운 삶을 묻고, 나의 응답을 적고, 다음 주자로 서기까지 — 이 수업을 함께 걸어온 여정과 학생들의 목소리.",
 };
+
+// 관리자 카피 편집(content.page.journey)을 반영하기 위해 ISR.
+export const revalidate = 300;
 
 // /journey — 인물들의 여정 옆에 두는, 수업(선생님과 학생들)이 걸어온 여정.
 // 두 번째 움직임("복음이 나를 통해")이 실제로 살아나는 자리.
@@ -47,7 +52,8 @@ const STEPS = [
   },
 ];
 
-export default function JourneyPage() {
+export default async function JourneyPage() {
+  const j = mergeCopy(JOURNEY_COPY, await fetchPageContent("journey"));
   return (
     <main className="lyric" style={{ background: "#f6efe1", color: "#3a2b1d" }}>
       {/* Hero */}
@@ -63,11 +69,10 @@ export default function JourneyPage() {
             Our Journey
           </span>
           <h1 className="font-serif" style={{ fontSize: "clamp(34px,6vw,60px)", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2, margin: "20px 0 0", color: "#2e2218" }}>
-            함께 걸어온 길
+            {j.heroTitle}
           </h1>
           <p className="font-serif" style={{ maxWidth: 560, margin: "24px auto 0", fontSize: "clamp(16px,2.2vw,19px)", lineHeight: 1.95, color: "#5f4d39" }}>
-            인물들의 여정 옆에, 우리의 여정을 둡니다. 한 사람의 삶을 만나고, 아름다운
-            삶을 묻고, 나의 응답을 적고, 다음 주자로 서기까지 — 이 수업이 걸어온 길입니다.
+            {j.heroLead}
           </p>
         </div>
       </section>
@@ -108,11 +113,9 @@ export default function JourneyPage() {
       <section style={{ padding: "clamp(48px,8vh,84px) 24px", background: "linear-gradient(180deg,#2e2218,#3a2a1c)", color: "#fff8ec" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
           <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: "#e8a765" }}>Lineage of the Gospel</span>
-          <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 8px", color: "#fff8ec" }}>복음의 계보</h2>
+          <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 8px", color: "#fff8ec" }}>{j.lineageTitle}</h2>
           <p className="font-serif" style={{ fontSize: "clamp(15px,2vw,17px)", lineHeight: 1.9, color: "rgba(255,248,236,.82)", maxWidth: 600, margin: "0 auto 36px" }}>
-            우리는 한국 선교사만 본 것이 아니라, 복음이 흘러온 긴 강을 거슬러 올랐습니다.
-            초대교회의 순교자들에서 시작해, 중세를 지나, 이 땅의 선교사들에게로 — 그리고
-            그 강이 지금 우리에게 닿았습니다. 같은 한 줄기의 복음입니다.
+            {j.lineageLead}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 0, maxWidth: 460, margin: "0 auto", textAlign: "left" }}>
             {[
@@ -141,11 +144,9 @@ export default function JourneyPage() {
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
             <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: "#1f6f8b" }}>The Book They Wrote</span>
-            <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 10px", color: "#2e2218" }}>학생들이 쓴 책</h2>
+            <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 10px", color: "#2e2218" }}>{j.bookTitle}</h2>
             <p className="font-serif" style={{ fontSize: "clamp(16px,2.3vw,19px)", lineHeight: 1.85, color: "#5f4d39", maxWidth: 600, margin: "0 auto" }}>
-              이 수업의 끝에서, 학생들은 직접 한 권의 책을 써 엮었습니다 —
-              <br />
-              <b style={{ color: "#9b3d2d" }}>『하나님이 우리를 이처럼 사랑하사』</b>. 이 사이트의 두 움직임은 바로 이 책에서 왔습니다.
+              {j.bookLead}
             </p>
           </div>
 
@@ -192,10 +193,9 @@ export default function JourneyPage() {
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
             <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: "#bf6b22" }}>On the Ground</span>
-            <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 8px", color: "#2e2218" }}>탐방의 기록</h2>
+            <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 8px", color: "#2e2218" }}>{j.tripTitle}</h2>
             <p className="font-serif" style={{ fontSize: "clamp(15px,2vw,17px)", lineHeight: 1.85, color: "#5f4d39", maxWidth: 560, margin: "0 auto" }}>
-              책으로만이 아니라, 학생들은 정동과 양화진을 직접 걸었습니다. 그들의 발자취를
-              따라 걸으며 남긴 답사 기록의 한 조각들입니다.
+              {j.tripLead}
             </p>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -219,7 +219,7 @@ export default function JourneyPage() {
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
             <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: "#9b3d2d" }}>Voices</span>
-            <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 0", color: "#2e2218" }}>학생들의 목소리</h2>
+            <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 0", color: "#2e2218" }}>{j.voicesTitle}</h2>
           </div>
 
           {STUDENT_VOICES.length > 0 ? (

@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { STORY_COPY, mergeCopy } from "@/lib/data/page-copy";
+import { fetchPageContent } from "@/lib/db/editable";
 
 export const metadata: Metadata = {
   title: "아름다운 삶은 무엇일까 · 들어가며",
   description:
     "성공이 아니라 섬김으로 산 사람들. 복음이 선교사를 통해 우리에게 왔고, 이제 우리를 통해 세계로 간다. 한 사람의 삶을 만나고, 다음 주자로 서는 자리.",
 };
+
+// 관리자 카피 편집(content.page.story)을 반영하기 위해 ISR.
+export const revalidate = 300;
 
 // /story — 사이트의 정문(formation). 검색·지도가 아니라 질문이 먼저 온다.
 // 지도·인물·관계망은 이 질문을 떠받치는 근거 층이며, 여기서 그 층으로 들어간다.
@@ -40,7 +45,8 @@ const kicker: React.CSSProperties = {
   textTransform: "uppercase",
 };
 
-export default function StoryPage() {
+export default async function StoryPage() {
+  const s = mergeCopy(STORY_COPY, await fetchPageContent("story"));
   return (
     <main style={{ background: C.cream, color: C.ink, fontFamily: "var(--font-serif)" }}>
       {/* ── 히어로: 질문이 먼저 ── */}
@@ -56,7 +62,7 @@ export default function StoryPage() {
           background: "radial-gradient(circle at 50% 18%, rgba(191,107,34,.16), transparent 60%), linear-gradient(180deg,#f7f0e2,#efe4cd)",
         }}
       >
-        <span style={{ ...kicker, color: C.gold }}>Missionaries from Aunae</span>
+        <span style={{ ...kicker, color: C.gold }}>{s.heroKicker}</span>
         <h1
           style={{
             fontFamily: "var(--font-serif)",
@@ -66,16 +72,13 @@ export default function StoryPage() {
             lineHeight: 1.12,
             margin: "22px 0 0",
             color: "#2e2218",
+            whiteSpace: "pre-line",
           }}
         >
-          아름다운 삶은
-          <br />
-          무엇일까?
+          {s.heroQuestion}
         </h1>
         <p style={{ maxWidth: 560, margin: "28px 0 0", fontSize: "clamp(15px,2.2vw,18px)", lineHeight: 1.8, color: "#5f4d39" }}>
-          여기 성공이 아니라 <b>섬김</b>을 택한 이들이 있습니다. 먼 땅을 집으로 삼고,
-          기꺼이 한 알의 밀알이 되기를 선택한 사람들. 그들의 삶을 따라 걷다 보면
-          한 가지 질문이 남습니다 — <b>나는 어떤 삶을 아름답다고 부를 것인가.</b>
+          {s.heroLead}
         </p>
         <div style={{ marginTop: 40, display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
           <a href="#movement-1" style={btn(true)}>이야기로 들어가기</a>
@@ -86,7 +89,7 @@ export default function StoryPage() {
       {/* ── 움직임 1: 복음이 선교사를 통해 나에게 ── */}
       <Section style={{ paddingTop: 96 }}>
         <span id="movement-1" style={{ ...kicker, color: C.rust }}>첫 번째 움직임</span>
-        <h2 style={h2()}>복음이, 선교사를 통해 나에게</h2>
+        <h2 style={h2()}>{s.m1Title}</h2>
         <p style={p()}>
           19세기의 조선은 굳게 닫혀 있었습니다. 그런데 선교사가 이 땅을 밟기도 전에,
           <b> 성경이 먼저 들어왔습니다.</b> 만주에서는 존 로스와 한국인 청년들이 성경을
@@ -118,7 +121,7 @@ export default function StoryPage() {
       {/* ── 값을 치른 사람들 ── */}
       <Section dark>
         <span style={{ ...kicker, color: "#e8a765" }}>값을 치른 사람들</span>
-        <h2 style={h2(true)}>성공이 아니라, 섬김</h2>
+        <h2 style={h2(true)}>{s.costTitle}</h2>
         <p style={p(true)}>
           그들은 영웅이 아니었습니다. 두려워하고, 앓고, 사랑하는 이를 먼저 묻은 평범한
           사람들이었습니다. 그러나 값을 치렀습니다. <Link href="/people/heron" style={a(true)}>존 헤론</Link>은
@@ -137,7 +140,7 @@ export default function StoryPage() {
       {/* ── Korea is their home — 양화진 ── */}
       <Section>
         <span style={{ ...kicker, color: C.rust }}>Korea is their home</span>
-        <h2 style={h2()}>이 땅을 집으로 삼은 사람들</h2>
+        <h2 style={h2()}>{s.homeTitle}</h2>
         <p style={p()}>
           많은 이들이 돌아가지 않았습니다. 서울 한강가 <b>양화진</b>에는 15개국 400여 명이
           잠들어 있습니다. 헐버트는 “웨스트민스터 사원보다 한국 땅에 묻히기를 원한다”는
@@ -152,7 +155,7 @@ export default function StoryPage() {
       {/* ── 움직임 2: 복음이 나를 통해 세계로 ── */}
       <Section dark style={{ background: "linear-gradient(180deg,#3a2a1c,#2e2218)" }}>
         <span style={{ ...kicker, color: "#e8a765" }}>두 번째 움직임</span>
-        <h2 style={h2(true)}>복음이, 나를 통해 세계로</h2>
+        <h2 style={h2(true)}>{s.m2Title}</h2>
         <p style={p(true)}>
           복음은 나에게서 멈추지 않습니다. 받은 사람은 전하는 사람이 됩니다. 복음을 받은
           한국 교회가 곧 <Link href="/people/leegipung" style={a(true)}>이기풍</Link>을 제주로 보냈듯이,
@@ -182,20 +185,15 @@ export default function StoryPage() {
         <p style={{ ...p(true), fontStyle: "italic", color: "rgba(255,248,236,.7)" }}>
           마지막 칸은 비어 있습니다. 거기에 들어설 사람은 당신입니다.
         </p>
-        <p style={{ fontFamily: "var(--font-serif)", fontWeight: 900, fontSize: "clamp(24px,4vw,38px)", lineHeight: 1.3, marginTop: 28, color: "#fff8ec" }}>
-          “I am the next runner.
-          <br />
-          I am a missionary from Aunae.”
+        <p style={{ fontFamily: "var(--font-serif)", fontWeight: 900, fontSize: "clamp(24px,4vw,38px)", lineHeight: 1.3, marginTop: 28, color: "#fff8ec", whiteSpace: "pre-line" }}>
+          {`“${s.nextRunner}”`}
         </p>
       </Section>
 
       {/* ── 묻는 자리(평가하지 않는다) + 아카이브 진입 ── */}
       <Section style={{ textAlign: "center", background: "linear-gradient(180deg,#efe4cd,#f6efe1)" }}>
-        <h2 style={{ ...h2(), textAlign: "center" }}>이제, 한 사람을 만나 보세요</h2>
-        <p style={{ ...p(), textAlign: "center" }}>
-          정답을 드리지 않겠습니다. 다만 묻습니다 — 당신은 어떤 삶을 아름답다고
-          부르겠습니까? 한 사람의 생애를 따라가 보고, 당신의 응답을 마음에 적어 보세요.
-        </p>
+        <h2 style={{ ...h2(), textAlign: "center" }}>{s.closeTitle}</h2>
+        <p style={{ ...p(), textAlign: "center" }}>{s.closeLead}</p>
         <div style={{ marginTop: 36, display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
           <Link href="/" style={btn(true)}>지도에서 만나기</Link>
           <Link href="/people" style={btn(false)}>인물 목록</Link>
