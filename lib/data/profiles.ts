@@ -20,6 +20,8 @@ export interface PersonProfile {
   story?: string[];
   /** 인물 관련 검증된 영상 링크. 없으면 생략. */
   videos?: { url: string; title: string; source?: string }[];
+  /** 검증된 권위 참고 사료 링크(한국민족문화대백과·위키 등). 없으면 생략. */
+  refs?: { title: string; url: string; publisher?: string }[];
 }
 
 export const PROFILES: Record<string, PersonProfile> = {
@@ -506,6 +508,10 @@ const QUOTES: Record<string, { text: string; source: string }> = {
   },
 };
 
+// 인물별 검증된 권위 참고 사료 링크(한국민족문화대백과·위키 등). 리서치로 인물 일치 확인된 것만.
+const REFS: Record<string, { title: string; url: string; publisher?: string }[]> = {
+};
+
 // 인물별 검증된 영상 링크(리서치로 인물 일치·접속 확인된 것만).
 const VIDEOS: Record<string, { url: string; title: string; source?: string }[]> = {
   underwood: [{ url: "https://www.youtube.com/watch?v=qVVDf219WyA", title: "이 땅을 사랑한 예수의 증인들 — 한국 최초의 교회를 설립한 호러스 언더우드", source: "CBS" }],
@@ -545,5 +551,6 @@ export function profileFor(id: string): PersonProfile | undefined {
   if (QUOTES[id]) merged.quote = QUOTES[id];
   if (STORIES[id]) merged.story = STORIES[id];
   if (VIDEOS[id]) merged.videos = VIDEOS[id];
+  if (REFS[id]) merged.refs = REFS[id];
   return merged;
 }

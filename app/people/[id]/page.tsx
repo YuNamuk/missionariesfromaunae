@@ -348,22 +348,41 @@ export default async function PersonPage({
             </div>
           </div>
 
-          {sources.length > 0 && (
+          {(sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (
             <div>
               <h2 className="font-display text-lg font-extrabold text-ink-900">
                 참고 출처
               </h2>
-              <ul className="mt-3 space-y-2">
-                {sources.map((s, i) => (
-                  <li
-                    key={i}
-                    className="rounded-2xl border border-ink-200 bg-white p-3"
-                  >
-                    <div className="text-[13px] font-bold text-ink-800">{s.t}</div>
-                    <div className="text-[12px] text-ink-500">{s.a}</div>
-                  </li>
-                ))}
-              </ul>
+              {profile?.refs && profile.refs.length > 0 && (
+                <ul className="mt-3 space-y-2">
+                  {profile.refs.map((r) => (
+                    <li key={r.url}>
+                      <a
+                        href={r.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300"
+                      >
+                        <div className="text-[13px] font-bold text-sky-700">{r.title} ↗</div>
+                        {r.publisher && <div className="text-[12px] text-ink-500">{r.publisher}</div>}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {sources.length > 0 && (
+                <ul className="mt-2 space-y-2">
+                  {sources.map((s, i) => (
+                    <li
+                      key={i}
+                      className="rounded-2xl border border-ink-200 bg-white p-3"
+                    >
+                      <div className="text-[13px] font-bold text-ink-800">{s.t}</div>
+                      <div className="text-[12px] text-ink-500">{s.a}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </aside>
