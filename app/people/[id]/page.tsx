@@ -83,18 +83,18 @@ export default async function PersonPage({
             <img
               src={photo}
               alt={person.name}
-              className="h-24 w-24 rounded-3xl object-cover"
+              className="h-36 w-28 rounded-2xl object-cover sm:h-44 sm:w-36"
               style={{ boxShadow: "var(--shadow-sky)", background: "#efe1c3" }}
             />
             {photoSource && (
-              <span className="mt-1 block max-w-24 text-[9px] leading-tight text-ink-400">
+              <span className="mt-1.5 block max-w-36 text-[9px] leading-tight text-ink-400">
                 {photoSource}
               </span>
             )}
           </span>
         ) : (
           <span
-            className="font-display flex h-20 w-20 flex-none items-center justify-center rounded-3xl text-5xl text-white"
+            className="font-display flex h-36 w-28 flex-none items-center justify-center rounded-2xl text-6xl text-white sm:h-44 sm:w-36"
             style={{ background: "var(--grad-dream)", boxShadow: "var(--shadow-sky)" }}
           >
             {person.glyph}
@@ -126,6 +126,16 @@ export default async function PersonPage({
         </div>
       </div>
 
+      {/* 그 사람의 말로 페이지를 연다 — 검증된 1차 자료 인용(있을 때만) */}
+      {profile?.quote && (
+        <figure className="mt-8 border-l-4 pl-5 sm:pl-6" style={{ borderColor: "#bf6b22" }}>
+          <blockquote className="font-serif text-[22px] leading-[1.8] text-ink-800 sm:text-[27px]">
+            &ldquo;{profile.quote.text}&rdquo;
+          </blockquote>
+          <figcaption className="mt-3 text-[12.5px] leading-relaxed text-ink-400">— {profile.quote.source}</figcaption>
+        </figure>
+      )}
+
       <p className="font-serif mt-7 text-[18px] leading-[2.05] text-ink-700 sm:text-[19px]">{person.summary}</p>
 
       {/* 서정적 서술: 큰 흐름 속 여정(중심) · 걸어온 사역 · 남긴 열매 */}
@@ -142,18 +152,10 @@ export default async function PersonPage({
             </div>
           </section>
 
-          {(profile.quote || profile.beauty) && (
+          {profile.beauty && (
             <section>
               <div className="text-[11px] font-extrabold uppercase tracking-[0.2em]" style={{ color: "#9b3d2d" }}>이 삶에서 아름다운 것 · 치른 값</div>
-              {profile.quote && (
-                <figure className="mt-4">
-                  <blockquote className="font-serif text-[20px] leading-[1.9] text-ink-800 sm:text-[22px]" style={{ borderLeft: "4px solid #bf6b22", paddingLeft: 18 }}>
-                    &ldquo;{profile.quote.text}&rdquo;
-                  </blockquote>
-                  <figcaption className="mt-2.5 pl-[18px] text-[12.5px] text-ink-400">— {profile.quote.source}</figcaption>
-                </figure>
-              )}
-              {profile.beauty && <p className="font-serif mt-4 text-[16.5px] leading-[2.0] text-ink-700">{profile.beauty}</p>}
+              <p className="font-serif mt-4 text-[16.5px] leading-[2.0] text-ink-700">{profile.beauty}</p>
             </section>
           )}
 
