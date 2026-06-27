@@ -17,6 +17,15 @@ export function generateStaticParams() {
   return PEOPLE.map((p) => ({ id: p.id }));
 }
 
+// YouTube 영상 ID 추출(watch?v= / youtu.be / embed). 페이지 내 임베드 재생용.
+function ytId(url: string): string | null {
+  const m =
+    url.match(/[?&]v=([\w-]{11})/) ||
+    url.match(/youtu\.be\/([\w-]{11})/) ||
+    url.match(/embed\/([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -222,8 +231,8 @@ export default async function PersonPage({
         ))}
       </div>
 
-      <div className="mt-9 grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr]">
-        {/* Timeline */}
+      {/* 연표 · 관계 — 좌우 두 열 */}
+      <div className="mt-9 grid grid-cols-1 gap-8 lg:grid-cols-2">
         <section>
           <h2 className="font-display text-lg font-extrabold text-ink-900">연표</h2>
           <ol className="mt-4 space-y-0">
@@ -244,125 +253,75 @@ export default async function PersonPage({
           </ol>
         </section>
 
-        {/* Side: relationships + media + sources */}
-        <aside className="space-y-7">
-          {rels.length > 0 && (
-            <div>
-              <h2 className="font-display text-lg font-extrabold text-ink-900">관계</h2>
-              <ul className="mt-3 space-y-2">
-                {rels.map((r, i) => {
-                  const other = r.from.id === person.id ? r.to : r.from;
-                  const dir = r.from.id === person.id ? "→" : "←";
-                  return (
-                    <li key={i}>
-                      <Link
-                        href={`/people/${other.id}`}
-                        className="flex items-center gap-2.5 rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300"
-                      >
-                        <span
-                          className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
-                          style={{ background: r.meta.color }}
-                        >
-                          {r.meta.label}
-                        </span>
-                        <span className="text-[13px] font-bold text-ink-800">
-                          {dir} {other.name}
-                        </span>
-                      </Link>
-                      <p className="mt-1 pl-1 text-[12px] text-ink-500">{r.note}</p>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-
-          {(extLinks.length > 0 || photoSource) && (
-            <div>
-              <h2 className="font-display text-lg font-extrabold text-ink-900">바깥 링크</h2>
-              {extLinks.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {extLinks.map((l) => (
-                    <a
-                      key={l.href}
-                      href={l.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-[12.5px] font-bold text-ink-700 transition-colors hover:border-sky-300 hover:text-sky-700"
+        {rels.length > 0 && (
+          <section>
+            <h2 className="font-display text-lg font-extrabold text-ink-900">관계</h2>
+            <ul className="mt-4 space-y-2">
+              {rels.map((r, i) => {
+                const other = r.from.id === person.id ? r.to : r.from;
+                const dir = r.from.id === person.id ? "→" : "←";
+                return (
+                  <li key={i}>
+                    <Link
+                      href={`/people/${other.id}`}
+                      className="flex items-center gap-2.5 rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300"
                     >
-                      {l.label} ↗
-                    </a>
-                  ))}
-                </div>
-              )}
-              {photoSource && (
-                <p className="mt-3 text-[11px] leading-relaxed text-ink-400">사진 출처: {photoSource} (CC/PD)</p>
-              )}
-            </div>
-          )}
+                      <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ background: r.meta.color }}>
+                        {r.meta.label}
+                      </span>
+                      <span className="text-[13px] font-bold text-ink-800">{dir} {other.name}</span>
+                    </Link>
+                    <p className="mt-1 pl-1 text-[12px] text-ink-500">{r.note}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+      </div>
 
-          {profile?.videos && profile.videos.length > 0 && (
-            <div>
-              <h2 className="font-display text-lg font-extrabold text-ink-900">관련 영상</h2>
-              <div className="mt-3 space-y-2">
-                {profile.videos.map((v) => (
-                  <a
-                    key={v.url}
-                    href={v.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-start gap-2.5 rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300"
-                  >
-                    <span className="text-[15px] leading-none">▶</span>
-                    <span className="min-w-0">
-                      <span className="block text-[13px] font-bold text-ink-800">{v.title}</span>
-                      {v.source && <span className="block text-[11px] text-ink-400">{v.source}</span>}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <h2 className="font-display text-lg font-extrabold text-ink-900">자료</h2>
-            <div className="mt-3 space-y-2 text-[13px]">
-              {person.video && (
-                <div className="rounded-2xl border border-ink-200 bg-white p-3">
-                  <span className="font-bold text-iris-600">영상 </span>
-                  <span className="text-ink-700">{person.video}</span>
-                </div>
-              )}
-              {person.interview && (
-                <div className="rounded-2xl border border-ink-200 bg-white p-3">
-                  <span className="font-bold text-aqua-700">인터뷰 </span>
-                  <span className="text-ink-700">“{person.interview}”</span>
-                </div>
-              )}
-              {person.photos.map((ph, i) => (
-                <div key={i} className="rounded-2xl border border-ink-200 bg-white p-3">
-                  <span className="font-bold text-sky-600">사진 </span>
-                  <span className="text-ink-700">{ph}</span>
-                </div>
-              ))}
-            </div>
+      {/* 관련 영상 — 페이지 안에서 재생(유튜브 로고 누르면 유튜브로 이동) */}
+      {profile?.videos && profile.videos.length > 0 && (
+        <section className="mt-10">
+          <h2 className="font-display text-lg font-extrabold text-ink-900">관련 영상</h2>
+          <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
+            {profile.videos.map((v) => {
+              const id = ytId(v.url);
+              return (
+                <figure key={v.url} className="m-0">
+                  {id ? (
+                    <div className="relative w-full overflow-hidden rounded-2xl border border-ink-200" style={{ aspectRatio: "16 / 9" }}>
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${id}`}
+                        title={v.title}
+                        loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        className="absolute inset-0 h-full w-full"
+                      />
+                    </div>
+                  ) : (
+                    <a href={v.url} target="_blank" rel="noreferrer" className="block rounded-2xl border border-ink-200 bg-white p-4 font-bold text-sky-700 hover:border-sky-300">▶ {v.title}</a>
+                  )}
+                  <figcaption className="mt-2 text-[12.5px] text-ink-500">{v.title}{v.source ? ` · ${v.source}` : ""}</figcaption>
+                </figure>
+              );
+            })}
           </div>
+        </section>
+      )}
 
+      {/* 바깥 링크 · 참고 출처 · 자료 — 아래 새 배치(3열) */}
+      {(extLinks.length > 0 || photoSource || sources.length > 0 || (profile?.refs && profile.refs.length > 0) || person.interview || person.photos.length > 0) && (
+        <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {(sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (
             <div>
-              <h2 className="font-display text-lg font-extrabold text-ink-900">
-                참고 출처
-              </h2>
+              <h2 className="font-display text-lg font-extrabold text-ink-900">참고 출처</h2>
               {profile?.refs && profile.refs.length > 0 && (
                 <ul className="mt-3 space-y-2">
                   {profile.refs.map((r) => (
                     <li key={r.url}>
-                      <a
-                        href={r.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="block rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300"
-                      >
+                      <a href={r.url} target="_blank" rel="noreferrer" className="block rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300">
                         <div className="text-[13px] font-bold text-sky-700">{r.title} ↗</div>
                         {r.publisher && <div className="text-[12px] text-ink-500">{r.publisher}</div>}
                       </a>
@@ -373,10 +332,7 @@ export default async function PersonPage({
               {sources.length > 0 && (
                 <ul className="mt-2 space-y-2">
                   {sources.map((s, i) => (
-                    <li
-                      key={i}
-                      className="rounded-2xl border border-ink-200 bg-white p-3"
-                    >
+                    <li key={i} className="rounded-2xl border border-ink-200 bg-white p-3">
                       <div className="text-[13px] font-bold text-ink-800">{s.t}</div>
                       <div className="text-[12px] text-ink-500">{s.a}</div>
                     </li>
@@ -385,8 +341,50 @@ export default async function PersonPage({
               )}
             </div>
           )}
-        </aside>
-      </div>
+
+          {(extLinks.length > 0 || photoSource) && (
+            <div>
+              <h2 className="font-display text-lg font-extrabold text-ink-900">바깥 링크</h2>
+              {extLinks.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {extLinks.map((l) => (
+                    <a key={l.href} href={l.href} target="_blank" rel="noreferrer" className="rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-[12.5px] font-bold text-ink-700 transition-colors hover:border-sky-300 hover:text-sky-700">
+                      {l.label} ↗
+                    </a>
+                  ))}
+                </div>
+              )}
+              {photoSource && <p className="mt-3 text-[11px] leading-relaxed text-ink-400">사진 출처: {photoSource} (CC/PD)</p>}
+            </div>
+          )}
+
+          {(person.interview || person.photos.length > 0 || person.video) && (
+            <div>
+              <h2 className="font-display text-lg font-extrabold text-ink-900">자료</h2>
+              <div className="mt-3 space-y-2 text-[13px]">
+                {person.interview && (
+                  <div className="rounded-2xl border border-ink-200 bg-white p-3">
+                    <span className="font-bold text-aqua-700">인터뷰 </span>
+                    <span className="text-ink-700">“{person.interview}”</span>
+                  </div>
+                )}
+                {person.photos.map((ph, i) => (
+                  <div key={i} className="rounded-2xl border border-ink-200 bg-white p-3">
+                    <span className="font-bold text-sky-600">사진 </span>
+                    <span className="text-ink-700">{ph}</span>
+                  </div>
+                ))}
+                {person.video && (
+                  <div className="rounded-2xl border border-ink-200 bg-white p-3">
+                    <span className="font-bold text-iris-600">영상 </span>
+                    <span className="text-ink-700">{person.video}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 묻는 자리 — 평가하지 않고 묻는다(학생 응답으로 이어지는 동선) */}
       <section
