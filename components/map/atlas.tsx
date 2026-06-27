@@ -493,6 +493,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showHeritage, setShowHeritage] = useState(false); // 선교 유적지 레이어 (메뉴/토글로 켤 때만)
   const [showCemeteries, setShowCemeteries] = useState(true); // 선교 묘역 마커 레이어
   const [showStations, setShowStations] = useState(true); // 주요 거점(항구·선교부 등) 마커 레이어
+  const [showPeople, setShowPeople] = useState(true); // 선교사(인물) 마커 레이어
   const toggleFacet = (axis: keyof typeof filters, key: string) =>
     setFilters((f) => ({ ...f, [axis]: f[axis].includes(key) ? f[axis].filter((k) => k !== key) : [...f[axis], key] }));
   const setFacet = (axis: keyof typeof filters, keys: string[]) => setFilters((f) => ({ ...f, [axis]: keys }));
@@ -1150,7 +1151,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               );
             })}
 
-            {mapPeople.map((p) => {
+            {(lens === "people" || lens === "era") && !showPeople ? null : mapPeople.map((p) => {
               const ll = personPos.get(p.id);
               if (!ll) return null;
               const sel = selected?.kind === "person" && selected.id === p.id;
@@ -1172,6 +1173,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <span style={{ fontSize: 10, opacity: 0.85 }}>{showGeo ? "●" : "○"}</span> 🗺 정세 {showGeo ? "ON" : "OFF"}
           </button>
           {(lens === "people" || lens === "era") && ([
+            { on: showPeople, set: setShowPeople, label: "👤 선교사", color: "#3f6f8f", title: "선교사(인물) 마커 표시" },
             { on: showStations, set: setShowStations, label: "⚓ 주요 거점", color: "#bf6b22", title: "항구·선교부 등 주요 거점 마커 표시" },
             { on: showCemeteries, set: setShowCemeteries, label: "♰ 선교 묘역", color: "#9b3d2d", title: "선교사 묘역 마커 표시" },
             { on: showHeritage, set: setShowHeritage, label: "⛪ 선교 유적지", color: "#7a4a9e", title: "교회·학교·병원 등 선교 유적지 표시" },
