@@ -141,16 +141,27 @@ export default async function PersonPage({
       {/* 서정적 서술: 큰 흐름 속 여정(중심) · 걸어온 사역 · 남긴 열매 */}
       {profile && (
         <div className="mt-12 space-y-12">
-          {/* 큰 흐름 속 여정 — 이 지면의 서정적 중심 */}
-          <section className="relative">
-            <span aria-hidden className="font-serif block select-none text-[64px] leading-[0.6] text-rust" style={{ color: "rgba(155,61,45,.16)" }}>
-              &ldquo;
-            </span>
-            <div className="pl-1">
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">한국 선교의 큰 흐름 속에서</div>
-              <p className="font-serif mt-4 text-[21px] leading-[2.0] text-ink-800 sm:text-[23px]">{profile.journey}</p>
-            </div>
-          </section>
+          {/* 잔잔한 스토리텔링 서사가 있으면 그것이 지면의 중심, 없으면 '큰 흐름 속 여정' */}
+          {profile.story ? (
+            <section>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">이야기</div>
+              <div className="mt-5 space-y-6">
+                {profile.story.map((para, i) => (
+                  <p key={i} className="font-serif text-[17px] leading-[2.1] text-ink-800 sm:text-[18.5px]">{para}</p>
+                ))}
+              </div>
+            </section>
+          ) : (
+            <section className="relative">
+              <span aria-hidden className="font-serif block select-none text-[64px] leading-[0.6] text-rust" style={{ color: "rgba(155,61,45,.16)" }}>
+                &ldquo;
+              </span>
+              <div className="pl-1">
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">한국 선교의 큰 흐름 속에서</div>
+                <p className="font-serif mt-4 text-[21px] leading-[2.0] text-ink-800 sm:text-[23px]">{profile.journey}</p>
+              </div>
+            </section>
+          )}
 
           {profile.beauty && (
             <section>
