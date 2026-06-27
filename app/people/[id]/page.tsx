@@ -282,16 +282,14 @@ export default async function PersonPage({
                       <li key={it.id + i}>
                         <Link
                           href={`/people/${it.id}`}
-                          className="block rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300"
+                          className="block rounded-xl border border-ink-200 bg-white px-3 py-2 transition-colors hover:border-sky-300"
                         >
-                          <span className="text-[13.5px] font-bold text-ink-800">{it.dir} {it.name}</span>
-                          {(it.role || it.life) && (
-                            <span className="mt-0.5 block text-[11.5px] text-ink-500">
-                              {[it.role, it.org, it.life].filter(Boolean).join(" · ")}
-                            </span>
-                          )}
+                          <span className="flex items-baseline gap-1.5">
+                            <span className="text-[13px] font-bold text-ink-800">{it.dir} {it.name}</span>
+                            {it.role && <span className="truncate text-[11px] text-ink-400">· {it.role}</span>}
+                          </span>
+                          {it.note && <span className="mt-0.5 block text-[11.5px] leading-snug text-ink-500">{it.note}</span>}
                         </Link>
-                        {it.note && <p className="mt-1 pl-1 text-[12px] text-ink-500">{it.note}</p>}
                       </li>
                     ))}
                   </ul>
