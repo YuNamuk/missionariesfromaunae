@@ -47,6 +47,18 @@ export default async function PersonPage({
 
   const place = getPlace(person.place);
   const rels = relationshipsFor(person.id);
+  // 같은 종류(관계 유형)끼리 묶고, 관련 인물의 간단한 소개(사역·생애)를 함께 둔다.
+  const relGroups = (() => {
+    const m = new Map<string, { color: string; items: { id: string; name: string; dir: string; note: string; role: string; org: string; life: string }[] }>();
+    for (const r of rels) {
+      const otherRef = r.from.id === person.id ? r.to : r.from;
+      const dir = r.from.id === person.id ? "→" : "←";
+      const o = getPerson(otherRef.id);
+      if (!m.has(r.meta.label)) m.set(r.meta.label, { color: r.meta.color, items: [] });
+      m.get(r.meta.label)!.items.push({ id: otherRef.id, name: otherRef.name, dir, note: r.note, role: o?.role ?? "", org: o?.org ?? "", life: o?.life ?? "" });
+    }
+    return [...m.entries()];
+  })();
   const sources = resourcesFor(person);
   const ph = PHOTOS[person.id];
   const photo = ph?.photo ?? null;
@@ -253,29 +265,39 @@ export default async function PersonPage({
           </ol>
         </section>
 
-        {rels.length > 0 && (
+        {relGroups.length > 0 && (
           <section>
             <h2 className="font-display text-lg font-extrabold text-ink-900">관계</h2>
-            <ul className="mt-4 space-y-2">
-              {rels.map((r, i) => {
-                const other = r.from.id === person.id ? r.to : r.from;
-                const dir = r.from.id === person.id ? "→" : "←";
-                return (
-                  <li key={i}>
-                    <Link
-                      href={`/people/${other.id}`}
-                      className="flex items-center gap-2.5 rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300"
-                    >
-                      <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ background: r.meta.color }}>
-                        {r.meta.label}
-                      </span>
-                      <span className="text-[13px] font-bold text-ink-800">{dir} {other.name}</span>
-                    </Link>
-                    <p className="mt-1 pl-1 text-[12px] text-ink-500">{r.note}</p>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="mt-4 space-y-5">
+              {relGroups.map(([label, group]) => (
+                <div key={label}>
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white" style={{ background: group.color }}>
+                      {label}
+                    </span>
+                    <span className="text-[11px] text-ink-400">{group.items.length}명</span>
+                  </div>
+                  <ul className="space-y-2">
+                    {group.items.map((it, i) => (
+                      <li key={it.id + i}>
+                        <Link
+                          href={`/people/${it.id}`}
+                          className="block rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300"
+                        >
+                          <span className="text-[13.5px] font-bold text-ink-800">{it.dir} {it.name}</span>
+                          {(it.role || it.life) && (
+                            <span className="mt-0.5 block text-[11.5px] text-ink-500">
+                              {[it.role, it.org, it.life].filter(Boolean).join(" · ")}
+                            </span>
+                          )}
+                        </Link>
+                        {it.note && <p className="mt-1 pl-1 text-[12px] text-ink-500">{it.note}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </section>
         )}
       </div>
