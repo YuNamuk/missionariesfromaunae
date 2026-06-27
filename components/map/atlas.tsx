@@ -101,6 +101,13 @@ function arrowIcon(angleDeg: number, color: string, label: string) {
 function bearingDeg(a: [number, number], b: [number, number]) {
   return (Math.atan2(-(b[0] - a[0]), b[1] - a[1]) * 180) / Math.PI;
 }
+// 두 좌표 사이 거리(km) — 유적 상세의 '인근 거점·묘역' 연결용.
+function distKm(aLat: number, aLng: number, bLat: number, bLng: number) {
+  const R = 6371, toR = (d: number) => (d * Math.PI) / 180;
+  const dLat = toR(bLat - aLat), dLng = toR(bLng - aLng);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(toR(aLat)) * Math.cos(toR(bLat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
 
 // ── 시대별 정세(역사 국경) 오버레이 ──────────────────────────────
 // 출처: historical-basemaps (github.com/aourednik/historical-basemaps, ODbL).
@@ -1429,6 +1436,35 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   </div>
                 </section>
               )}
+              {(() => {
+                // C3: 같은 좌표 기준 인근 거점(지도 장소)·유적을 거리순으로 연결. 좌표 근사치는 제외.
+                const nearPlaces = data.places
+                  .map((p) => ({ p, d: distKm(selHeritage.lat, selHeritage.lng, p.lat, p.lng) }))
+                  .filter((x) => x.d <= 12).sort((a, b) => a.d - b.d).slice(0, 4);
+                const nearHeritage = HERITAGE
+                  .filter((h) => h.id !== selHeritage.id && !h.coordUncertain)
+                  .map((h) => ({ h, d: distKm(selHeritage.lat, selHeritage.lng, h.lat, h.lng) }))
+                  .filter((x) => x.d <= 6).sort((a, b) => a.d - b.d).slice(0, 4);
+                if (!nearPlaces.length && !nearHeritage.length) return null;
+                const km = (d: number) => (d < 1 ? `${Math.round(d * 1000)}m` : `${d.toFixed(1)}km`);
+                return (
+                  <section style={{ marginBottom: 14 }}>
+                    <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>인근 거점·유적</h3>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {nearPlaces.map(({ p, d }) => (
+                        <button key={`pl-${p.id}`} onClick={() => setSelected({ kind: "place", id: p.id })} style={{ ...pill("rgba(155,61,45,.1)", "#84321f"), border: `1px solid ${C.line}`, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                          {p.glyph} {p.name} <span style={{ color: C.faint, fontWeight: 700 }}>{km(d)}</span>
+                        </button>
+                      ))}
+                      {nearHeritage.map(({ h, d }) => (
+                        <button key={`h-${h.id}`} onClick={() => { setShowHeritage(true); setSelected({ kind: "heritage", id: h.id }); }} style={{ ...pill("rgba(122,74,158,.1)", "#5a3f72"), border: `1px solid ${C.line}`, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
+                          {heritageStyle(h.type).glyph} {h.name} <span style={{ color: C.faint, fontWeight: 700 }}>{km(d)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                );
+              })()}
               {selHeritage.source.length > 0 && (
                 <section>
                   <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>참고 출처</h3>
