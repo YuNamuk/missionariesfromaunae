@@ -374,12 +374,12 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     }
     prevSelRef.current = selected;
   }, [selected]);
-  const goBack = () => setHistory((h) => {
-    if (!h.length) return h;
+  const goBack = () => {
+    if (history.length === 0) return;
     goingBackRef.current = true;
-    setSelected(h[h.length - 1]);
-    return h.slice(0, -1);
-  });
+    setSelected(history[history.length - 1]); // null 이면 시작 내러티브로 복귀
+    setHistory((h) => h.slice(0, -1));
+  };
   const [showSettings, setShowSettings] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
