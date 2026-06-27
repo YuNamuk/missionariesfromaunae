@@ -42,7 +42,7 @@ export default function DictionaryPage() {
       {/* ── 전체 인명 리스트(대표/전체 분리) ── */}
       <section className="mt-12">
         <div className="flex items-end justify-between border-b border-ink-200 pb-3">
-          <h2 className="font-display text-2xl font-black tracking-tight text-ink-900">전체 인명 <span className="text-[13px] font-semibold text-ink-400">· 입국 연도순</span></h2>
+          <h2 className="font-display text-2xl font-black tracking-tight text-ink-900">전체 인명 <span className="text-[13px] font-semibold text-ink-400">· 입국·활동 연도순</span></h2>
           <span className="text-[13px] font-bold text-ink-500">{everyone.length}명 · 대표 {featuredCount}명</span>
         </div>
         <ul className="mt-4 grid gap-x-6 sm:grid-cols-2">

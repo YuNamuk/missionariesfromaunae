@@ -191,9 +191,11 @@ function InvalidateOnResize({ deps }: { deps: unknown[] }) {
 }
 
 const ZOOM_PRESET: Record<string, { maxZoom: number; pad: number }> = {
-  loose: { maxZoom: 7.5, pad: 90 },
-  normal: { maxZoom: 9, pad: 58 },
-  tight: { maxZoom: 11, pad: 34 },
+  loose: { maxZoom: 8.5, pad: 90 },
+  normal: { maxZoom: 11, pad: 58 },
+  // 서울권은 인물이 실제 사역지(정동·새문안·세브란스·연동·연희…)에 수백 m 간격으로
+  // 몰려 있어, 관계선을 또렷이 보려면 더 깊이 들어가야 한다.
+  tight: { maxZoom: 14, pad: 28 },
 };
 
 /** Flies the camera to fit the current selection + its relationship network. */
@@ -941,7 +943,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <div style={{ position: "absolute", top: "100%", right: 0, paddingTop: 8, width: 290, zIndex: 900 }}>
               <div style={{ background: "rgba(255,250,237,.99)", border: `1px solid ${C.line}`, borderRadius: 13, boxShadow: "0 14px 32px rgba(46,28,14,.24)", padding: 7 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 6px 6px" }}>
-                  <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".08em", color: "#80603b" }}>{q ? `검색 ${pickList.length}` : `선교사 ${pickList.length}명`}{!q && <span style={{ fontWeight: 600, opacity: 0.7 }}> · 입국 연도순</span>}</span>
+                  <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".08em", color: "#80603b" }}>{q ? `검색 ${pickList.length}` : `선교사 ${pickList.length}명`}{!q && <span style={{ fontWeight: 600, opacity: 0.7 }}> · 입국·활동 연도순</span>}</span>
                   {!q && <button onClick={() => setListAll((v) => !v)} title="대표만 / 전체" style={{ padding: "3px 9px", borderRadius: 99, border: `1px solid ${C.line}`, background: listAll ? "rgba(255,255,255,.7)" : "#2f2419", color: listAll ? "#5f4d39" : "#fff8ed", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{listAll ? "전체" : "★ 대표"}</button>}
                 </div>
                 <div style={{ maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
@@ -1050,9 +1052,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       {/* ── CENTER: map ── */}
       <section style={{ gridColumn: 2, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", minHeight: 420, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
         <div style={{ position: "absolute", inset: 14, borderRadius: 18, overflow: "hidden", border: `1px solid ${C.line}` }}>
-          <MapContainer center={[38.4, 127.5]} zoom={6} minZoom={4} maxZoom={14} zoomControl={false} scrollWheelZoom={false} zoomSnap={0} zoomDelta={0.6} zoomAnimationThreshold={4} style={{ height: "100%", width: "100%" }}>
+          <MapContainer center={[38.4, 127.5]} zoom={6} minZoom={4} maxZoom={17} zoomControl={false} scrollWheelZoom={false} zoomSnap={0} zoomDelta={0.6} zoomAnimationThreshold={4} style={{ height: "100%", width: "100%" }}>
             <SmoothWheelZoom />
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" subdomains="abcd" attribution="&copy; OpenStreetMap &copy; CARTO" />
+            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" subdomains="abcd" attribution="&copy; OpenStreetMap &copy; CARTO" maxZoom={19} maxNativeZoom={19} />
             <HistoricalOverlay year={year} on={showGeo} />
             <MapPanes />
             <MapBinder mapRef={mapRef} viewRef={viewRef} />
@@ -1331,7 +1333,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, background: orgTint(selPerson.org), fontSize: 48 }}>{selPerson.glyph}</span>
                 )}
                 <div style={{ minWidth: 0, paddingTop: 2 }}>
-                  <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}년 입국·활동</span>
+                  <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}년 {selPerson.country === "조선" ? "활동" : "입국"}</span>
                   <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26, margin: "10px 0 0", letterSpacing: "-.03em" }}>{selPerson.name}</h2>
                   {selPerson.en && <p style={{ margin: "3px 0 0", fontSize: 13.5, fontWeight: 600, color: "rgba(255,248,235,.82)" }}>{selPerson.en}</p>}
                   <p style={{ margin: "7px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.72)" }}>
