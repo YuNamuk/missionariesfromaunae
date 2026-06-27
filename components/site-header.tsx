@@ -98,6 +98,7 @@ function NavDrop({ id, label, items, open, setOpen, onPick }: {
 }
 
 const PAGES = [
+  { href: "/story", label: "들어가며" },
   { href: "/", label: "지도" },
   { href: "/people", label: "인물" },
   { href: "/network", label: "관계망" },
@@ -119,7 +120,7 @@ export function SiteHeader() {
       className="sticky top-0 z-[1000] flex h-16 items-center justify-between gap-4 px-5 sm:px-7"
       style={{ background: "linear-gradient(180deg,#3a2a1c 0%,#2e2218 100%)", borderBottom: "1px solid rgba(255,248,236,0.08)", boxShadow: "0 4px 20px rgba(38,25,10,0.35)" }}
     >
-      <Link href="/" className="flex min-w-0 flex-none items-center gap-3">
+      <Link href="/story" className="flex min-w-0 flex-none items-center gap-3">
         <span className="font-display flex h-9 w-9 flex-none items-center justify-center rounded-[11px] text-[22px] font-black leading-none text-white" style={{ background: "var(--grad-dream)", boxShadow: "var(--shadow-sky)" }}>Ð</span>
         <span className="hidden min-w-0 sm:block">
           <span className="font-display block truncate text-[15px] font-extrabold tracking-tight text-white">조선 선교사 온라인 자료실</span>
