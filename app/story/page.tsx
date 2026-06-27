@@ -42,7 +42,7 @@ const kicker: React.CSSProperties = {
 
 export default function StoryPage() {
   return (
-    <main style={{ background: C.cream, color: C.ink, fontFamily: "var(--font-body)" }}>
+    <main style={{ background: C.cream, color: C.ink, fontFamily: "var(--font-serif)" }}>
       {/* ── 히어로: 질문이 먼저 ── */}
       <section
         style={{
@@ -59,7 +59,7 @@ export default function StoryPage() {
         <span style={{ ...kicker, color: C.gold }}>Missionaries from Aunae</span>
         <h1
           style={{
-            fontFamily: "var(--font-display)",
+            fontFamily: "var(--font-serif)",
             fontWeight: 900,
             fontSize: "clamp(38px, 7vw, 76px)",
             letterSpacing: "-0.03em",
@@ -182,7 +182,7 @@ export default function StoryPage() {
         <p style={{ ...p(true), fontStyle: "italic", color: "rgba(255,248,236,.7)" }}>
           마지막 칸은 비어 있습니다. 거기에 들어설 사람은 당신입니다.
         </p>
-        <p style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: "clamp(24px,4vw,38px)", lineHeight: 1.3, marginTop: 28, color: "#fff8ec" }}>
+        <p style={{ fontFamily: "var(--font-serif)", fontWeight: 900, fontSize: "clamp(24px,4vw,38px)", lineHeight: 1.3, marginTop: 28, color: "#fff8ec" }}>
           “I am the next runner.
           <br />
           I am a missionary from Aunae.”
@@ -208,7 +208,7 @@ export default function StoryPage() {
 
 function h2(dark?: boolean): React.CSSProperties {
   return {
-    fontFamily: "var(--font-display)",
+    fontFamily: "var(--font-serif)",
     fontWeight: 900,
     fontSize: "clamp(28px,4.6vw,46px)",
     letterSpacing: "-0.03em",
@@ -241,7 +241,7 @@ function quote(): React.CSSProperties {
     borderLeft: "4px solid #bf6b22",
     background: "rgba(191,107,34,.07)",
     borderRadius: "0 14px 14px 0",
-    fontFamily: "var(--font-display)",
+    fontFamily: "var(--font-serif)",
     fontSize: "clamp(18px,2.6vw,23px)",
     fontWeight: 800,
     lineHeight: 1.5,
