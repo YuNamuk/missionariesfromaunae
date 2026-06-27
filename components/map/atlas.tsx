@@ -800,9 +800,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   );
 
   // 좌측 리스트 칸은 연혁·묘역·관계망에서만 필요(평소엔 지도 넓게)
-  // 필터를 걸면(인물/시대 렌즈) 좌측에 매칭 인물 카드 목록(활동 시기 포함)을 띄운다.
+  // 필터를 걸면(인물/시대 렌즈) 우측 상세 패널에 매칭 인물 목록(활동 시기 포함)을 띄운다.
   const filterActive = facetCount > 0 && (lens === "people" || lens === "era");
-  const showLeft = lens === "history" || lens === "cemetery" || lens === "network" || filterActive;
+  const showLeft = lens === "history" || lens === "cemetery" || lens === "network";
   const hdr: React.CSSProperties = { fontSize: 11, fontWeight: 900, letterSpacing: ".1em", color: "#80603b", textTransform: "uppercase", marginBottom: 8 };
 
   return (
@@ -1045,34 +1045,6 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 );
               })}
               {!cemeteries.length && <p style={{ fontSize: 12.5, color: C.muted }}>기록된 묘역이 없습니다.</p>}
-            </div>
-          </div>
-        )}
-
-        {filterActive && (
-          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingRight: 2 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={hdr}>필터 결과 <span style={{ color: "#9b3d2d" }}>{visiblePeople.length}명</span></span>
-              <button onClick={clearFilters} style={{ border: 0, background: "transparent", color: "#9b3d2d", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>필터 해제</button>
-            </div>
-            <div style={{ display: "grid", gap: 7 }}>
-              {visiblePeople.map((p) => {
-                const on = selPerson?.id === p.id;
-                const span = p.active.map(([s, e]) => `${s}–${e}`).join(", ");
-                return (
-                  <button key={p.id} onClick={() => setSelected({ kind: "person", id: p.id })} style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${on ? "#9b3d2d" : C.line}`, borderRadius: 13, padding: "9px 11px", background: on ? "#2f2419" : "rgba(255,255,255,.55)", color: on ? "#fff8ed" : "#3f3022", cursor: "pointer", textAlign: "left" }}>
-                    {p.photo
-                      ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={p.photo} alt="" style={{ width: 38, height: 38, flex: "0 0 auto", borderRadius: 10, objectFit: "cover", background: "#efe1c3" }} />
-                      : <span style={{ width: 38, height: 38, flex: "0 0 auto", borderRadius: 10, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 17 }}>{p.glyph}</span>}
-                    <span style={{ minWidth: 0, flex: 1 }}>
-                      <span style={{ display: "block", fontSize: 13.5, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}{p.en ? <span style={{ fontWeight: 600, fontSize: 11, color: on ? "rgba(255,248,236,.6)" : C.muted }}> · {p.en}</span> : null}</span>
-                      <span style={{ display: "block", marginTop: 1, fontSize: 11, color: on ? "rgba(255,248,236,.72)" : C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.role, p.org].filter(Boolean).join(" · ")}</span>
-                      <span style={{ display: "block", marginTop: 2, fontSize: 11, fontWeight: 800, color: on ? "#f0c98a" : "#a0641f" }}>🕰 활동 {span || "—"}{p.life ? `  · 생애 ${p.life}` : ""}</span>
-                    </span>
-                  </button>
-                );
-              })}
-              {!visiblePeople.length && <p style={{ fontSize: 12.5, color: C.muted }}>조건에 맞는 인물이 없습니다. 필터를 줄여 보세요.</p>}
             </div>
           </div>
         )}
@@ -1590,7 +1562,36 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           </>
         )}
 
-        {!selPerson && !selPlace && !selEvent && !selHeritage && !selBuried && (
+        {!selPerson && !selPlace && !selEvent && !selHeritage && !selBuried && filterActive && (
+          <div style={{ padding: "20px 18px 24px", overflowY: "auto", height: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={pill("rgba(155,61,45,.9)")}>필터 결과 · {visiblePeople.length}명</span>
+              <button onClick={clearFilters} style={{ border: 0, background: "transparent", color: "#9b3d2d", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>필터 해제</button>
+            </div>
+            <p style={{ margin: "8px 0 12px", fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>선택한 조건에 해당하는 선교사입니다. 카드를 누르면 상세로 가고, 뒤로가기로 이 목록으로 돌아옵니다.</p>
+            <div style={{ display: "grid", gap: 7 }}>
+              {visiblePeople.map((p) => {
+                const span = p.active.map(([s, e]) => `${s}–${e}`).join(", ");
+                return (
+                  <button key={p.id} onClick={() => setSelected({ kind: "person", id: p.id })} style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${C.line}`, borderRadius: 13, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#3f3022", cursor: "pointer", textAlign: "left" }}>
+                    {p.photo
+                      ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={p.photo} alt="" style={{ width: 42, height: 42, flex: "0 0 auto", borderRadius: 10, objectFit: "cover", background: "#efe1c3" }} />
+                      : <span style={{ width: 42, height: 42, flex: "0 0 auto", borderRadius: 10, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 18 }}>{p.glyph}</span>}
+                    <span style={{ minWidth: 0, flex: 1 }}>
+                      <span style={{ display: "block", fontSize: 14, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}{p.en ? <span style={{ fontWeight: 600, fontSize: 11, color: C.muted }}> · {p.en}</span> : null}</span>
+                      <span style={{ display: "block", marginTop: 1, fontSize: 11.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.role, p.org].filter(Boolean).join(" · ")}</span>
+                      <span style={{ display: "block", marginTop: 2, fontSize: 11.5, fontWeight: 800, color: "#a0641f" }}>🕰 활동 {span || "—"}{p.life ? `  · 생애 ${p.life}` : ""}</span>
+                    </span>
+                    <ArrowRight size={15} style={{ flex: "0 0 auto", color: C.faint }} />
+                  </button>
+                );
+              })}
+              {!visiblePeople.length && <p style={{ fontSize: 12.5, color: C.muted }}>조건에 맞는 인물이 없습니다. 필터를 줄여 보세요.</p>}
+            </div>
+          </div>
+        )}
+
+        {!selPerson && !selPlace && !selEvent && !selHeritage && !selBuried && !filterActive && (
           <div style={{ padding: "24px 22px 28px", overflowY: "auto", height: "100%" }}>
             <span style={pill("rgba(191,107,34,.9)")}>조선 선교의 흐름</span>
             <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "12px 0 8px", letterSpacing: "-.03em", color: "#3e2c1d" }}>복음이 들어온 길</h2>
