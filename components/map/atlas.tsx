@@ -209,6 +209,19 @@ function FitToSelection({ targets, focusKey, fit, skipFirst, skipRef }: { target
 type MapView = { center: [number, number]; zoom: number };
 // 홈(시작 내러티브)의 기본 넓은 지도 뷰 — MapContainer center/zoom과 동일.
 const HOME_VIEW: MapView = { center: [38.4, 127.5], zoom: 6 };
+
+/** 전용 pane(레이어) 생성 — 위도 기반 z-index와 무관하게 항상 인물 > 유적 > 장소
+ *  순으로 그려지도록 한다(겹쳐도 인물 아이콘이 가려지지 않음). */
+function MapPanes() {
+  const map = useMap();
+  useEffect(() => {
+    const mk = (name: string, z: number) => { if (!map.getPane(name)) { const p = map.createPane(name); p.style.zIndex = String(z); } };
+    mk("placesPane", 590);   // 기본 markerPane(600) 아래
+    mk("heritagePane", 605);
+    mk("peoplePane", 620);   // 항상 위
+  }, [map]);
+  return null;
+}
 /** Holds a ref to the map and tracks the last settled view (center+zoom) so the
  *  detail-card back button can restore the previous map state, not just the card. */
 function MapBinder({ mapRef, viewRef }: { mapRef: React.MutableRefObject<L.Map | null>; viewRef: React.MutableRefObject<MapView | null> }) {
@@ -941,6 +954,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <SmoothWheelZoom />
             <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" subdomains="abcd" attribution="&copy; OpenStreetMap &copy; CARTO" />
             <HistoricalOverlay year={year} on={showGeo} />
+            <MapPanes />
             <MapBinder mapRef={mapRef} viewRef={viewRef} />
             <InvalidateOnResize deps={[leftOpen, rightOpen]} />
             <MapControls />
@@ -987,7 +1001,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               const dim = (!!selPerson && selPerson.place !== p.id) || (!!selEvent && selEvent.placeId !== p.id);
               // 장소는 인물보다 항상 아래에 깔리도록 음수 오프셋(선택된 장소만 살짝 위)
               return (
-                <Marker key={p.id} position={[p.lat, p.lng]} icon={placeIcon(p, sel, landing ? false : dim)} zIndexOffset={landing ? 200 : sel ? -120 : -600} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
+                <Marker key={p.id} position={[p.lat, p.lng]} pane="placesPane" icon={placeIcon(p, sel, landing ? false : dim)} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
               );
             })}
 
@@ -996,7 +1010,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               const sel = selected?.kind === "heritage" && selected.id === h.id;
               const dimActive = !!selPerson || !!selEvent || (selected?.kind === "heritage" && !sel) || selected?.kind === "place";
               return (
-                <Marker key={h.id} position={[h.lat, h.lng]} icon={heritageIcon(h, sel, !sel && dimActive)} zIndexOffset={sel ? 800 : landing ? 160 : -400} eventHandlers={{ click: () => setSelected({ kind: "heritage", id: h.id }) }} />
+                <Marker key={h.id} position={[h.lat, h.lng]} pane="heritagePane" icon={heritageIcon(h, sel, !sel && dimActive)} zIndexOffset={sel ? 800 : 0} eventHandlers={{ click: () => setSelected({ kind: "heritage", id: h.id }) }} />
               );
             })}
 
@@ -1010,7 +1024,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               // 선택 시: 본인·1차 선명 / 2차 흐리게 / 그 외 더 흐리게
               const opacity = landing ? 0.28 : !dimActive || sel || first ? 1 : second ? 0.55 : 0.22;
               return (
-                <Marker key={p.id} position={ll} icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
+                <Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
               );
             })}
           </MapContainer>
