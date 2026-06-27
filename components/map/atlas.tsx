@@ -496,6 +496,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showCemeteries, setShowCemeteries] = useState(true); // 선교 묘역 마커 레이어
   const [showStations, setShowStations] = useState(true); // 주요 거점(항구·선교부 등) 마커 레이어
   const [showPeople, setShowPeople] = useState(true); // 선교사(인물) 마커 레이어
+  const [showNetwork, setShowNetwork] = useState(false); // 관계망(인물 간 관계선) 표시
   const toggleFacet = (axis: keyof typeof filters, key: string) =>
     setFilters((f) => ({ ...f, [axis]: f[axis].includes(key) ? f[axis].filter((k) => k !== key) : [...f[axis], key] }));
   const setFacet = (axis: keyof typeof filters, keys: string[]) => setFilters((f) => ({ ...f, [axis]: keys }));
@@ -718,9 +719,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const visIds = useMemo(() => new Set(mapPeople.map((p) => p.id)), [mapPeople]);
   const drawEdges = relations.filter((r) => visIds.has(r.other.id));
   // network lens: every relationship among visible people, drawn faintly
+  const netOn = lens === "network" || showNetwork;
   const networkEdges = useMemo(
-    () => (lens === "network" ? data.edges.filter((e) => visIds.has(e.from) && visIds.has(e.to)) : []),
-    [lens, data.edges, visIds],
+    () => (netOn ? data.edges.filter((e) => visIds.has(e.from) && visIds.has(e.to)) : []),
+    [netOn, data.edges, visIds],
   );
 
   const coordOf = (id: string): [number, number] | null => {
@@ -1143,6 +1145,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             { on: showStations, set: setShowStations, label: "⚓ 주요 거점", color: "#bf6b22", title: "항구·선교부 등 주요 거점 마커 표시" },
             { on: showCemeteries, set: setShowCemeteries, label: "♰ 선교 묘역", color: "#9b3d2d", title: "선교사 묘역 마커 표시" },
             { on: showHeritage, set: setShowHeritage, label: "⛪ 선교 유적지", color: "#7a4a9e", title: "교회·학교·병원 등 선교 유적지 표시" },
+            { on: showNetwork, set: setShowNetwork, label: "🕸 관계망", color: "#5a3f72", title: "인물 간 관계선 표시" },
           ] as const).map((t) => (
             <button key={t.label} onClick={() => t.set((v: boolean) => !v)} title={t.title}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 11, border: `1px solid ${t.on ? t.color : "rgba(255,255,255,.2)"}`, background: t.on ? t.color : "rgba(40,26,14,.7)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, opacity: t.on ? 1 : 0.62, whiteSpace: "nowrap" }}>
@@ -1159,8 +1162,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           </div>
         )}
 
-        {/* 관계 유형 범례 — 지도 안 작은 오버레이(관계망 렌즈) */}
-        {lens === "network" && (
+        {/* 관계 유형 범례 — 지도 안 작은 오버레이(관계망 켤 때) */}
+        {netOn && (
           <div style={{ position: "absolute", right: 24, bottom: 24, zIndex: 500, background: "rgba(40,26,14,.82)", color: "#fff8ec", padding: "8px 11px", borderRadius: 11, maxWidth: 210, backdropFilter: "blur(4px)" }}>
             <div style={{ fontSize: 9.5, fontWeight: 900, letterSpacing: ".1em", textTransform: "uppercase", opacity: 0.7, marginBottom: 6 }}>관계 유형</div>
             <div style={{ display: "grid", gap: 5 }}>
