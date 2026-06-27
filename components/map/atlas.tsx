@@ -347,8 +347,12 @@ function MapControls() {
 }
 
 /** Compact hover/click dropdown used for the data-bank filter menu bar. */
-function MenuBtn({ id, label, count, openMenu, setOpenMenu, wide, children }: { id: string; label: string; count?: number; openMenu: string | null; setOpenMenu: (v: string | null) => void; wide?: boolean; children: React.ReactNode }) {
+function MenuBtn({ id, label, count, openMenu, setOpenMenu, wide, mega, children }: { id: string; label: string; count?: number; openMenu: string | null; setOpenMenu: (v: string | null) => void; wide?: boolean; mega?: boolean; children: React.ReactNode }) {
   const open = openMenu === id;
+  // mega: 카테고리를 여러 열로 한눈에 펼치는 넓은 패널(필터용). 화면 밖으로 나가지 않게 오른쪽 정렬.
+  const panelPos: React.CSSProperties = mega
+    ? { position: "absolute", top: "100%", right: 0, paddingTop: 6, width: "min(720px, 92vw)", zIndex: 900 }
+    : { position: "absolute", top: "100%", left: 0, paddingTop: 6, width: wide ? 300 : 196, zIndex: 900 };
   return (
     <div style={{ position: "relative" }} onMouseEnter={() => setOpenMenu(id)} onMouseLeave={() => setOpenMenu(open ? null : openMenu)}>
       <button onClick={() => setOpenMenu(open ? null : id)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 10, border: `1px solid ${open ? "#9b3d2d" : C.line}`, background: open ? "#9b3d2d" : count ? "#f2e3c8" : "rgba(255,255,255,.6)", color: open ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>
@@ -358,8 +362,8 @@ function MenuBtn({ id, label, count, openMenu, setOpenMenu, wide, children }: { 
       </button>
       {open && (
         // top:100% + 위쪽 패딩으로 버튼↔패널 사이 틈을 메워(호버 브리지) 끊김 없이 유지
-        <div style={{ position: "absolute", top: "100%", left: 0, paddingTop: 6, width: wide ? 300 : 196, zIndex: 900 }}>
-          <div style={{ maxHeight: 360, overflowY: "auto", background: "rgba(255,250,237,.99)", border: `1px solid ${C.line}`, borderRadius: 13, boxShadow: "0 14px 32px rgba(46,28,14,.24)", padding: 7 }}>
+        <div style={panelPos}>
+          <div style={{ maxHeight: mega ? "72vh" : 360, overflowY: "auto", background: "rgba(255,250,237,.99)", border: `1px solid ${C.line}`, borderRadius: 13, boxShadow: "0 14px 32px rgba(46,28,14,.24)", padding: mega ? 12 : 7 }}>
             {children}
           </div>
         </div>
@@ -487,6 +491,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [pickerOpen, setPickerOpen] = useState(false); // 인물 드롭다운: 마우스 영역 안이면 유지
   const [showGeo, setShowGeo] = useState(false); // 시대별 정세(역사 국경) 오버레이
   const [showHeritage, setShowHeritage] = useState(false); // 선교 유적지 레이어 (메뉴/토글로 켤 때만)
+  const [showCemeteries, setShowCemeteries] = useState(true); // 선교 묘역 마커 레이어
+  const [showStations, setShowStations] = useState(true); // 주요 거점(항구·선교부 등) 마커 레이어
   const toggleFacet = (axis: keyof typeof filters, key: string) =>
     setFilters((f) => ({ ...f, [axis]: f[axis].includes(key) ? f[axis].filter((k) => k !== key) : [...f[axis], key] }));
   const setFacet = (axis: keyof typeof filters, keys: string[]) => setFilters((f) => ({ ...f, [axis]: keys }));
@@ -591,6 +597,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     return data.places.filter((pl) => names.has(pl.name));
   }, [data]);
   const buriedAt = (placeName: string) => data.people.filter((p) => p.burial === placeName);
+  const cemeteryIds = useMemo(() => new Set(cemeteries.map((c) => c.id)), [cemeteries]);
 
   const selPerson =
     selected?.kind === "person" ? data.people.find((p) => p.id === selected.id) ?? null : null;
@@ -843,11 +850,12 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         {/* 대표만 / 전체 인물 토글 */}
         <button onClick={() => setFeaturedOnly((v) => !v)} title="지도에 대표 선교사만 / 전체" style={{ flex: "0 0 auto", padding: "7px 11px", borderRadius: 10, border: `1px solid ${C.line}`, background: featuredOnly ? "#2f2419" : "rgba(255,255,255,.6)", color: featuredOnly ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>{featuredOnly ? "★ 대표만" : "전체"}</button>
 
-        {/* 선교 유적지 레이어 토글 */}
-        <button onClick={() => setShowHeritage((v) => !v)} title="선교 유적지(교회·학교·병원 등) 표시" style={{ flex: "0 0 auto", padding: "7px 11px", borderRadius: 10, border: `1px solid ${showHeritage ? "#7a4a9e" : C.line}`, background: showHeritage ? "#7a4a9e" : "rgba(255,255,255,.6)", color: showHeritage ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>⛪ 유적지</button>
+        {/* 유적지 레이어 토글은 지도 상단 레이어 묶음으로 이동(주요 거점·묘역·유적지) */}
 
         {/* 통합 필터(체크박스): 시대·교단·나라·사역·지역 + 관계망 집중 + 묘역 이동 */}
-        <MenuBtn id="filter" label="필터" count={facetCount} openMenu={openMenu} setOpenMenu={setOpenMenu} wide>
+        <MenuBtn id="filter" label="필터" count={facetCount} openMenu={openMenu} setOpenMenu={setOpenMenu} mega>
+          {/* 카테고리를 여러 열로 한눈에 펼침 — 각 축이 하나의 열. */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))", gap: "4px 14px", alignItems: "start" }}>
           {([
             ["시대", "era", ERAS.map((e) => ({ key: e.key, label: e.label }))],
             ["파송 교단", "denom", DENOM_LIST],
@@ -859,10 +867,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             const allKeys = items.map((it) => it.key);
             const allOn = allKeys.length > 0 && allKeys.every((k) => filters[ax].includes(k));
             return (
-            <div key={axis} style={{ marginBottom: 6 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "6px 6px 2px" }}>
+            <div key={axis} style={{ marginBottom: 6, breakInside: "avoid" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "2px 6px 3px", borderBottom: `1px solid ${C.line}`, paddingBottom: 3 }}>
                 <span style={hdr}>{title}</span>
-                <button onClick={() => setFacet(ax, allOn ? [] : allKeys)} style={{ border: 0, background: "transparent", color: allOn ? "#9b3d2d" : "#80603b", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{allOn ? "전체 해제" : "전체 선택"}</button>
+                <button onClick={() => setFacet(ax, allOn ? [] : allKeys)} style={{ border: 0, background: "transparent", color: allOn ? "#9b3d2d" : "#80603b", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{allOn ? "전체 해제" : "전체"}</button>
               </div>
               {items.map((it) => (
                 <FacetRow key={it.key} label={it.label} on={filters[axis as "era" | "denom" | "country" | "role" | "region"].includes(it.key)}
@@ -871,13 +879,14 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             </div>
           );})}
           {cemeteries.length > 0 && (
-            <div style={{ marginBottom: 6 }}>
-              <div style={{ ...hdr, margin: "6px 6px 2px" }}>선교 묘역 이동</div>
+            <div style={{ marginBottom: 6, breakInside: "avoid" }}>
+              <div style={{ ...hdr, margin: "2px 6px 3px", borderBottom: `1px solid ${C.line}`, paddingBottom: 3 }}>선교 묘역 이동</div>
               {cemeteries.map((c) => (
                 <FacetRow key={c.id} label={c.name} on={selPlace?.id === c.id} onClick={() => { setSelected({ kind: "place", id: c.id }); setOpenMenu(null); }} />
               ))}
             </div>
           )}
+          </div>
           <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 4, paddingTop: 6, display: "flex", gap: 6 }}>
             <button onClick={() => setNetFocus((v) => !v)} style={{ flex: 1, padding: "8px 6px", borderRadius: 9, border: `1px solid ${netFocus ? "#9b3d2d" : C.line}`, background: netFocus ? "#9b3d2d" : "rgba(255,255,255,.6)", color: netFocus ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>관계망 집중</button>
             {facetCount > 0 && <button onClick={clearFilters} style={{ flex: "0 0 auto", padding: "8px 10px", borderRadius: 9, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#9b3d2d", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>해제</button>}
@@ -1070,6 +1079,11 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             })}
 
             {mapPlaces.map((p) => {
+              // 레이어 토글: 묘역/거점 마커 표시 여부(묘역 렌즈 자체에서는 항상 표시).
+              if (lens !== "cemetery") {
+                const isCem = cemeteryIds.has(p.id);
+                if (isCem ? !showCemeteries : !showStations) return null;
+              }
               const sel = (selected?.kind === "place" && selected.id === p.id) || (!!selEvent && selEvent.placeId === p.id);
               const dim = (!!selPerson && selPerson.place !== p.id) || (!!selEvent && selEvent.placeId !== p.id);
               // 장소는 인물보다 항상 아래에 깔리도록 음수 오프셋(선택된 장소만 살짝 위)
@@ -1115,6 +1129,22 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             </span>
           )}
         </div>
+
+        {/* 지도 레이어 토글(주요 거점·선교 묘역·선교 유적지) — 정세 토글 아래 줄 */}
+        {(lens === "people" || lens === "era") && (
+          <div style={{ position: "absolute", left: 24, top: 66, zIndex: 500, display: "flex", alignItems: "center", gap: 6 }}>
+            {([
+              { on: showStations, set: setShowStations, label: "⚓ 주요 거점", color: "#bf6b22", title: "항구·선교부 등 주요 거점 마커 표시" },
+              { on: showCemeteries, set: setShowCemeteries, label: "♰ 선교 묘역", color: "#9b3d2d", title: "선교사 묘역 마커 표시" },
+              { on: showHeritage, set: setShowHeritage, label: "⛪ 선교 유적지", color: "#7a4a9e", title: "교회·학교·병원 등 선교 유적지 표시" },
+            ] as const).map((t) => (
+              <button key={t.label} onClick={() => t.set((v: boolean) => !v)} title={t.title}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 11, border: `1px solid ${t.on ? t.color : "rgba(255,255,255,.2)"}`, background: t.on ? t.color : "rgba(40,26,14,.7)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, opacity: t.on ? 1 : 0.62 }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div style={{ position: "absolute", left: 26, bottom: 26, right: 26, display: "flex", justifyContent: "space-between", alignItems: "flex-end", pointerEvents: "none", gap: 12 }}>
           <span style={{ fontSize: 11.5, color: "#fff8ec", background: "rgba(40,26,14,.7)", padding: "5px 10px", borderRadius: 999, fontWeight: 700 }}>
