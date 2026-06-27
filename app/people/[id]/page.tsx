@@ -8,6 +8,7 @@ import {
   getPlace,
   relationshipsFor,
   resourcesFor,
+  BURIAL,
 } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 import { profileFor } from "@/lib/data/profiles";
@@ -41,6 +42,7 @@ export default async function PersonPage({
   const photo = PHOTOS[person.id]?.photo ?? null;
   const photoSource = PHOTOS[person.id]?.source ?? "";
   const profile = profileFor(person.id);
+  const burialPlace = BURIAL[person.id] ? getPlace(BURIAL[person.id]) : null;
 
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://missionaries-khaki.vercel.app";
   const [birth, death] = (person.life.match(/(\d{4})\D+(\d{4})/)?.slice(1) ?? []) as (string | undefined)[];
@@ -142,11 +144,30 @@ export default async function PersonPage({
               <p className="mt-3 text-[14.5px] leading-relaxed text-ink-700">{profile.journey}</p>
             </section>
             <section className="rounded-3xl border p-6" style={{ borderColor: "var(--aqua-300)", background: "var(--aqua-50)" }}>
-              <h2 className="font-display text-lg font-extrabold text-aqua-700">한국인과 동료에게 준 영향</h2>
+              <h2 className="font-display text-lg font-extrabold text-aqua-700">남긴 열매</h2>
               <p className="mt-3 text-[14.5px] leading-relaxed text-ink-700">{profile.influence}</p>
             </section>
           </div>
         </div>
+      )}
+
+      {/* Korea is home — 안장지가 있으면(이 땅에 묻힌 사실 기반) */}
+      {burialPlace && (
+        <section
+          className="mt-6 rounded-3xl border p-6"
+          style={{ borderColor: "rgba(155,61,45,.25)", background: "rgba(155,61,45,.06)" }}
+        >
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-rust-600" style={{ color: "#9b3d2d" }}>
+            Korea is home
+          </div>
+          <p className="mt-2 text-[15px] leading-relaxed text-ink-800">
+            돌아갈 수도 있었지만, 이 땅을 집으로 삼았습니다.{" "}
+            <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>
+              {burialPlace.name}
+            </Link>
+            에 잠들어 있습니다.
+          </p>
+        </section>
       )}
 
       {/* Facts */}
@@ -260,6 +281,31 @@ export default async function PersonPage({
           )}
         </aside>
       </div>
+
+      {/* 묻는 자리 — 평가하지 않고 묻는다(학생 응답으로 이어지는 동선) */}
+      <section
+        className="mt-12 rounded-3xl p-7 text-center sm:p-9"
+        style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8ec" }}
+      >
+        <div className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: "#e8a765" }}>
+          잠시, 묻는 자리
+        </div>
+        <p className="mx-auto mt-3 max-w-xl font-display text-[20px] font-extrabold leading-snug sm:text-[24px]">
+          {person.name}의 삶에서, 당신은 무엇이 아름답다고 느꼈나요?
+        </p>
+        <p className="mx-auto mt-3 max-w-xl text-[13.5px] leading-relaxed" style={{ color: "rgba(255,248,236,.75)" }}>
+          정답은 없습니다. 다만 이 질문을 가지고 가세요 — 나라면 무엇에 내 삶의 값을
+          치르고 싶은가. 복음이라는 바통은 이제 당신의 손에 있습니다.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link href="/story" className="rounded-full px-5 py-2.5 text-[14px] font-bold" style={{ background: "rgba(255,248,236,.14)", color: "#fff8ec" }}>
+            ← 두 움직임 다시 보기
+          </Link>
+          <Link href="/people" className="rounded-full px-5 py-2.5 text-[14px] font-bold" style={{ background: "linear-gradient(135deg,#9b3d2d,#bf6b22)", color: "#fff8ec" }}>
+            또 다른 사람을 만나기 →
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
