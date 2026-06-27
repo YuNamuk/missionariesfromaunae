@@ -584,8 +584,6 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     (!filters.era.length || erasOf(p.active).some((e) => filters.era.includes(e))) &&
     (!filters.role.length || roleTagsOf(p.role).some((r) => filters.role.includes(r))) &&
     (!filters.country.length || filters.country.includes(p.country));
-  // 랜딩(홈 첫 진입·미선택·미검색·미필터): 거점(항구·묘역)이 주인공, 인물은 흐리게.
-  const landing = lens === "people" && !selected && q === "" && facetCount === 0;
 
   const visiblePeople = useMemo(
     () => data.people.filter((p) => yearOK(p) && matchPerson(p) && facetMatch(p)),
@@ -1116,19 +1114,18 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 if (isCem ? !showCemeteries : !showStations) return null;
               }
               const sel = (selected?.kind === "place" && selected.id === p.id) || (!!selEvent && selEvent.placeId === p.id);
-              const dim = (!!selPerson && selPerson.place !== p.id) || (!!selEvent && selEvent.placeId !== p.id);
-              // 장소는 인물보다 항상 아래에 깔리도록 음수 오프셋(선택된 장소만 살짝 위)
+              // 거점·묘역 마커는 토글로만 표시/숨김 — 인물 선택과 무관하게 항상 또렷(흐려지지 않음).
               return (
-                <Marker key={p.id} position={[p.lat, p.lng]} pane="placesPane" icon={placeIcon(p, sel, landing ? false : dim)} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
+                <Marker key={p.id} position={[p.lat, p.lng]} pane="placesPane" icon={placeIcon(p, sel, false)} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
               );
             })}
 
             {/* 선교 유적지 레이어 — 메뉴/토글로 켤 때만(또는 특정 유적 선택 시) 표시 */}
             {(lens === "people" || lens === "era") && (showHeritage || selected?.kind === "heritage") && HERITAGE.map((h) => {
               const sel = selected?.kind === "heritage" && selected.id === h.id;
-              const dimActive = !!selPerson || !!selEvent || (selected?.kind === "heritage" && !sel) || selected?.kind === "place";
+              // 유적지도 토글로만 표시 — 선택된 유적만 강조하고 나머지는 흐리지 않고 또렷하게.
               return (
-                <Marker key={h.id} position={[h.lat, h.lng]} pane="heritagePane" icon={heritageIcon(h, sel, !sel && dimActive)} zIndexOffset={sel ? 800 : 0} eventHandlers={{ click: () => setSelected({ kind: "heritage", id: h.id }) }} />
+                <Marker key={h.id} position={[h.lat, h.lng]} pane="heritagePane" icon={heritageIcon(h, sel, false)} zIndexOffset={sel ? 800 : 0} eventHandlers={{ click: () => setSelected({ kind: "heritage", id: h.id }) }} />
               );
             })}
 
@@ -1139,8 +1136,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               const first = relatedIds.has(p.id) || eventHi.has(p.id);
               const second = secondDeg.has(p.id);
               const dimActive = !!selPerson || !!selEvent;
-              // 선택 시: 본인·1차 선명 / 2차 흐리게 / 그 외 더 흐리게. 랜딩에서도 선교사는 활성(또렷).
-              const opacity = landing ? 1 : !dimActive || sel || first ? 1 : second ? 0.55 : 0.22;
+              // 투명도는 '특정 선교사(또는 사건) 클릭 시 관계망에서 제외된 인물'에만 적용.
+              // 그 외(미선택·랜딩)에는 토글로 보이는 모든 인물을 또렷하게(활성) 표시.
+              const opacity = !dimActive ? 1 : sel || first ? 1 : 0.22;
               return (
                 <Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
               );
