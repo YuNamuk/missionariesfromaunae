@@ -232,6 +232,8 @@ export const BURIAL: Record<string, string> = {
   rosetta: "yanghwajin", // 홀 일가 (Wikidata P119 확인)
   lillias: "yanghwajin", // Wikidata P119 확인
   sherwoodhall: "yanghwajin", // Wikidata P119 확인
+  avison: "yanghwajin", // 양화진 공식 명단(별세 후 이장)
+  reynolds: "yanghwajin", // 양화진 공식 명단
   mscranton: "yanghwajin",
   bunker: "yanghwajin", // 1932, 유해 안장
   annie: "yanghwajin", // 벙커 부부

@@ -81,6 +81,32 @@ export const BURIED_EXTRA: Record<string, BuriedPerson[]> = {
     { nameKo: "클락 자녀", nameEn: "Clark infant", role: "윌리엄 클락 선교사의 두 살배기 아들", uncertain: true, note: "단일 출처(당당뉴스)" },
     { nameKo: "해진(고아)", nameEn: "\"Haejin\"", role: "존 폴타 목사가 돌본 고아", uncertain: true, note: "단일 출처, 안장 여부 불명확" },
   ],
+
+  // ── 양화진 외국인선교사묘원(서울 마포) ──
+  // roster 개별 수록(헤론·언더우드·원한경·헐버트·홀가·M.스크랜튼·벙커·애니엘러스·
+  //  에비슨·레이놀즈) 제외한 주요 안장 인물. 출처: 양화진 공식·위키·기독교역사.
+  yanghwajin: [
+    { nameKo: "베델", nameEn: "Ernest T. Bethell", life: "1872–1909", role: "대한매일신보 창간, 항일 언론인" },
+    { nameKo: "무어(모삼열)", nameEn: "Samuel F. Moore", life: "1860–1906", role: "백정 신분해방 운동·곤당골(승동)교회" },
+    { nameKo: "조세핀 캠벨", nameEn: "Josephine E. P. Campbell", life: "1853–1920", role: "남감리회 여선교사·배화학당 설립" },
+    { nameKo: "더글러스 에비슨", nameEn: "Douglas B. Avison", life: "1893–1952", role: "에비슨의 아들·세브란스 소아과 교수·병원장" },
+    { nameKo: "앨버트 테일러", nameEn: "Albert W. Taylor", life: "1875–1948", role: "AP 통신원·3·1운동/제암리 보도(딜쿠샤)" },
+    { nameKo: "앨리스 아펜젤러", nameEn: "Alice R. Appenzeller", life: "1885–1950", role: "아펜젤러의 딸·이화여전 초대 교장" },
+    { nameKo: "헨리 닷지 아펜젤러", nameEn: "Henry D. Appenzeller", life: "1889–1953", role: "아펜젤러의 아들·배재학당 교장" },
+    { nameKo: "프란츠 에케르트", nameEn: "Franz Eckert", life: "1852–1916", role: "대한제국 애국가 작곡·서양식 군악대 창설" },
+    { nameKo: "샤를 르장드르", nameEn: "Charles W. Legendre", life: "1830–1899", role: "대한제국 궁내부·내장원 고문" },
+    { nameKo: "에밀 마르텔", nameEn: "Émile Martel", life: "1874–1949", role: "관립법어학교 설립·프랑스어 교육", uncertain: true, note: "생몰년 자료 간 차이" },
+    { nameKo: "빈튼", nameEn: "Cadwallader C. Vinton", life: "1856–1936", role: "북장로회 의료선교사·제중원 의사", uncertain: true, note: "부인·두 아들 안장 확실, 본인은 추가 확인 필요" },
+    { nameKo: "곽안련(클라크)", nameEn: "Charles A. Clark", life: "1878–1961", role: "북장로회 선교사·평양신학교 교수·한국교회사 저술", uncertain: true, note: "안장 경위 추가 확인 권장" },
+    { nameKo: "조마가(트롤로프)", nameEn: "Mark N. Trollope", life: "1862–1930", role: "성공회 제3대 조선교구장 주교", uncertain: true, note: "성 세례자요한성당 안장설이 유력, 안장지 표기 충돌" },
+  ],
+
+  // ── 국립서울현충원(외국인 안장자) ──
+  // roster 수록(스코필드) 제외. 6·25 참전 화교 등.
+  hyeonchung: [
+    { nameKo: "위서방", nameEn: "Wei Xufang", life: "1923–1989", role: "6·25 참전 화교·국군 1사단 수색대" },
+    { nameKo: "강혜림", nameEn: "Jiang Huilin", life: "1925–1951", role: "6·25 참전 화교·관악산 전투 전사", note: "1964년 국립묘지 안장, 2012년 외국인묘역 이전" },
+  ],
 };
 
 /** cemeteryPlaceId → 안장자 명단의 출처 URL. */
@@ -103,6 +129,16 @@ export const BURIED_SOURCE: Record<string, string[]> = {
     "https://k-pilgrimageroad.org/전주지부-순례-코스/", // K-순례길 전주지부
     "https://brunch.co.kr/@37142dd4d64f415/135", // 마티 잉골드(미안장 근거)
   ],
+  yanghwajin: [
+    "https://yanghwajin.net/", // 양화진 외국인선교사묘원 공식(1차)
+    "https://ko.wikipedia.org/wiki/양화진외국인선교사묘원",
+    "https://encykorea.aks.ac.kr/Article/E0075892",
+    "https://www.kich.org/news/articleView.html?idxno=10300",
+  ],
+  hyeonchung: [
+    "https://www.snmb.mil.kr/snmb/228/subview.do", // 국립서울현충원
+    "https://ko.wikipedia.org/wiki/국립서울현충원",
+  ],
 };
 
 /** cemeteryPlaceId → 총 안장 규모 설명(예: "선교사·가족 등 약 26명 안장"). */
@@ -113,4 +149,8 @@ export const BURIED_TOTAL: Record<string, string> = {
     "북장로회 등 선교사·가족 16명 안장(현존 묘석 13기; 일부 합장, 콜러는 2000년 양화진 이장). 안의와(J.E. Adams)·우드브리지 존슨 본인은 미안장(부인 넬리 딕 아담스만 안장).",
   jeonju_seonkyosa:
     "남장로회 선교사·가족 약 17명 안장(전체 명단 공개본 부재). 전킨(전위렴)·잉골드 본인은 미안장이며 자녀만 안장. 미상 유아묘 다수.",
+  yanghwajin:
+    "15개국 약 417명이 안장된 한국 개신교 선교 역사의 대표 묘역(1890년 헤론 안장으로 시작). 아래는 본 자료실 수록 인물 외 주요 안장자 일부입니다. 베어드·게일은 양화진엔 기념비/가묘만 있고 본인은 평양/영국 안장.",
+  hyeonchung:
+    "국군·국가유공자 중심의 국립묘지. 외국인 안장자는 스코필드(외국인 첫 독립유공자) 외에 6·25 참전 화교 등이 외국인묘역에 안장.",
 };
