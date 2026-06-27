@@ -101,6 +101,17 @@ export const BURIED_EXTRA: Record<string, BuriedPerson[]> = {
     { nameKo: "빈튼", nameEn: "Cadwallader C. Vinton", life: "1856–1936", role: "북장로회 의료선교사·제중원 의사", uncertain: true, note: "부인·두 아들 안장 확실, 본인은 추가 확인 필요" },
     { nameKo: "곽안련(클라크)", nameEn: "Charles A. Clark", life: "1878–1961", role: "북장로회 선교사·평양신학교 교수·한국교회사 저술", uncertain: true, note: "안장 경위 추가 확인 권장" },
     { nameKo: "조마가(트롤로프)", nameEn: "Mark N. Trollope", life: "1862–1930", role: "성공회 제3대 조선교구장 주교", uncertain: true, note: "성 세례자요한성당 안장설이 유력, 안장지 표기 충돌", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/1890_08_15_cabinet_print_by_MILLER%27s_of_Yarmouth_(eBay_purchase_2018_01)_-_Revd_M._N._TROLLOPE_%27of_Beckenham%27.jpg?width=240" },
+    { nameKo: "루비 켄드릭", nameEn: "Ruby R. Kendrick", life: "1883–1908", role: "남감리회 여선교사·송도(개성) 파송. 묘비명 \"내게 천 개의 생명이 있다면 모두 조선에 바치겠다\"", wiki: "https://ko.wikipedia.org/wiki/루비_캔드릭" },
+    { nameKo: "조세핀 페인(배의례)", nameEn: "Josephine O. Paine", life: "1869–1909", role: "미감리회 여선교사·이화학당 제3대 당장. 콜레라로 별세" },
+    { nameKo: "찰스 모리스", nameEn: "Charles D. Morris", life: "1869–1927", role: "미감리회 선교사·영변·평양·원주 교회·진료소 개척", note: "한국어 위키 '찰스 윌리엄 모리스'는 동명이인(기호학자)" },
+    { nameKo: "채부인(안나 베어 채핀)", nameEn: "Anna Bair Chaffin", life: "1883–1977", role: "미감리회 여선교사·협성여자신학교 초대 교장" },
+    { nameKo: "채피득(빅터 채핀)", nameEn: "Victor D. Chaffin", life: "1881–1916", role: "미감리회 선교사·경기(고양·김포) 사역. 심장병으로 별세" },
+    { nameKo: "소다 가이치", nameEn: "Soda Kaichi", life: "1867–1962", role: "양화진 유일의 일본인 안장자·조선 고아 1천여 명 돌본 '고아의 아버지'·외국인 최초 문화훈장", wiki: "https://ko.wikipedia.org/wiki/소다_가이치" },
+    { nameKo: "최봉인", nameEn: "Choi Bong-in", role: "양화진 유일의 한국인 안장자·초기 묘원 관리인·서교동교회 장로", uncertain: true, note: "안장은 확인되나 생몰년 미검증" },
+    { nameKo: "엘리자베스 캠벨 피터스", nameEn: "Elizabeth Campbell Pieters", life: "1872–1906", role: "구약 번역자 알렉산더 피터스(피득)의 첫 부인. 결핵으로 별세", note: "피터스 본인은 미국 안장, 두 부인만 양화진 안장" },
+    { nameKo: "에바 필드 피터스", nameEn: "Eva Field Pieters", life: "1868–1932", role: "세브란스 여의사 출신·알렉산더 피터스의 둘째 부인" },
+    { nameKo: "헨리 졸리", nameEn: "Henry B. Joly", life: "1857–1898", role: "주한 영국 부영사·『홍루몽』 영역자. 제물포에서 별세", note: "한국어 위키 없음(영문·기록 교차 확인)" },
+    { nameKo: "도익서(찰스 D. 스톡스)", nameEn: "Charles D. Stokes", life: "1915–1997", role: "도마련(M.B. Stokes)의 아들로 조선 출생·목원대 설립자·예일대 한국감리교사 박사", uncertain: true, note: "유언에 따른 양화진 안장(단일 1차 출처 다소 약함)" },
   ],
 
   // ── 국립서울현충원(외국인 안장자) ──
@@ -135,7 +146,8 @@ export const BURIED_SOURCE: Record<string, string[]> = {
     "https://yanghwajin.net/", // 양화진 외국인선교사묘원 공식(1차)
     "https://ko.wikipedia.org/wiki/양화진외국인선교사묘원",
     "https://encykorea.aks.ac.kr/Article/E0075892",
-    "https://www.kich.org/news/articleView.html?idxno=10300",
+    "https://www.kich.org/news/articleView.html?idxno=10300", // 한국기독교역사연구소(켄드릭·페인·채핀 등 안장자 연재)
+    "https://www.christiantoday.co.kr/news/307429", // 피터스 두 부인 안장
   ],
   hyeonchung: [
     "https://www.snmb.mil.kr/snmb/228/subview.do", // 국립서울현충원
