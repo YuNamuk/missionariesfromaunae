@@ -384,6 +384,14 @@ const HERITAGE_STYLE: Record<string, { color: string; glyph: string }> = {
   "마을·구역": { color: "#5f7a2f", glyph: "❖" },
 };
 function heritageStyle(t: string) { return HERITAGE_STYLE[t] ?? { color: "#6b5e4b", glyph: "◆" }; }
+/** 생몰("1872–1909")에서 향년(별세 나이). 유아·미상은 null. */
+function ageFromLife(life?: string): number | null {
+  if (!life) return null;
+  const m = life.match(/(\d{4})\D+(\d{4})/);
+  if (!m) return null;
+  const a = Number(m[2]) - Number(m[1]);
+  return a >= 1 && a < 115 ? a : null;
+}
 function heritageIcon(h: HeritageSite, sel: boolean, dim: boolean) {
   const { color, glyph } = heritageStyle(h.type);
   const size = sel ? 30 : 22;
@@ -1165,7 +1173,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                             : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 15 }}>{p.glyph}</span>}
                           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
                             <span style={{ fontSize: 13.5, fontWeight: 800, color: "#3e2c1d" }}>{p.name}</span>
-                            <span style={{ fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.org, p.life].filter(Boolean).join(" · ")}</span>
+                            <span style={{ fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.org, p.life ? `${p.life}${ageFromLife(p.life) ? ` (향년 ${ageFromLife(p.life)})` : ""}` : ""].filter(Boolean).join(" · ")}</span>
                           </span>
                         </button>
                       ))}
@@ -1178,7 +1186,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                             : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: "rgba(120,100,80,.18)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b5e4b", fontSize: 13, fontWeight: 800 }}>✝</span>}
                           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
                             <span style={{ fontSize: 13, fontWeight: 800, color: "#3e2c1d" }}>{b.nameKo || b.nameEn}{b.uncertain && <span style={{ color: C.faint, fontWeight: 600 }}> ?</span>}</span>
-                            <span style={{ fontSize: 10.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[b.nameKo && b.nameEn, b.life, b.role].filter(Boolean).join(" · ")}</span>
+                            <span style={{ fontSize: 10.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[b.nameKo && b.nameEn, b.life ? `${b.life}${ageFromLife(b.life) ? ` (향년 ${ageFromLife(b.life)})` : ""}` : "", b.role].filter(Boolean).join(" · ")}</span>
                           </span>
                         </button>
                       ))}
@@ -1205,7 +1213,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 <div style={{ minWidth: 0 }}>
                   <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}년 입국·활동</span>
                   <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 25, margin: "10px 0 2px", letterSpacing: "-.03em" }}>{selPerson.name}</h2>
-                  <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,235,.78)" }}>{selPerson.en} · {selPerson.life}</p>
+                  <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,235,.78)" }}>{selPerson.en} · {selPerson.life}{ageFromLife(selPerson.life) ? ` · 향년 ${ageFromLife(selPerson.life)}세` : ""}</p>
                 </div>
               </div>
             </div>
@@ -1394,7 +1402,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   <span style={pill("rgba(255,255,255,.16)")}>✝ 안장 선교사{selBuried.uncertain ? " · 확인 필요" : ""}</span>
                   <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "10px 0 2px", letterSpacing: "-.03em" }}>{selBuried.nameKo || selBuried.nameEn}</h2>
                   {selBuried.nameKo && selBuried.nameEn && <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.nameEn}</p>}
-                  {selBuried.life && <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.life}</p>}
+                  {selBuried.life && <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.life}{ageFromLife(selBuried.life) ? ` · 향년 ${ageFromLife(selBuried.life)}세` : ""}</p>}
                 </div>
               </div>
             </div>
