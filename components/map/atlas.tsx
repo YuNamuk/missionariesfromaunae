@@ -12,6 +12,7 @@ import type { AtlasData, MapPerson, MapPlace } from "./types";
 import { isFeatured, regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleTagsOf, ROLE_LIST, peakYear } from "@/lib/data/meta";
 import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
 import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
+import { PERSON_COORD } from "@/lib/data/person-coord";
 
 /* ── warm archival palette (scoped to this immersive view) ── */
 const C = {
@@ -40,9 +41,10 @@ function orgTint(org: string) {
 }
 
 function personLatLng(base: [number, number], i: number, n: number): [number, number] {
-  if (n <= 1) return [base[0] + 0.05, base[1] + 0.06];
+  if (n <= 1) return [base[0] + 0.02, base[1] + 0.025];
+  // 거점 주변에 너무 넓게 퍼지지 않도록 반경을 좁혀 정돈(인원 많으면 약간만 확장).
   const a = (i / n) * Math.PI * 2 - Math.PI / 2;
-  const r = 0.17;
+  const r = 0.04 + Math.min(n, 8) * 0.004;
   return [base[0] + r * Math.sin(a), base[1] + r * Math.cos(a)];
 }
 
@@ -682,8 +684,15 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       groups.get(p.place)!.push(p);
     }
     const pos = new Map<string, [number, number]>();
-    for (const [, arr] of groups)
-      arr.forEach((p, i) => pos.set(p.id, personLatLng([p.lat, p.lng], i, arr.length)));
+    for (const [, arr] of groups) {
+      // 고증 좌표(실제 사역지)가 있는 인물은 그대로, 나머지만 거점 주변에 분산.
+      const spread = arr.filter((p) => !PERSON_COORD[p.id]);
+      arr.forEach((p) => {
+        const fixed = PERSON_COORD[p.id];
+        if (fixed) { pos.set(p.id, fixed); return; }
+        pos.set(p.id, personLatLng([p.lat, p.lng], spread.indexOf(p), spread.length));
+      });
+    }
     return pos;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapPeople]);
