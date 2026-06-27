@@ -7,7 +7,7 @@ import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from "reac
 import L from "leaflet";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, X, ArrowRight, Settings, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { Search, X, ArrowRight, Settings, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Share2, Check } from "lucide-react";
 import type { AtlasData, MapPerson, MapPlace } from "./types";
 import { isFeatured, regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleTagsOf, ROLE_LIST, peakYear } from "@/lib/data/meta";
 import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
@@ -460,6 +460,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showSettings, setShowSettings] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
+  const [shared, setShared] = useState(false);
   const [fit, setFit] = useState<string>("tight");
   useEffect(() => {
     const saved = typeof window !== "undefined" ? window.localStorage.getItem("atlas-fit") : null;
@@ -516,19 +517,41 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   // 헤더 메뉴 = 내비게이션(인물·묘역·연도)만 URL로 전달. 필터는 아래 패널의
   // 클라이언트 상태가 전담(즉시 반응) → 필터를 URL과 동기화하지 않아 빠르다.
   const sp = useSearchParams();
-  const navSig = `${sp.get("person") ?? ""}|${sp.get("focus") ?? ""}|${sp.get("heritage") ?? ""}|${sp.get("y") ?? ""}`;
+  const navSig = `${sp.get("person") ?? ""}|${sp.get("focus") ?? ""}|${sp.get("heritage") ?? ""}|${sp.get("buried") ?? ""}|${sp.get("y") ?? ""}`;
   useEffect(() => {
     const person = sp.get("person");
     const focus = sp.get("focus");
     const heritage = sp.get("heritage");
+    const buried = sp.get("buried");
     const y = sp.get("y");
     if (person) setSelected({ kind: "person", id: person });
+    else if (buried) setSelected({ kind: "buried", id: buried });
     else if (heritage && heritage !== "all") setSelected({ kind: "heritage", id: heritage });
     else if (focus) setSelected({ kind: "place", id: focus });
     if (heritage) setShowHeritage(true); // 유적지 메뉴를 누르면 레이어 표시
     if (y) { setYear(Number(y)); setSnapshot(true); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navSig]);
+
+  // C5 공유/딥링크: 현재 선택(인물·묘역·유적·안장자 + 스냅샷 연도)을 URL로.
+  const shareUrl = () => {
+    const p = new URLSearchParams();
+    if (selected?.kind === "person") p.set("person", selected.id);
+    else if (selected?.kind === "buried") p.set("buried", selected.id);
+    else if (selected?.kind === "heritage") p.set("heritage", selected.id);
+    else if (selected?.kind === "place") p.set("focus", selected.id);
+    if (snapshot) p.set("y", String(year));
+    const qs = p.toString();
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return `${origin}/${qs ? `?${qs}` : ""}`;
+  };
+  const doShare = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl());
+      setShared(true);
+      window.setTimeout(() => setShared(false), 1600);
+    } catch {}
+  };
   const setYearSnapshot = (y: number) => { setYear(y); setSnapshot(true); };
   // 조선 사역 구간(다중 구간 포함) 안에 들어와야 그 시점에 표시
   const yearOK = (p: MapPerson) => !snapshot || p.active.some(([s, e]) => s <= year && year <= e);
@@ -1107,11 +1130,16 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       {/* ── RIGHT: detail + relationships ── */}
       <article style={{ gridColumn: 3, minWidth: 0, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", display: rightOpen ? "flex" : "none", flexDirection: "column", minHeight: 0, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
         {(selPerson || selPlace || selEvent || selHeritage || selBuried) && (
-          <button onClick={goBack} title="이전 선택으로" style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 44px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
+          <button onClick={goBack} title="이전 선택으로" style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 120px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
             <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> 뒤로
           </button>
         )}
-        <button onClick={() => setRightOpen(false)} title="상세 접기" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: "1px solid rgba(255,255,255,.25)", background: "rgba(40,26,14,.45)", color: "#fff8ec", cursor: "pointer", zIndex: 10 }}>
+        {(selPerson || selPlace || selHeritage || selBuried) && (
+          <button onClick={doShare} title={shared ? "링크 복사됨" : "이 화면 링크 복사"} style={{ position: "absolute", top: 12, right: 48, height: 30, display: "flex", alignItems: "center", gap: 5, padding: "0 9px", borderRadius: 9, border: "1px solid rgba(255,255,255,.25)", background: shared ? "rgba(58,120,74,.92)" : "rgba(40,26,14,.45)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, zIndex: 12, transition: "background .2s" }}>
+            {shared ? <Check size={15} /> : <Share2 size={15} />}{shared ? "복사됨" : "공유"}
+          </button>
+        )}
+        <button onClick={() => setRightOpen(false)} title="상세 접기" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: "1px solid rgba(255,255,255,.25)", background: "rgba(40,26,14,.45)", color: "#fff8ec", cursor: "pointer", zIndex: 12 }}>
           <PanelRightClose size={16} />
         </button>
 

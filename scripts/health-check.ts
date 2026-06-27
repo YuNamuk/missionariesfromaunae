@@ -62,6 +62,17 @@ for (const h of HERITAGE) {
   if (!h.source?.length) add("warn", "heritage", `출처 없음: ${h.id}`);
 }
 
+// 5b) 묘역 명단 정합성: 명단 보유 묘역은 출처·총원 설명을 갖추고, 각 안장자는 이름·행적 필수.
+for (const [cemId, arr] of Object.entries(BURIED_EXTRA)) {
+  if (!BURIED_SOURCE[cemId]?.length) add("warn", "cemetery", `명단 출처 없음: ${cemId}`);
+  if (!BURIED_TOTAL[cemId]) add("warn", "cemetery", `총원 설명 없음: ${cemId}`);
+  arr.forEach((b, i) => {
+    // 한국어명이 없어도 영문명만 있으면 표시 가능(묘비 OCR 손상·미상 인물). 둘 다 없을 때만 오류.
+    if (!b.nameKo && !b.nameEn) add("error", "cemetery", `안장자 이름(한/영) 모두 없음: ${cemId}[${i}]`);
+    else if (!b.role) add("warn", "cemetery", `안장자 행적 설명 없음: ${cemId}[${i}] (${b.nameKo || b.nameEn})`);
+  });
+}
+
 // 6) (옵션) 외부 링크/원격 사진 생존
 async function checkLinks() {
   const urls = new Set<string>();
