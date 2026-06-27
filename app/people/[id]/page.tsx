@@ -42,8 +42,25 @@ export default async function PersonPage({
   const photoSource = PHOTOS[person.id]?.source ?? "";
   const profile = profileFor(person.id);
 
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://missionaries-khaki.vercel.app";
+  const [birth, death] = (person.life.match(/(\d{4})\D+(\d{4})/)?.slice(1) ?? []) as (string | undefined)[];
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: person.name,
+    alternateName: person.en,
+    description: person.summary,
+    nationality: person.country,
+    affiliation: person.org,
+    ...(birth ? { birthDate: birth } : {}),
+    ...(death ? { deathDate: death } : {}),
+    ...(photo ? { image: new URL(photo, SITE_URL).toString() } : {}),
+    url: `${SITE_URL}/people/${person.id}`,
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-10 sm:px-7">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Link
         href="/people"
         className="inline-flex items-center gap-1.5 text-[13px] font-bold text-ink-500 hover:text-sky-600"
