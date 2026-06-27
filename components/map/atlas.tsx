@@ -427,6 +427,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [listAll, setListAll] = useState(false); // 리스트바: 대표만/전체
   const [pickerOpen, setPickerOpen] = useState(false); // 인물 드롭다운: 마우스 영역 안이면 유지
   const [showGeo, setShowGeo] = useState(false); // 시대별 정세(역사 국경) 오버레이
+  const [showHeritage, setShowHeritage] = useState(false); // 선교 유적지 레이어 (메뉴/토글로 켤 때만)
   const toggleFacet = (axis: keyof typeof filters, key: string) =>
     setFilters((f) => ({ ...f, [axis]: f[axis].includes(key) ? f[axis].filter((k) => k !== key) : [...f[axis], key] }));
   const setFacet = (axis: keyof typeof filters, keys: string[]) => setFilters((f) => ({ ...f, [axis]: keys }));
@@ -471,8 +472,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     const heritage = sp.get("heritage");
     const y = sp.get("y");
     if (person) setSelected({ kind: "person", id: person });
-    else if (heritage) setSelected({ kind: "heritage", id: heritage });
+    else if (heritage && heritage !== "all") setSelected({ kind: "heritage", id: heritage });
     else if (focus) setSelected({ kind: "place", id: focus });
+    if (heritage) setShowHeritage(true); // 유적지 메뉴를 누르면 레이어 표시
     if (y) { setYear(Number(y)); setSnapshot(true); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navSig]);
@@ -749,6 +751,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         {/* 대표만 / 전체 인물 토글 */}
         <button onClick={() => setFeaturedOnly((v) => !v)} title="지도에 대표 선교사만 / 전체" style={{ flex: "0 0 auto", padding: "7px 11px", borderRadius: 10, border: `1px solid ${C.line}`, background: featuredOnly ? "#2f2419" : "rgba(255,255,255,.6)", color: featuredOnly ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>{featuredOnly ? "★ 대표만" : "전체"}</button>
 
+        {/* 선교 유적지 레이어 토글 */}
+        <button onClick={() => setShowHeritage((v) => !v)} title="선교 유적지(교회·학교·병원 등) 표시" style={{ flex: "0 0 auto", padding: "7px 11px", borderRadius: 10, border: `1px solid ${showHeritage ? "#7a4a9e" : C.line}`, background: showHeritage ? "#7a4a9e" : "rgba(255,255,255,.6)", color: showHeritage ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>⛪ 유적지</button>
+
         {/* 통합 필터(체크박스): 시대·교단·나라·사역·지역 + 관계망 집중 + 묘역 이동 */}
         <MenuBtn id="filter" label="필터" count={facetCount} openMenu={openMenu} setOpenMenu={setOpenMenu} wide>
           {([
@@ -955,8 +960,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               );
             })}
 
-            {/* 선교 유적지 레이어 (people·era 렌즈에서 표시) */}
-            {(lens === "people" || lens === "era") && HERITAGE.map((h) => {
+            {/* 선교 유적지 레이어 — 메뉴/토글로 켤 때만(또는 특정 유적 선택 시) 표시 */}
+            {(lens === "people" || lens === "era") && (showHeritage || selected?.kind === "heritage") && HERITAGE.map((h) => {
               const sel = selected?.kind === "heritage" && selected.id === h.id;
               const dimActive = !!selPerson || !!selEvent || (selected?.kind === "heritage" && !sel) || selected?.kind === "place";
               return (
