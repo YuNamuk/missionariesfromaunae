@@ -415,11 +415,18 @@ export default async function PersonPage({
           잠시, 묻는 자리
         </div>
         <p className="mx-auto mt-3 max-w-xl font-serif text-[21px] font-bold leading-snug sm:text-[25px]">
-          {person.name}의 삶에서, 당신은 무엇이 아름답다고 느꼈나요?
+          {person.name}의 삶에서,
+          <br />
+          당신은 무엇이 아름답다고 느꼈나요?
         </p>
-        <p className="mx-auto mt-3 max-w-xl font-serif text-[14px] leading-relaxed" style={{ color: "rgba(255,248,236,.78)" }}>
-          정답은 없습니다. 다만 이 질문을 가지고 가세요 — 나라면 무엇에 내 삶의 값을
-          치르고 싶은가. 복음이라는 바통은 이제 당신의 손에 있습니다.
+        <p className="mx-auto mt-4 max-w-xl font-serif text-[14.5px] leading-loose" style={{ color: "rgba(255,248,236,.8)" }}>
+          정답은 없습니다.
+          <br />
+          다만 이 질문을 가지고 가세요 —
+          <br />
+          나라면 무엇에 내 삶의 값을 치르고 싶은가.
+          <br />
+          복음이라는 바통은, 이제 당신의 손에 있습니다.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link href="/story" className="rounded-full px-5 py-2.5 text-[14px] font-bold" style={{ background: "rgba(255,248,236,.14)", color: "#fff8ec" }}>
