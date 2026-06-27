@@ -53,7 +53,7 @@ export default function DictionaryPage() {
               <li key={p.id} className="border-b border-ink-100">
                 <Link href={`/people/${p.id}`} className="flex items-center gap-3 py-3 transition-colors hover:bg-ink-50">
                   {photo ? (
-                    <img src={photo} alt="" className="h-10 w-10 flex-none rounded-full object-cover" style={{ background: "var(--ink-100)" }} />
+                    <img src={photo} alt={`${p.name} 초상`} loading="lazy" decoding="async" className="h-10 w-10 flex-none rounded-full object-cover" style={{ background: "var(--ink-100)" }} />
                   ) : (
                     <span className="font-display flex h-10 w-10 flex-none items-center justify-center rounded-full text-lg" style={{ background: "var(--ink-100)", color: "var(--ink-700)" }}>{p.glyph}</span>
                   )}
@@ -106,7 +106,7 @@ export default function DictionaryPage() {
                   <li key={p.id}>
                     <Link href={`/people/${p.id}`} className="flex items-center gap-3 py-3 transition-colors hover:bg-ink-50">
                       {photo ? (
-                        <img src={photo} alt="" className="h-10 w-10 flex-none rounded-full object-cover" style={{ background: "var(--ink-100)" }} />
+                        <img src={photo} alt={`${p.name} 초상`} loading="lazy" decoding="async" className="h-10 w-10 flex-none rounded-full object-cover" style={{ background: "var(--ink-100)" }} />
                       ) : (
                         <span className="font-display flex h-10 w-10 flex-none items-center justify-center rounded-full text-lg" style={{ background: "var(--ink-100)", color: "var(--ink-700)" }}>{p.glyph}</span>
                       )}
@@ -126,7 +126,7 @@ export default function DictionaryPage() {
               {extra.map((e, i) => (
                 <li key={(e.nameEn || e.nameKo) + i} className="flex items-center gap-3 py-3">
                   {e.photo ? (
-                    <img src={e.photo} alt="" className="h-10 w-10 flex-none rounded-full object-cover" style={{ background: "var(--ink-100)" }} />
+                    <img src={e.photo} alt={`${e.nameKo || e.nameEn} 초상`} loading="lazy" decoding="async" className="h-10 w-10 flex-none rounded-full object-cover" style={{ background: "var(--ink-100)" }} />
                   ) : (
                     <span className="font-display flex h-10 w-10 flex-none items-center justify-center rounded-full text-[15px]" style={{ background: "var(--ink-100)", color: "var(--ink-500)" }}>✝</span>
                   )}

@@ -55,10 +55,11 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,600&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,400&family=Gowun+Dodum&display=swap" />
       </head>
       <body>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[2000] focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:font-bold focus:text-white">본문으로 건너뛰기</a>
         <Suspense fallback={<div style={{ height: "4rem", background: "#2e2218" }} />}>
           <SiteHeader />
         </Suspense>
-        <main>{children}</main>
+        <main id="main-content">{children}</main>
       </body>
     </html>
   );
