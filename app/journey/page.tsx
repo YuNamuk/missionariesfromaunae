@@ -136,6 +136,57 @@ export default function JourneyPage() {
         </div>
       </section>
 
+      {/* 학생들이 쓴 책 — 실제 산출물(『하나님이 우리를 이처럼 사랑하사』) */}
+      <section style={{ padding: "clamp(56px,9vh,96px) 24px" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
+            <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: "#1f6f8b" }}>The Book They Wrote</span>
+            <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 10px", color: "#2e2218" }}>학생들이 쓴 책</h2>
+            <p className="font-serif" style={{ fontSize: "clamp(16px,2.3vw,19px)", lineHeight: 1.85, color: "#5f4d39", maxWidth: 600, margin: "0 auto" }}>
+              이 수업의 끝에서, 학생들은 직접 한 권의 책을 써 엮었습니다 —
+              <br />
+              <b style={{ color: "#9b3d2d" }}>『하나님이 우리를 이처럼 사랑하사』</b>. 이 사이트의 두 움직임은 바로 이 책에서 왔습니다.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gap: 18, gridTemplateColumns: "repeat(auto-fit, minmax(260px,1fr))" }}>
+            {[
+              {
+                part: "Part 1",
+                title: "복음이 선교사를 통해 나에게",
+                ch: [
+                  "1. 흔들리는 조선",
+                  "2. 선교사보다 먼저 들어온 복음",
+                  "3. 선교사와 함께 걷는 복음의 길",
+                  "4. 하나님이 조선을 이처럼 사랑하사 — 서울 선교유적지 탐방",
+                  "5. 책으로 만나는 그 날들의 이야기",
+                ],
+              },
+              {
+                part: "Part 2",
+                title: "복음이 나를 통해 세계로",
+                ch: ["6. Who Am I?", "7. I Am the Next Runner"],
+              },
+            ].map((p) => (
+              <div key={p.part} style={{ padding: "clamp(22px,3vw,28px)", borderRadius: 20, background: "rgba(255,255,255,.62)", border: "1px solid rgba(120,90,50,.16)" }}>
+                <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.16em", textTransform: "uppercase", color: "#bf6b22" }}>{p.part}</div>
+                <h3 className="font-serif" style={{ fontSize: 20, fontWeight: 700, margin: "6px 0 14px", color: "#2e2218" }}>{p.title}</h3>
+                <ul className="font-serif" style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 9 }}>
+                  {p.ch.map((c) => (
+                    <li key={c} style={{ fontSize: 14.5, lineHeight: 1.6, color: "#5f4d39", paddingLeft: 12, borderLeft: "2px solid rgba(191,107,34,.4)" }}>{c}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <blockquote className="font-serif" style={{ margin: "32px auto 0", maxWidth: 600, textAlign: "center", fontSize: "clamp(16px,2.3vw,19px)", lineHeight: 1.9, color: "#5f3a1f", fontStyle: "italic" }}>
+            “그들의 발자취를 따라 · 복음의 보금자리 · 그들의 일생 동안 풍긴 향을 맡는 여정 · Korea is his home · 와서 우리를 도우라”
+            <span style={{ display: "block", marginTop: 10, fontSize: 13, fontStyle: "normal", fontWeight: 700, color: "#8a7860" }}>— 학생들이 붙인 탐방기의 소제목들 (드리미학교)</span>
+          </blockquote>
+        </div>
+      </section>
+
       {/* 학생들의 목소리 */}
       <section style={{ padding: "clamp(56px,9vh,96px) 24px clamp(72px,12vh,120px)", background: "linear-gradient(180deg,#efe4cd,#f6efe1)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
