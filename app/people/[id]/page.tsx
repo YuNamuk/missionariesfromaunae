@@ -136,6 +136,21 @@ export default async function PersonPage({
             </div>
           </section>
 
+          {(profile.quote || profile.beauty) && (
+            <section>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em]" style={{ color: "#9b3d2d" }}>이 삶에서 아름다운 것 · 치른 값</div>
+              {profile.quote && (
+                <figure className="mt-4">
+                  <blockquote className="font-serif text-[20px] leading-[1.9] text-ink-800 sm:text-[22px]" style={{ borderLeft: "4px solid #bf6b22", paddingLeft: 18 }}>
+                    &ldquo;{profile.quote.text}&rdquo;
+                  </blockquote>
+                  <figcaption className="mt-2.5 pl-[18px] text-[12.5px] text-ink-400">— {profile.quote.source}</figcaption>
+                </figure>
+              )}
+              {profile.beauty && <p className="font-serif mt-4 text-[16.5px] leading-[2.0] text-ink-700">{profile.beauty}</p>}
+            </section>
+          )}
+
           {profile.ministry.length > 0 && (
             <section>
               <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">걸어온 사역</div>

@@ -9,6 +9,10 @@ export interface PersonProfile {
   journey: string;
   /** 한국인과 동료 선교사에게 준 영향 */
   influence: string;
+  /** 이 삶에서 아름다운 것 / 치른 값 — 헌신·희생의 결(검증된 내용만, 없으면 생략) */
+  beauty?: string;
+  /** 1차 자료 인용(편지·일기·묘비명 등). 반드시 출처와 함께. 확실하지 않으면 비움. */
+  quote?: { text: string; source: string };
 }
 
 export const PROFILES: Record<string, PersonProfile> = {
