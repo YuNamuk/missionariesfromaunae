@@ -10,6 +10,7 @@ import {
   resourcesFor,
 } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
+import { profileFor } from "@/lib/data/profiles";
 
 export function generateStaticParams() {
   return PEOPLE.map((p) => ({ id: p.id }));
@@ -39,6 +40,7 @@ export default async function PersonPage({
   const sources = resourcesFor(person);
   const photo = PHOTOS[person.id]?.photo ?? null;
   const photoSource = PHOTOS[person.id]?.source ?? "";
+  const profile = profileFor(person.id);
 
   return (
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-10 sm:px-7">
@@ -100,6 +102,35 @@ export default async function PersonPage({
       </div>
 
       <p className="mt-6 text-[16px] leading-relaxed text-ink-700">{person.summary}</p>
+
+      {/* 상세 서술: 사역 내역 · 큰 흐름 속 여정 · 영향 */}
+      {profile && (
+        <div className="mt-8 space-y-5">
+          {profile.ministry.length > 0 && (
+            <section className="rounded-3xl border border-ink-200 bg-white p-6">
+              <h2 className="font-display text-lg font-extrabold text-ink-900">사역 내역</h2>
+              <ul className="mt-3 space-y-2">
+                {profile.ministry.map((m, i) => (
+                  <li key={i} className="flex gap-2.5 text-[14.5px] leading-relaxed text-ink-700">
+                    <span className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-sky-500" />
+                    <span>{m}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <section className="rounded-3xl border p-6" style={{ borderColor: "var(--iris-200)", background: "var(--iris-50)" }}>
+              <h2 className="font-display text-lg font-extrabold text-iris-700">한국 선교의 큰 흐름 속에서</h2>
+              <p className="mt-3 text-[14.5px] leading-relaxed text-ink-700">{profile.journey}</p>
+            </section>
+            <section className="rounded-3xl border p-6" style={{ borderColor: "var(--aqua-300)", background: "var(--aqua-50)" }}>
+              <h2 className="font-display text-lg font-extrabold text-aqua-700">한국인과 동료에게 준 영향</h2>
+              <p className="mt-3 text-[14.5px] leading-relaxed text-ink-700">{profile.influence}</p>
+            </section>
+          </div>
+        </div>
+      )}
 
       {/* Facts */}
       <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
