@@ -510,6 +510,337 @@ const QUOTES: Record<string, { text: string; source: string }> = {
 
 // 인물별 검증된 권위 참고 사료 링크(한국민족문화대백과·위키 등). 리서치로 인물 일치 확인된 것만.
 const REFS: Record<string, { title: string; url: string; publisher?: string }[]> = {
+  "allen": [
+    {
+      "title": "호러스 뉴턴 알렌 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/호러스_뉴턴_알렌",
+      "publisher": "한국어 위키백과"
+    },
+    {
+      "title": "호러스 알렌 — 디지털미추홀구문화대전",
+      "url": "https://michuhol.grandculture.net/michuhol/toc/GC04700680",
+      "publisher": "한국향토문화전자대전"
+    }
+  ],
+  "underwood": [
+    {
+      "title": "호러스 그랜트 언더우드 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/호러스_그랜트_언더우드",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "appenzeller": [
+    {
+      "title": "헨리 아펜젤러 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/헨리_아펜젤러",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "mscranton": [
+    {
+      "title": "메리 스크랜튼 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/메리_스크랜튼",
+      "publisher": "한국어 위키백과"
+    },
+    {
+      "title": "이화학당 — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0046618",
+      "publisher": "한국학중앙연구원"
+    }
+  ],
+  "sherwoodhall": [
+    {
+      "title": "셔우드 홀 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/셔우드_홀_(1893년)",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "ross": [
+    {
+      "title": "존 로스 (선교사) — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/존_로스_(선교사)",
+      "publisher": "한국어 위키백과"
+    },
+    {
+      "title": "예수성교전서(존 로스 번역) — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0037972",
+      "publisher": "한국학중앙연구원"
+    }
+  ],
+  "leesujeong": [
+    {
+      "title": "이수정(李樹廷) — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0044856",
+      "publisher": "한국학중앙연구원"
+    },
+    {
+      "title": "이수정 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/이수정_(1842년)",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "william": [
+    {
+      "title": "윌리엄 스크랜턴 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/윌리엄_스크랜턴",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "heron": [
+    {
+      "title": "존 헤론 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/존_헤론",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "seo": [
+    {
+      "title": "서상륜(徐相崙) — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0027845",
+      "publisher": "한국학중앙연구원"
+    },
+    {
+      "title": "서상륜 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/서상륜",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "rosetta": [
+    {
+      "title": "로제타 셔우드 홀 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/로제타_셔우드_홀",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "moffett": [
+    {
+      "title": "새뮤얼 오스틴 모펫 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/새뮤얼_오스틴_모펫",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "baird": [
+    {
+      "title": "윌리엄 M. 베어드 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/윌리엄_M._베어드",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "avison": [
+    {
+      "title": "올리버 R. 에이비슨 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/올리버_R._에이비슨",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "gale": [
+    {
+      "title": "제임스 게일 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/제임스_게일",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "hulbert": [
+    {
+      "title": "호머 헐버트 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/호머_헐버트",
+      "publisher": "한국어 위키백과"
+    },
+    {
+      "title": "사민필지(헐버트 저술) — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0025620",
+      "publisher": "한국학중앙연구원"
+    }
+  ],
+  "bunker": [
+    {
+      "title": "내한선교사 Bunker, Dalziel A. — 한국기독교사연구소",
+      "url": "https://www.kich.org/bbs/view.html?idxno=2855",
+      "publisher": "한국기독교사연구소"
+    }
+  ],
+  "annie": [
+    {
+      "title": "명성황후 주치의 애니 엘러스 선교사",
+      "url": "https://www.bonhd.net/news/articleView.html?idxno=12026",
+      "publisher": "본헤럴드"
+    }
+  ],
+  "lillias": [
+    {
+      "title": "릴리어스 호턴 언더우드 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/릴리어스_호턴_언더우드",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "wjhall": [
+    {
+      "title": "William James Hall — Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/William_James_Hall",
+      "publisher": "Wikipedia"
+    }
+  ],
+  "hardie": [
+    {
+      "title": "로버트 A. 하디 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/로버트_A._하디",
+      "publisher": "한국어 위키백과"
+    },
+    {
+      "title": "내한선교사 Hardie, Robert A. — 한국기독교사연구소",
+      "url": "https://www.kich.org/news/articleView.html?idxno=10366",
+      "publisher": "한국기독교사연구소"
+    }
+  ],
+  "eugenebell": [
+    {
+      "title": "배유지(Eugene Bell) — 디지털광주문화대전",
+      "url": "https://www.grandculture.net/gwangju/toc/GC60001996",
+      "publisher": "한국학중앙연구원"
+    }
+  ],
+  "junkin": [
+    {
+      "title": "‘호남 선교의 초석’ 윌리엄 전킨 선교사의 생애",
+      "url": "https://www.christiantoday.co.kr/news/341057",
+      "publisher": "크리스천투데이"
+    }
+  ],
+  "reynolds": [
+    {
+      "title": "윌리엄 데이비스 레이놀즈 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/윌리엄_데이비스_레이놀즈",
+      "publisher": "한국어 위키백과"
+    },
+    {
+      "title": "내한선교사 Reynolds, William Davis — 한국기독교사연구소",
+      "url": "https://www.kich.org/news/articleView.html?idxno=10547",
+      "publisher": "한국기독교사연구소"
+    }
+  ],
+  "gilseonju": [
+    {
+      "title": "길선주(吉善宙) — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0008542",
+      "publisher": "한국학중앙연구원"
+    },
+    {
+      "title": "길선주 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/길선주",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "leegipung": [
+    {
+      "title": "이기풍(李基豊) — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0043886",
+      "publisher": "한국학중앙연구원"
+    },
+    {
+      "title": "이기풍 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/이기풍",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "seogyeongjo": [
+    {
+      "title": "서경조 (목회자) — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/서경조_(목회자)",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "kimchangsik": [
+    {
+      "title": "김창식(金昌植) — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0010708",
+      "publisher": "한국학중앙연구원"
+    },
+    {
+      "title": "김창식 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/김창식_(1857년)",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "schofield": [
+    {
+      "title": "프랭크 스코필드 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/프랭크_스코필드",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "hhunderwood": [
+    {
+      "title": "호러스 호턴 언더우드 — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/호러스_호턴_언더우드",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "linton": [
+    {
+      "title": "윌리엄 린튼(인돈) — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/윌리엄_린튼",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "owen": [
+    {
+      "title": "오기원(클레멘트 오웬) — 광주 인문스토리플랫폼",
+      "url": "https://dh.aks.ac.kr/~gwangju/wiki/index.php/오기원",
+      "publisher": "한국학중앙연구원"
+    },
+    {
+      "title": "오웬기념각 — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0067276",
+      "publisher": "한국학중앙연구원"
+    }
+  ],
+  "shepping": [
+    {
+      "title": "서서평(엘리자베스 셰핑) — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/서서평",
+      "publisher": "한국어 위키백과"
+    }
+  ],
+  "bruen_martha": [
+    {
+      "title": "마사 스콧 브루언(부마태) — 대구역사문화대전",
+      "url": "https://www.grandculture.net/daegu/toc/GC40008142",
+      "publisher": "한국학중앙연구원"
+    }
+  ],
+  "switzer": [
+    {
+      "title": "선교사 스윗즈 주택(Martha Switzer) — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0028623",
+      "publisher": "한국학중앙연구원"
+    },
+    {
+      "title": "내한선교사 Switzer, Martha(성마리태) — 한국기독교사연구소",
+      "url": "http://www.kich.org/bbs/view.html?idxno=2806",
+      "publisher": "한국기독교사연구소"
+    }
+  ],
+  "davis": [
+    {
+      "title": "리니 데이비스 — 남장로교의 한국선교",
+      "url": "https://kmhistory.com/pioneers-2/davis/",
+      "publisher": "남장로교의 한국선교"
+    }
+  ],
+  "rankin": [
+    {
+      "title": "넬리 랭킨(나은희) 선교사",
+      "url": "https://www.kidok.com/news/articleView.html?idxno=60778",
+      "publisher": "주간기독신문"
+    }
+  ],
+  "preston": [
+    {
+      "title": "변요한(John F. Preston) — 디지털순천문화대전",
+      "url": "http://suncheon.grandculture.net/suncheon/toc/GC07600673",
+      "publisher": "한국학중앙연구원"
+    }
+  ]
 };
 
 // 인물별 검증된 영상 링크(리서치로 인물 일치·접속 확인된 것만).
