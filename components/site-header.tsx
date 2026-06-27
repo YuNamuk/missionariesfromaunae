@@ -130,6 +130,18 @@ export function SiteHeader() {
       </Link>
 
       <nav className="flex items-center gap-0.5">
+        {PAGES.map((item) => {
+          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          return (
+            <Link key={item.href} href={item.href}
+              className={clsx("rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors", active ? "bg-white/12 text-white" : "text-white/55 hover:bg-white/8 hover:text-white")}>
+              {item.label}
+            </Link>
+          );
+        })}
+
+        <span className="mx-1.5 h-5 w-px bg-white/15" />
+
         <NavDrop id="era" label="선교 연혁" open={open} setOpen={setOpen}
           items={ERAS.map((e) => ({ key: e.key, label: e.label, sub: `${Math.round((e.from + e.to) / 2)}년` }))}
           onPick={(k) => { const e = ERAS.find((x) => x.key === k); if (e) goYear(Math.round((e.from + e.to) / 2)); }} />
@@ -140,18 +152,6 @@ export function SiteHeader() {
         <DirectoryDrop id="role" label="사역 분야" groups={ROLE_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
         <DirectoryDrop id="region" label="지역" groups={REGION_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
         <DirectoryDrop id="heritage" label="선교 유적지" groups={HERITAGE_GROUPS} open={open} setOpen={setOpen} onPickPerson={goHeritage} />
-
-        <span className="mx-1.5 h-5 w-px bg-white/15" />
-
-        {PAGES.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-          return (
-            <Link key={item.href} href={item.href}
-              className={clsx("rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors", active ? "bg-white/12 text-white" : "text-white/55 hover:bg-white/8 hover:text-white")}>
-              {item.label}
-            </Link>
-          );
-        })}
       </nav>
     </header>
   );
