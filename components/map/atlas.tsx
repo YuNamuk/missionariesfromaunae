@@ -941,7 +941,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <div style={{ position: "absolute", top: "100%", right: 0, paddingTop: 8, width: 290, zIndex: 900 }}>
               <div style={{ background: "rgba(255,250,237,.99)", border: `1px solid ${C.line}`, borderRadius: 13, boxShadow: "0 14px 32px rgba(46,28,14,.24)", padding: 7 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 6px 6px" }}>
-                  <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".08em", color: "#80603b" }}>{q ? `검색 ${pickList.length}` : `선교사 ${pickList.length}명`}</span>
+                  <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".08em", color: "#80603b" }}>{q ? `검색 ${pickList.length}` : `선교사 ${pickList.length}명`}{!q && <span style={{ fontWeight: 600, opacity: 0.7 }}> · 입국 연도순</span>}</span>
                   {!q && <button onClick={() => setListAll((v) => !v)} title="대표만 / 전체" style={{ padding: "3px 9px", borderRadius: 99, border: `1px solid ${C.line}`, background: listAll ? "rgba(255,255,255,.7)" : "#2f2419", color: listAll ? "#5f4d39" : "#fff8ed", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{listAll ? "전체" : "★ 대표"}</button>}
                 </div>
                 <div style={{ maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
