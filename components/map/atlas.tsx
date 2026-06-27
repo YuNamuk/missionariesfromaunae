@@ -11,6 +11,7 @@ import { Search, X, ArrowRight, Settings, PanelLeftClose, PanelLeftOpen, PanelRi
 import type { AtlasData, MapPerson, MapPlace } from "./types";
 import { isFeatured, regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleTagsOf, ROLE_LIST, peakYear } from "@/lib/data/meta";
 import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
+import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 
 /* ── warm archival palette (scoped to this immersive view) ── */
 const C = {
@@ -1115,30 +1116,47 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               {(() => {
                 // 묘역 여부는 lens 가 아니라 '안장 데이터'로 판단 → 헤더 드롭다운으로 와도 안장자 표시
                 const buried = buriedAt(selPlace.name);
-                const isCem = buried.length > 0;
+                const extra = BURIED_EXTRA[selPlace.id] ?? [];
+                const isCem = buried.length > 0 || extra.length > 0;
                 const list = isCem ? buried : data.people.filter((p) => p.place === selPlace.id);
+                const total = BURIED_TOTAL[selPlace.id];
+                const srcs = BURIED_SOURCE[selPlace.id] ?? [];
+                if (!isCem && list.length === 0) {
+                  return <section style={{ marginTop: 14 }}><p style={{ margin: 0, fontSize: 12.5, color: C.muted }}>기록된 인물이 없습니다.</p></section>;
+                }
                 return (
                   <section style={{ marginTop: 14 }}>
-                    <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>
-                      {isCem ? `수록된 대표 선교사 ${buried.length}명` : "이곳의 인물"}
+                    <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 4px", color: "#3e2c1d" }}>
+                      {isCem ? `안장 선교사 ${buried.length + extra.length}명` : "이곳의 인물"}
                     </h3>
-                    {list.length === 0 ? (
-                      <p style={{ margin: 0, fontSize: 12.5, color: C.muted }}>기록된 인물이 없습니다.</p>
-                    ) : (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        {list.map((p) => (
-                          <button key={p.id} onClick={() => setSelected({ kind: "person", id: p.id })}
-                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "6px 8px", borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.55)", cursor: "pointer" }}>
-                            {p.photo
-                              ? <img src={p.photo} alt="" style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, objectFit: "cover" }} />
-                              : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 15 }}>{p.glyph}</span>}
-                            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
-                              <span style={{ fontSize: 13.5, fontWeight: 800, color: "#3e2c1d" }}>{p.name}</span>
-                              <span style={{ fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.org, p.life].filter(Boolean).join(" · ")}</span>
-                            </span>
-                          </button>
-                        ))}
-                      </div>
+                    {total && <p style={{ margin: "0 0 10px", fontSize: 11.5, color: C.muted }}>{total}</p>}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {/* 본 자료실 개별 수록 인물(클릭 시 상세) */}
+                      {list.map((p) => (
+                        <button key={p.id} onClick={() => setSelected({ kind: "person", id: p.id })}
+                          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "6px 8px", borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.55)", cursor: "pointer" }}>
+                          {p.photo
+                            ? <img src={p.photo} alt="" style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, objectFit: "cover" }} />
+                            : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 15 }}>{p.glyph}</span>}
+                          <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
+                            <span style={{ fontSize: 13.5, fontWeight: 800, color: "#3e2c1d" }}>{p.name}</span>
+                            <span style={{ fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.org, p.life].filter(Boolean).join(" · ")}</span>
+                          </span>
+                        </button>
+                      ))}
+                      {/* 추가 안장자 명단(개별 페이지 없는 인물) */}
+                      {extra.map((b, i) => (
+                        <div key={`x${i}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 8px", borderRadius: 12, border: `1px dashed ${C.line}`, background: "rgba(255,255,255,.35)" }}>
+                          <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: "rgba(120,100,80,.18)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b5e4b", fontSize: 13, fontWeight: 800 }}>✝</span>
+                          <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
+                            <span style={{ fontSize: 13, fontWeight: 800, color: "#3e2c1d" }}>{b.nameKo || b.nameEn}{b.uncertain && <span style={{ color: C.faint, fontWeight: 600 }}> ?</span>}</span>
+                            <span style={{ fontSize: 10.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[b.nameKo && b.nameEn, b.life, b.role].filter(Boolean).join(" · ")}</span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {srcs.length > 0 && (
+                      <p style={{ margin: "8px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>안장자 명단 출처: {srcs.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" style={{ color: "#84321f" }}>[{i + 1}]</a>)}</p>
                     )}
                   </section>
                 );
