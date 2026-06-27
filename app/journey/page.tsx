@@ -11,36 +11,37 @@ export const metadata: Metadata = {
 // /journey — 인물들의 여정 옆에 두는, 수업(선생님과 학생들)이 걸어온 여정.
 // 두 번째 움직임("복음이 나를 통해")이 실제로 살아나는 자리.
 
+// 유세리 교사의 'Missionaries from Aunae(한국 기독교사의 이해)' 3P 활동 구조에 기초.
 const STEPS = [
   {
     n: "01",
-    title: "만남",
-    en: "Encounter",
-    body: "한 사람의 삶을 만납니다. 지도 위의 점이 아니라, 값을 치르고 이 땅을 집으로 삼은 한 사람을. 위인이 아니라 두려워하면서도 사랑한 평범한 사람을.",
+    title: "배움 — Play",
+    en: "Understanding the soil",
+    body: "조선 말기의 닫힌 사회와, 그 땅이 복음을 받아들인 배경을 배웁니다. 의료·교육·문서 선교가 어떻게 한 나라를 깨웠는지 살피고, 그 첫 물음을 에세이로 적습니다.",
+    href: "/story",
+    cta: "복음이 들어온 길 보기",
+  },
+  {
+    n: "02",
+    title: "만남 — Performance",
+    en: "Meeting a life",
+    body: "선교사의 입국과 활동을 분석하고, 정동과 양화진을 직접 걷습니다. 그리고 한 사람을 깊이 연구해, 그 삶을 친구에게 이야기하듯 나눕니다.",
     href: "/",
     cta: "지도에서 만나기",
   },
   {
-    n: "02",
-    title: "질문",
-    en: "The Question",
-    body: "그 삶 앞에서 묻습니다 — 아름다운 삶이란 무엇일까. 내 인생의 전환점(나의 BC/AD)은 어디였을까. 나는 무엇에 내 삶의 값을 치르고 싶은가.",
-    href: "/story",
-    cta: "두 움직임 보기",
-  },
-  {
     n: "03",
-    title: "응답",
-    en: "Response",
-    body: "묻고 나면 적습니다. 정답이 아니라 나의 응답을. 어설퍼도 괜찮습니다. 한 줄이라도 정직하게 쓴 글이 그 사람을 닮아 가는 첫걸음입니다.",
+    title: "되살림 — Practice",
+    en: "Re-telling the story",
+    body: "연구보고서를 쓰고, 그 사람의 목소리로 ‘가상 인터뷰집’을 만듭니다. 백 년 전 한 사람의 삶이 학생의 손끝에서 다시 살아나, 오늘의 언어로 말을 겁니다.",
     href: "/people",
-    cta: "또 다른 사람을 만나기",
+    cta: "인물을 연구하러 가기",
   },
   {
     n: "04",
-    title: "다음 주자",
-    en: "The Next Runner",
-    body: "복음이라는 바통은 이제 우리 손에 있습니다. “I am a missionary from Aunae.” 받은 사람이 전하는 사람이 되는 릴레이의, 다음 칸은 비어 있습니다.",
+    title: "다음 주자 — The Next Runner",
+    en: "My mission",
+    body: "마지막은 ‘사명 로드맵’입니다. 받은 사람이 전하는 사람이 되는 릴레이의 다음 칸은 비어 있습니다. “I am a missionary from Aunae.”",
     href: "/story",
     cta: "나의 자리 확인하기",
   },
