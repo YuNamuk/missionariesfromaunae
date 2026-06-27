@@ -872,18 +872,31 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             ["지역", "region", REGIONS],
           ] as const).map(([title, axis, items]) => {
             const ax = axis as "era" | "denom" | "country" | "role" | "region";
+            const isRadio = ax === "era"; // 시대는 단일 선택(라디오)
             const allKeys = items.map((it) => it.key);
             const allOn = allKeys.length > 0 && allKeys.every((k) => filters[ax].includes(k));
+            const anyOn = filters[ax].length > 0;
             return (
             <div key={axis} style={{ marginBottom: 6, breakInside: "avoid" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "2px 6px 3px", borderBottom: `1px solid ${C.line}`, paddingBottom: 3 }}>
                 <span style={hdr}>{title}</span>
-                <button onClick={() => setFacet(ax, allOn ? [] : allKeys)} style={{ border: 0, background: "transparent", color: allOn ? "#9b3d2d" : "#80603b", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{allOn ? "전체 해제" : "전체"}</button>
+                {isRadio
+                  ? (anyOn && <button onClick={() => setFacet(ax, [])} style={{ border: 0, background: "transparent", color: "#9b3d2d", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>해제</button>)
+                  : <button onClick={() => setFacet(ax, allOn ? [] : allKeys)} style={{ border: 0, background: "transparent", color: allOn ? "#9b3d2d" : "#80603b", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{allOn ? "전체 해제" : "전체"}</button>}
               </div>
-              {items.map((it) => (
-                <FacetRow key={it.key} label={it.label} on={filters[axis as "era" | "denom" | "country" | "role" | "region"].includes(it.key)}
-                  onClick={() => { toggleFacet(ax, it.key); if (axis === "era") { const e = ERAS.find((x) => x.key === it.key); if (e) { setYear(Math.round((e.from + e.to) / 2)); setSnapshot(true); } } }} />
-              ))}
+              {items.map((it) => {
+                const on = filters[ax].includes(it.key);
+                return (
+                <FacetRow key={it.key} label={it.label} radio={isRadio} on={on}
+                  onClick={() => {
+                    if (isRadio) {
+                      setFacet(ax, on ? [] : [it.key]); // 같은 항목 재클릭 시 해제, 아니면 그것만 선택
+                      const e = ERAS.find((x) => x.key === it.key); if (!on && e) { setYear(Math.round((e.from + e.to) / 2)); setSnapshot(true); }
+                    } else {
+                      toggleFacet(ax, it.key);
+                    }
+                  }} />
+              );})}
             </div>
           );})}
           {cemeteries.length > 0 && (
