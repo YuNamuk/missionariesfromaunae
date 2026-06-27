@@ -64,6 +64,8 @@
 @theme inline {
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  /* Tailwind 기본 .font-serif(Georgia/Times)를 우리 서정 글꼴로 덮어씀 — 한글 고딕 폴백 방지 */
+  --font-serif: var(--font-serif);
 
   --color-sky-50: var(--sky-50);   --color-sky-100: var(--sky-100);
   --color-sky-200: var(--sky-200); --color-sky-300: var(--sky-300);
