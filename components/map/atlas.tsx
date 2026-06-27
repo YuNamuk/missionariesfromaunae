@@ -1319,16 +1319,19 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         {selPerson && (
           <>
             <div style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb", padding: "22px 22px 20px", position: "relative" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 15 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
                 {selPerson.photo ? (
-                  <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={selPerson.photo} alt={selPerson.name} style={{ width: 86, height: 86, flex: "0 0 auto", borderRadius: 18, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
+                  <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={selPerson.photo} alt={selPerson.name} style={{ width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
                 ) : (
-                  <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 86, height: 86, flex: "0 0 auto", borderRadius: 18, background: orgTint(selPerson.org), fontSize: 42 }}>{selPerson.glyph}</span>
+                  <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, background: orgTint(selPerson.org), fontSize: 48 }}>{selPerson.glyph}</span>
                 )}
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, paddingTop: 2 }}>
                   <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}년 입국·활동</span>
-                  <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 25, margin: "10px 0 2px", letterSpacing: "-.03em" }}>{selPerson.name}</h2>
-                  <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,235,.78)" }}>{selPerson.en} · {selPerson.life}{ageFromLife(selPerson.life) ? ` · 향년 ${ageFromLife(selPerson.life)}세` : ""}</p>
+                  <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26, margin: "10px 0 0", letterSpacing: "-.03em" }}>{selPerson.name}</h2>
+                  {selPerson.en && <p style={{ margin: "3px 0 0", fontSize: 13.5, fontWeight: 600, color: "rgba(255,248,235,.82)" }}>{selPerson.en}</p>}
+                  <p style={{ margin: "7px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.72)" }}>
+                    {selPerson.life}{ageFromLife(selPerson.life) ? <span style={{ color: "#f0c98a", fontWeight: 700 }}> · 향년 {ageFromLife(selPerson.life)}세</span> : ""}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1540,8 +1543,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <div style={{ background: "linear-gradient(145deg,#2e2218,#4a3a28)", color: "#fff8eb", padding: "22px 22px 20px", position: "relative" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 15 }}>
                 {selBuried.photo
-                  ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={selBuried.photo} alt={selBuried.nameKo || selBuried.nameEn} style={{ width: 80, height: 80, flex: "0 0 auto", borderRadius: 18, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
-                  : <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 80, height: 80, flex: "0 0 auto", borderRadius: 18, background: "rgba(255,248,236,.14)", fontSize: 36 }}>✝</span>}
+                  ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={selBuried.photo} alt={selBuried.nameKo || selBuried.nameEn} style={{ width: 88, height: 112, flex: "0 0 auto", borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
+                  : <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 88, height: 112, flex: "0 0 auto", borderRadius: 16, background: "rgba(255,248,236,.14)", fontSize: 40 }}>✝</span>}
                 <div style={{ minWidth: 0 }}>
                   <span style={pill("rgba(255,255,255,.16)")}>✝ 안장 선교사{selBuried.uncertain ? " · 확인 필요" : ""}</span>
                   <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "10px 0 2px", letterSpacing: "-.03em" }}>{selBuried.nameKo || selBuried.nameEn}</h2>
