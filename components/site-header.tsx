@@ -97,6 +97,73 @@ function NavDrop({ id, label, items, open, setOpen, onPick }: {
   );
 }
 
+/** 통합 '둘러보기' — 시대·묘역·유적지·교단·나라·사역·지역을 한 패널에 카드로. */
+function BrowseDrop({ open, setOpen, onPickPerson, onPickFocus, onPickYear, onPickHeritage }: {
+  open: string | null; setOpen: (v: string | null) => void;
+  onPickPerson: (id: string) => void; onPickFocus: (id: string) => void; onPickYear: (y: number) => void; onPickHeritage: (id: string) => void;
+}) {
+  const id = "browse";
+  const isOpen = open === id;
+  const itemCls = "flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-[12px] font-semibold transition-colors hover:bg-[#f2e3c8]";
+  function Card({ title, children }: { title: string; children: React.ReactNode }) {
+    return (
+      <div className="rounded-lg border p-2" style={{ borderColor: LINE, background: "rgba(255,255,255,.4)" }}>
+        <div className="px-1 pb-1 text-[10.5px] font-extrabold uppercase tracking-wider" style={{ color: "#80603b" }}>{title}</div>
+        <div className="max-h-[240px] overflow-y-auto">{children}</div>
+      </div>
+    );
+  }
+  function Groups({ groups, onPick }: { groups: Group[]; onPick: (pid: string) => void }) {
+    return (
+      <>
+        {groups.map((g) => (
+          <div key={g.key} className="mb-1">
+            <div className="px-1 pt-1 text-[10px] font-bold" style={{ color: "#a07d4e" }}>{g.label} <span className="opacity-55">{g.people.length}</span></div>
+            {g.people.map((p) => (
+              <button key={p.id} onClick={() => onPick(p.id)} className={itemCls} style={{ color: "#3e2c1d" }}>
+                <span className="truncate">{p.name}</span>{p.year > 0 && <span className="text-[10px] opacity-50">{p.year}</span>}
+              </button>
+            ))}
+          </div>
+        ))}
+      </>
+    );
+  }
+  return (
+    <div className="relative" onMouseEnter={() => setOpen(id)} onMouseLeave={() => setOpen(isOpen ? null : open)}>
+      <button onClick={() => setOpen(isOpen ? null : id)}
+        className={clsx("flex items-center gap-1 rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors", isOpen ? "bg-white/15 text-white" : "text-white/60 hover:bg-white/10 hover:text-white")}>
+        둘러보기<span className="text-[8px] opacity-70">▾</span>
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-full z-50 pt-2" style={{ width: "min(880px,94vw)" }}>
+          <div className="rounded-xl border p-3 shadow-xl" style={{ background: PANEL, borderColor: LINE, maxHeight: "76vh", overflowY: "auto" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px,1fr))", gap: 10 }}>
+              <Card title="선교 연혁">
+                {ERAS.map((e) => (
+                  <button key={e.key} onClick={() => onPickYear(Math.round((e.from + e.to) / 2))} className={itemCls} style={{ color: "#3e2c1d" }}>
+                    <span className="truncate">{e.label}</span><span className="text-[10px] opacity-55">{Math.round((e.from + e.to) / 2)}년</span>
+                  </button>
+                ))}
+              </Card>
+              <Card title="선교 묘역">
+                {CEMETERIES.map((c) => (
+                  <button key={c.id} onClick={() => onPickFocus(c.id)} className={itemCls} style={{ color: "#3e2c1d" }}><span className="truncate">{c.name}</span></button>
+                ))}
+              </Card>
+              <Card title="선교 유적지"><Groups groups={HERITAGE_GROUPS} onPick={onPickHeritage} /></Card>
+              <Card title="교단"><Groups groups={DENOM_GROUPS} onPick={onPickPerson} /></Card>
+              <Card title="나라"><Groups groups={COUNTRY_GROUPS} onPick={onPickPerson} /></Card>
+              <Card title="사역 분야"><Groups groups={ROLE_GROUPS} onPick={onPickPerson} /></Card>
+              <Card title="지역"><Groups groups={REGION_GROUPS} onPick={onPickPerson} /></Card>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const PAGES = [
   { href: "/story", label: "들어가며" },
   { href: "/journey", label: "우리의 여정" },
@@ -142,16 +209,7 @@ export function SiteHeader() {
 
         <span className="mx-1.5 h-5 w-px bg-white/15" />
 
-        <NavDrop id="era" label="선교 연혁" open={open} setOpen={setOpen}
-          items={ERAS.map((e) => ({ key: e.key, label: e.label, sub: `${Math.round((e.from + e.to) / 2)}년` }))}
-          onPick={(k) => { const e = ERAS.find((x) => x.key === k); if (e) goYear(Math.round((e.from + e.to) / 2)); }} />
-        <NavDrop id="cem" label="선교 묘역" open={open} setOpen={setOpen}
-          items={CEMETERIES.map((c) => ({ key: c.id, label: c.name }))} onPick={goFocus} />
-        <DirectoryDrop id="denom" label="교단" groups={DENOM_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
-        <DirectoryDrop id="country" label="나라" groups={COUNTRY_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
-        <DirectoryDrop id="role" label="사역 분야" groups={ROLE_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
-        <DirectoryDrop id="region" label="지역" groups={REGION_GROUPS} open={open} setOpen={setOpen} onPickPerson={goPerson} />
-        <DirectoryDrop id="heritage" label="선교 유적지" groups={HERITAGE_GROUPS} open={open} setOpen={setOpen} onPickPerson={goHeritage} />
+        <BrowseDrop open={open} setOpen={setOpen} onPickPerson={goPerson} onPickFocus={goFocus} onPickYear={goYear} onPickHeritage={goHeritage} />
       </nav>
     </header>
   );
