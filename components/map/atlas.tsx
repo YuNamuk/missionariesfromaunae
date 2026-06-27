@@ -372,12 +372,12 @@ function MenuBtn({ id, label, count, openMenu, setOpenMenu, wide, mega, children
   );
 }
 
-/** A single checkable filter row inside a MenuBtn dropdown. */
-function FacetRow({ label, sub, on, onClick }: { label: string; sub?: string; on: boolean; onClick: () => void }) {
+/** A single checkable filter row inside a MenuBtn dropdown. radio=단일 선택(원형 표시). */
+function FacetRow({ label, sub, on, onClick, radio }: { label: string; sub?: string; on: boolean; onClick: () => void; radio?: boolean }) {
   return (
     <button onClick={onClick} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, width: "100%", textAlign: "left", border: 0, background: on ? "#f2e3c8" : "transparent", borderRadius: 8, padding: "8px 9px", cursor: "pointer", color: "#4a3a28", fontSize: 12.5, fontWeight: on ? 800 : 600 }}>
       <span>{label}{sub ? <span style={{ color: C.muted, fontWeight: 500 }}> · {sub}</span> : null}</span>
-      <span style={{ flex: "0 0 auto", width: 15, height: 15, borderRadius: 4, border: `1.5px solid ${on ? "#9b3d2d" : C.line}`, background: on ? "#9b3d2d" : "transparent", color: "#fff8ed", fontSize: 11, lineHeight: "13px", textAlign: "center" }}>{on ? "✓" : ""}</span>
+      <span style={{ flex: "0 0 auto", width: 15, height: 15, borderRadius: radio ? 99 : 4, border: `1.5px solid ${on ? "#9b3d2d" : C.line}`, background: on ? "#9b3d2d" : "transparent", color: "#fff8ed", fontSize: radio ? 9 : 11, lineHeight: "13px", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center" }}>{on ? (radio ? "●" : "✓") : ""}</span>
     </button>
   );
 }
@@ -823,6 +823,12 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         .atlas-warm .leaflet-fade-anim .leaflet-tile{will-change:opacity;}
         .atlas-warm .leaflet-zoom-anim .leaflet-zoom-animated{will-change:transform;}
         .atlas-warm .leaflet-container{background:${C.sea};font-family:var(--font-body);}
+        /* 지도/구획(국경 polygon) 클릭 시 브라우저 기본 파란 포커스 테두리 제거 */
+        .atlas-warm .leaflet-container:focus,
+        .atlas-warm .leaflet-interactive:focus,
+        .atlas-warm .leaflet-interactive:focus-visible,
+        .atlas-warm path.leaflet-interactive:focus,
+        .atlas-warm .leaflet-pane svg *:focus{outline:none!important;}
         .atlas-warm .leaflet-control-attribution{background:rgba(40,26,14,.5)!important;color:rgba(255,248,236,.5)!important;font-size:9px!important;}
         .atlas-warm ::-webkit-scrollbar{width:9px;height:9px;}
         .atlas-warm ::-webkit-scrollbar-thumb{background:rgba(77,56,34,.22);border-radius:99px;}
