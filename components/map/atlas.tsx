@@ -425,12 +425,12 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     prevSelRef.current = selected;
   }, [selected]);
   const goBack = () => {
-    if (history.length === 0) return;
-    const entry = history[history.length - 1];
+    // 이력이 있으면 직전 상태로, 없으면(이력 소실 등) 항상 시작 화면으로 복귀.
+    const entry: Hist = history.length > 0 ? history[history.length - 1] : { sel: null, view: HOME_VIEW };
     goingBackRef.current = true;
     skipFitRef.current = true; // 자동 줌 대신 저장된 지도 상태 복원
     setSelected(entry.sel);
-    setHistory((h) => h.slice(0, -1));
+    if (history.length > 0) setHistory((h) => h.slice(0, -1));
     // 시작 내러티브(선택 없음)로 복귀하면 항상 홈의 넓은 지도로, 그 외엔 저장된 뷰로.
     const target = entry.sel ? entry.view : HOME_VIEW;
     if (target && mapRef.current) mapRef.current.flyTo(target.center, target.zoom, { duration: 0.5, easeLinearity: 0.25 });
@@ -1049,7 +1049,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
       {/* ── RIGHT: detail + relationships ── */}
       <article style={{ gridColumn: 3, minWidth: 0, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", display: rightOpen ? "flex" : "none", flexDirection: "column", minHeight: 0, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
-        {history.length > 0 && (selPerson || selPlace || selEvent || selHeritage) && (
+        {(selPerson || selPlace || selEvent || selHeritage) && (
           <button onClick={goBack} title="이전 선택으로" style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 44px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
             <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> 뒤로
           </button>
@@ -1168,11 +1168,11 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         {selPerson && (
           <>
             <div style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb", padding: "22px 22px 20px", position: "relative" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 15 }}>
                 {selPerson.photo ? (
-                  <img src={selPerson.photo} alt={selPerson.name} style={{ width: 60, height: 60, flex: "0 0 auto", borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
+                  <img src={selPerson.photo} alt={selPerson.name} style={{ width: 86, height: 86, flex: "0 0 auto", borderRadius: 18, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
                 ) : (
-                  <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 60, height: 60, flex: "0 0 auto", borderRadius: 16, background: orgTint(selPerson.org), fontSize: 30 }}>{selPerson.glyph}</span>
+                  <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 86, height: 86, flex: "0 0 auto", borderRadius: 18, background: orgTint(selPerson.org), fontSize: 42 }}>{selPerson.glyph}</span>
                 )}
                 <div style={{ minWidth: 0 }}>
                   <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}년 입국·활동</span>
