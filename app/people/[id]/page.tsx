@@ -241,7 +241,7 @@ export default async function PersonPage({
             Korea is home
           </div>
           <p className="font-serif mt-2 text-[16px] leading-[1.95] text-ink-800">
-            돌아갈 수도 있었지만, 이 땅을 집으로 삼았습니다.{" "}
+            돌아갈 수도 있었지만, 조선을 집으로 삼았습니다.{" "}
             <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>
               {burialPlace.name}
             </Link>

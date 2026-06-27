@@ -9,7 +9,7 @@ export const STORY_COPY: Record<string, string> = {
     "여기 성공이 아니라 섬김을 택한 이들이 있습니다. 먼 땅을 집으로 삼고, 기꺼이 한 알의 밀알이 되기를 선택한 사람들. 그들의 삶을 따라 걷다 보면 한 가지 질문이 남습니다 — 나는 어떤 삶을 아름답다고 부를 것인가.",
   m1Title: "복음이, 선교사를 통해 나에게",
   costTitle: "성공이 아니라, 섬김",
-  homeTitle: "이 땅을 집으로 삼은 사람들",
+  homeTitle: "조선을 집으로 삼은 사람들",
   m2Title: "복음이, 나를 통해 세계로",
   nextRunner: "I am the next runner.\nI am a missionary from Aunae.",
   closeTitle: "이제, 한 사람을 만나 보세요",
