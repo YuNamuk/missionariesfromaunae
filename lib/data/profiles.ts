@@ -453,6 +453,55 @@ export const PROFILES: Record<string, PersonProfile> = {
   },
 };
 
+// 검증된 1차 자료 인용(편지·일기·묘비명). 리서치로 출처 확인된 것만.
+// ※언더우드의 "주여 지금은 아무것도…" 기도문은 1984년 정연희 소설의 창작(위작)으로
+//   확인되어 본인의 말로 절대 싣지 않는다.
+const QUOTES: Record<string, { text: string; source: string }> = {
+  hulbert: {
+    text: "나는 웨스트민스터 사원보다 한국 땅에 묻히기를 원하노라.",
+    source: "“I would rather be buried in Korea than in Westminster Abbey.” — 1949년 귀환 소감 · 양화진 묘비",
+  },
+  appenzeller: {
+    text: "오늘 무덤의 빗장을 부수신 그분께서, 이 한국 백성에게 빛과 자유를 가져다주시기를.",
+    source: "1885년 부활절 제물포 도착일의 기도 · W. E. Griffis, A Modern Pioneer in Korea(1912)",
+  },
+  kendrick: {
+    text: "나에게 천 개의 생명이 있다면, 그 모두를 한국에 바치리라.",
+    source: "“If I had a thousand lives to give, Korea should have them all.” — 양화진 묘비명(1908)",
+  },
+  mscranton: {
+    text: "우리 학교는 무엇보다도, 조선 소녀를 더 나은 조선 소녀로 길러내는 학교입니다.",
+    source: "이화학당 연례보고(미감리회 여선교부, 1895–96) · ※널리 퍼진 ‘한 사람의 조선 소녀라도’는 출처 불명 의역",
+  },
+  shepping: {
+    text: "성공이 아니라 섬김.",
+    source: "“Not success, but service.” — 서서평의 좌우명(전승) · 백춘성 『천국에서 만납시다』(1980)",
+  },
+  moffett: {
+    text: "이 사람들에게 참된 행복이 전혀 없다는 것 — 이들이 복음을 절실히 필요로 한다는 첫인상을, 시간이 갈수록 지울 수 없었다.",
+    source: "1890년 내한 직후 북장로교 해외선교부에 보낸 첫 보고",
+  },
+  avison: {
+    text: "나는 이 서양 의학을 한국말로 가르쳐야 한다고 결정했다.",
+    source: "에비슨 회고록(Memoirs of Life in Korea)",
+  },
+  gale: {
+    text: "정치적으로 한국은 보잘것없으나, 선교의 영역에서는 일류 강국이다.",
+    source: "James S. Gale, Korea in Transition(1909) 서문",
+  },
+  rosetta: {
+    text: "한국의 맹인과 농아의 처지는 참으로 가련하다.",
+    source: "평양 맹·농아 교육에 관하여 · The Silent Worker(1910)",
+  },
+  heron: {
+    text: "하나님의 아들이 나를 사랑하사, 나를 위하여 자기 자신을 버리셨느니라.",
+    source: "양화진 묘비명(갈라디아서 2:20) · 양화진 외국인선교사묘원 최초 안장자",
+  },
+};
+
 export function profileFor(id: string): PersonProfile | undefined {
-  return PROFILES[id];
+  const p = PROFILES[id];
+  if (!p) return undefined;
+  const q = QUOTES[id];
+  return q ? { ...p, quote: q } : p;
 }
