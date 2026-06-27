@@ -1130,17 +1130,17 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           )}
         </div>
 
-        {/* 지도 레이어 토글(주요 거점·선교 묘역·선교 유적지) — 정세 토글 아래 줄 */}
+        {/* 지도 레이어 토글(주요 거점·선교 묘역·선교 유적지) — 정세 토글 아래로 세로 배치 */}
         {(lens === "people" || lens === "era") && (
-          <div style={{ position: "absolute", left: 24, top: 66, zIndex: 500, display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ position: "absolute", left: 24, top: 66, zIndex: 500, display: "flex", flexDirection: "column", alignItems: "stretch", gap: 6 }}>
             {([
               { on: showStations, set: setShowStations, label: "⚓ 주요 거점", color: "#bf6b22", title: "항구·선교부 등 주요 거점 마커 표시" },
               { on: showCemeteries, set: setShowCemeteries, label: "♰ 선교 묘역", color: "#9b3d2d", title: "선교사 묘역 마커 표시" },
               { on: showHeritage, set: setShowHeritage, label: "⛪ 선교 유적지", color: "#7a4a9e", title: "교회·학교·병원 등 선교 유적지 표시" },
             ] as const).map((t) => (
               <button key={t.label} onClick={() => t.set((v: boolean) => !v)} title={t.title}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 10px", borderRadius: 11, border: `1px solid ${t.on ? t.color : "rgba(255,255,255,.2)"}`, background: t.on ? t.color : "rgba(40,26,14,.7)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, opacity: t.on ? 1 : 0.62 }}>
-                {t.label}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 11, border: `1px solid ${t.on ? t.color : "rgba(255,255,255,.2)"}`, background: t.on ? t.color : "rgba(40,26,14,.7)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, opacity: t.on ? 1 : 0.62, whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 10, opacity: 0.85 }}>{t.on ? "●" : "○"}</span> {t.label}
               </button>
             ))}
           </div>
