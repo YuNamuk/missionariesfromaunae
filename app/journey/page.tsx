@@ -187,6 +187,33 @@ export default function JourneyPage() {
         </div>
       </section>
 
+      {/* 탐방의 기록 — 그들의 발자취를 따라(2023·2026 서울 선교유적지 탐방) */}
+      <section style={{ padding: "clamp(56px,9vh,96px) 24px", background: "linear-gradient(180deg,#f6efe1,#efe4cd)" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
+            <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: "#bf6b22" }}>On the Ground</span>
+            <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 8px", color: "#2e2218" }}>탐방의 기록</h2>
+            <p className="font-serif" style={{ fontSize: "clamp(15px,2vw,17px)", lineHeight: 1.85, color: "#5f4d39", maxWidth: 560, margin: "0 auto" }}>
+              책으로만이 아니라, 학생들은 정동과 양화진을 직접 걸었습니다. 그들의 발자취를
+              따라 걸으며 남긴 답사 기록의 한 조각들입니다.
+            </p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {[
+              { place: "배재학당", body: "정문 앞에는 500살이 넘은 향나무가 서 있었다. 임진왜란 때 일본 장군이 말을 묶었다는 쇠못이, 그새 폭풍 성장한 나무의 높은 곳에 아직 박혀 있었다. 시간이 흘러도 흔적은 남는다." },
+              { place: "이화학당", body: "낮에는 길조차 마음껏 걷지 못하던 조선의 여성들. 그들을 안타까워한 메리 스크랜튼이, 1886년 단 한 사람의 소녀로 이화학당을 시작했다." },
+              { place: "양화진", body: "양화진의 깨지고 상한 비석들. 한국전쟁 때의 총탄 자국이, 이 무덤들이 견뎌 온 세월을 말없이 증언하고 있었다." },
+            ].map((r) => (
+              <figure key={r.place} style={{ margin: 0, padding: "clamp(20px,3vw,28px)", borderRadius: 18, background: "rgba(255,255,255,.66)", borderLeft: "4px solid #bf6b22" }}>
+                <figcaption style={{ fontSize: 11, fontWeight: 900, letterSpacing: "0.12em", color: "#9b3d2d", marginBottom: 8 }}>📍 {r.place}</figcaption>
+                <p className="font-serif" style={{ margin: 0, fontSize: "clamp(15px,2.1vw,17px)", lineHeight: 1.9, color: "#46362a" }}>{r.body}</p>
+              </figure>
+            ))}
+          </div>
+          <p className="font-serif" style={{ textAlign: "center", marginTop: 20, fontSize: 12.5, color: "#8a7860" }}>— 학생 탐방기에서 (드리미학교 서울 선교유적지 탐방)</p>
+        </div>
+      </section>
+
       {/* 학생들의 목소리 */}
       <section style={{ padding: "clamp(56px,9vh,96px) 24px clamp(72px,12vh,120px)", background: "linear-gradient(180deg,#efe4cd,#f6efe1)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
