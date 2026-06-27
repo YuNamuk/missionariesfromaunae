@@ -39,8 +39,14 @@ export default async function PersonPage({
   const place = getPlace(person.place);
   const rels = relationshipsFor(person.id);
   const sources = resourcesFor(person);
-  const photo = PHOTOS[person.id]?.photo ?? null;
-  const photoSource = PHOTOS[person.id]?.source ?? "";
+  const ph = PHOTOS[person.id];
+  const photo = ph?.photo ?? null;
+  const photoSource = ph?.source ?? "";
+  const extLinks = [
+    ph?.wiki ? { label: "위키백과", href: ph.wiki } : null,
+    ph?.wikiEn ? { label: "Wikipedia (EN)", href: ph.wikiEn } : null,
+    ph?.namu ? { label: "나무위키", href: ph.namu } : null,
+  ].filter((x): x is { label: string; href: string } => !!x && !!x.href);
   const profile = profileFor(person.id);
   const burialPlace = BURIAL[person.id] ? getPlace(BURIAL[person.id]) : null;
 
@@ -255,6 +261,30 @@ export default async function PersonPage({
                   );
                 })}
               </ul>
+            </div>
+          )}
+
+          {(extLinks.length > 0 || photoSource) && (
+            <div>
+              <h2 className="font-display text-lg font-extrabold text-ink-900">바깥 링크</h2>
+              {extLinks.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {extLinks.map((l) => (
+                    <a
+                      key={l.href}
+                      href={l.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-[12.5px] font-bold text-ink-700 transition-colors hover:border-sky-300 hover:text-sky-700"
+                    >
+                      {l.label} ↗
+                    </a>
+                  ))}
+                </div>
+              )}
+              {photoSource && (
+                <p className="mt-3 text-[11px] leading-relaxed text-ink-400">사진 출처: {photoSource} (CC/PD)</p>
+              )}
             </div>
           )}
 
