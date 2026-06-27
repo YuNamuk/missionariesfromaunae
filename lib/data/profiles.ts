@@ -569,8 +569,36 @@ const STORIES: Record<string, string[]> = {
   ],
 };
 
-// 인물별 검증된 영상 링크(리서치로 확인된 것만 채운다).
+// 인물별 검증된 영상 링크(리서치로 인물 일치·접속 확인된 것만).
 const VIDEOS: Record<string, { url: string; title: string; source?: string }[]> = {
+  underwood: [{ url: "https://www.youtube.com/watch?v=qVVDf219WyA", title: "이 땅을 사랑한 예수의 증인들 — 한국 최초의 교회를 설립한 호러스 언더우드", source: "CBS" }],
+  appenzeller: [{ url: "https://www.youtube.com/watch?v=hbkKtwitffg", title: "죽기까지 선교하고 순교한 선교사, 아펜젤러 이야기", source: "걸어서 성지속으로" }],
+  mscranton: [
+    { url: "https://www.youtube.com/watch?v=8jzGAKv6wcg", title: "이 땅을 사랑한 예수의 증인들 — 조선 여성을 일깨운 메리 스크랜턴", source: "CBS" },
+    { url: "https://www.youtube.com/watch?v=gcIOOAHckSc", title: "다큐 ‘女선교사 조선을 비추다’ — 메리 스크랜턴과 로제타 홀", source: "CGNTV" },
+  ],
+  william: [{ url: "https://www.youtube.com/watch?v=FbfaSdPpnyA", title: "예수의 마음으로 조선을 사랑한 윌리엄 스크랜튼 선교사 — 위대한 발걸음 12화", source: "위대한 발걸음" }],
+  heron: [{ url: "https://www.youtube.com/watch?v=zx08-phSy-A", title: "이 땅을 사랑한 예수의 증인들 — 죽음을 뛰어넘은 사랑 존 헤론", source: "CBS" }],
+  avison: [{ url: "https://www.youtube.com/watch?v=QKg1zUgoR0c", title: "조선을 사랑한 선교사 05 — 올리버 에비슨", source: "조선을 사랑한 선교사" }],
+  gale: [{ url: "https://www.youtube.com/watch?v=aVLnH6VPEuk", title: "예수의 흔적 2부 — 40년 조선인으로 살다 간 착한 목자 제임스 게일", source: "CBS" }],
+  hulbert: [{ url: "https://www.youtube.com/watch?v=1VXu_ZElm78", title: "한국인보다 더 한국을 사랑했던 선교사 헐버트 (다큐ON)", source: "KBS" }],
+  rosetta: [{ url: "https://www.youtube.com/watch?v=kcbWWBNKg80", title: "예수의 흔적 3부 — 조선 여성들에게 빛이 된 선교사 로제타 홀", source: "CBS" }],
+  wjhall: [{ url: "https://www.youtube.com/watch?v=AoLi4TQ8rrk", title: "조선을 사랑한 선교사 07 — 윌리엄 제임스 홀", source: "조선을 사랑한 선교사" }],
+  sherwoodhall: [{ url: "https://www.youtube.com/watch?v=j9mfS08qB-Q", title: "크리스마스 씰로 결핵 퇴치에 헌신한 셔우드 홀 선교사", source: "CTS뉴스" }],
+  moffett: [{ url: "https://www.youtube.com/watch?v=0T0fKuyU6vk", title: "조선을 사랑한 선교사 12 — 사무엘 모펫(마포삼열)", source: "조선을 사랑한 선교사" }],
+  shepping: [{ url: "https://www.youtube.com/watch?v=-TbZpzs0uS4", title: "서서평 선교사의 생애 — 조선인들의 어머니", source: "선교사 이야기" }],
+  schofield: [
+    { url: "https://www.youtube.com/watch?v=wTIrxxDDPcg", title: "EBS 걸작 다큐멘터리 — 민족대표 34인 석호필", source: "EBS" },
+    { url: "https://www.youtube.com/watch?v=wMgTZcoKKPA", title: "역사채널e — 34번째 민족대표, 석호필", source: "EBS 역사채널e" },
+  ],
+  gilseonju: [{ url: "https://www.youtube.com/watch?v=0oEvP6Fglq0", title: "길선주 목사의 생애 — 한국 초대교회를 빛낸 인물", source: "신앙의 위인전" }],
+  leegipung: [{ url: "https://www.youtube.com/watch?v=3wSDeO9ATMA", title: "이기풍 목사의 생애 1부 — 한국교회 최초 목사, 제주 선교사", source: "믿음의 위인들" }],
+  seo: [{ url: "https://www.youtube.com/watch?v=FlLyUV_GCOg", title: "서상륜 (1) — 한국 최초의 기독교인 (1907 믿음의 사람들)", source: "CGNTV" }],
+  leesujeong: [{ url: "https://www.youtube.com/watch?v=0lRHRLdKskk", title: "한국 기독교 선교의 개척자 이수정 — CBS 특집다큐", source: "CBS" }],
+  hardie: [{ url: "https://www.youtube.com/watch?v=VC7AZrxOSl4", title: "한국교회 부흥운동의 아버지, 로버트 하디", source: "YouTube" }],
+  ross: [{ url: "https://www.youtube.com/watch?v=fMrx2zGn2ps", title: "존 로스 (1) — 스코틀랜드에서 온 선교사 (1907 믿음의 사람들)", source: "CGNTV" }],
+  linton: [{ url: "https://www.youtube.com/watch?v=ybxCDWfH-5Y", title: "2022년 3월 이달의 독립운동가 — 윌리엄 린튼(한남대 초대총장)", source: "국가보훈처" }],
+  kendrick: [{ url: "https://www.youtube.com/watch?v=cJNqMWoCQl8", title: "루비 켄드릭의 생애 — 조선에 심장을 묻은 선교사", source: "믿음의 위인들" }],
 };
 
 export function profileFor(id: string): PersonProfile | undefined {
