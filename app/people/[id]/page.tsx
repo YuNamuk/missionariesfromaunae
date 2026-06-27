@@ -284,7 +284,7 @@ export default async function PersonPage({
       {profile?.videos && profile.videos.length > 0 && (
         <section className="mt-10">
           <h2 className="font-display text-lg font-extrabold text-ink-900">관련 영상</h2>
-          <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="mt-4 space-y-6">
             {profile.videos.map((v) => {
               const id = ytId(v.url);
               return (
@@ -342,22 +342,6 @@ export default async function PersonPage({
             </div>
           )}
 
-          {(extLinks.length > 0 || photoSource) && (
-            <div>
-              <h2 className="font-display text-lg font-extrabold text-ink-900">바깥 링크</h2>
-              {extLinks.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {extLinks.map((l) => (
-                    <a key={l.href} href={l.href} target="_blank" rel="noreferrer" className="rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-[12.5px] font-bold text-ink-700 transition-colors hover:border-sky-300 hover:text-sky-700">
-                      {l.label} ↗
-                    </a>
-                  ))}
-                </div>
-              )}
-              {photoSource && <p className="mt-3 text-[11px] leading-relaxed text-ink-400">사진 출처: {photoSource} (CC/PD)</p>}
-            </div>
-          )}
-
           {(person.interview || person.photos.length > 0 || person.video) && (
             <div>
               <h2 className="font-display text-lg font-extrabold text-ink-900">자료</h2>
@@ -381,6 +365,22 @@ export default async function PersonPage({
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {(extLinks.length > 0 || photoSource) && (
+            <div>
+              <h2 className="font-display text-lg font-extrabold text-ink-900">외부 링크</h2>
+              {extLinks.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {extLinks.map((l) => (
+                    <a key={l.href} href={l.href} target="_blank" rel="noreferrer" className="rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-[12.5px] font-bold text-ink-700 transition-colors hover:border-sky-300 hover:text-sky-700">
+                      {l.label} ↗
+                    </a>
+                  ))}
+                </div>
+              )}
+              {photoSource && <p className="mt-3 text-[11px] leading-relaxed text-ink-400">사진 출처: {photoSource} (CC/PD)</p>}
             </div>
           )}
         </div>
