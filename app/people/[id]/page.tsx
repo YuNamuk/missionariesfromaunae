@@ -9,6 +9,7 @@ import {
   relationshipsFor,
   resourcesFor,
 } from "@/lib/data";
+import { PHOTOS } from "@/lib/data/photos";
 
 export function generateStaticParams() {
   return PEOPLE.map((p) => ({ id: p.id }));
@@ -36,6 +37,8 @@ export default async function PersonPage({
   const place = getPlace(person.place);
   const rels = relationshipsFor(person.id);
   const sources = resourcesFor(person);
+  const photo = PHOTOS[person.id]?.photo ?? null;
+  const photoSource = PHOTOS[person.id]?.source ?? "";
 
   return (
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-10 sm:px-7">
@@ -48,12 +51,28 @@ export default async function PersonPage({
 
       {/* Header */}
       <div className="mt-5 flex flex-wrap items-start gap-5">
-        <span
-          className="font-display flex h-20 w-20 flex-none items-center justify-center rounded-3xl text-5xl text-white"
-          style={{ background: "var(--grad-dream)", boxShadow: "var(--shadow-sky)" }}
-        >
-          {person.glyph}
-        </span>
+        {photo ? (
+          <span className="flex-none">
+            <img
+              src={photo}
+              alt={person.name}
+              className="h-24 w-24 rounded-3xl object-cover"
+              style={{ boxShadow: "var(--shadow-sky)", background: "#efe1c3" }}
+            />
+            {photoSource && (
+              <span className="mt-1 block max-w-24 text-[9px] leading-tight text-ink-400">
+                {photoSource}
+              </span>
+            )}
+          </span>
+        ) : (
+          <span
+            className="font-display flex h-20 w-20 flex-none items-center justify-center rounded-3xl text-5xl text-white"
+            style={{ background: "var(--grad-dream)", boxShadow: "var(--shadow-sky)" }}
+          >
+            {person.glyph}
+          </span>
+        )}
         <div className="min-w-0">
           <h1 className="font-display text-3xl font-black tracking-tight text-ink-900 sm:text-4xl">
             {person.name}

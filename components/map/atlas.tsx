@@ -1158,8 +1158,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               const first = relatedIds.has(p.id) || eventHi.has(p.id);
               const second = secondDeg.has(p.id);
               const dimActive = !!selPerson || !!selEvent;
-              // 선택 시: 본인·1차 선명 / 2차 흐리게 / 그 외 더 흐리게
-              const opacity = landing ? 0.28 : !dimActive || sel || first ? 1 : second ? 0.55 : 0.22;
+              // 선택 시: 본인·1차 선명 / 2차 흐리게 / 그 외 더 흐리게. 랜딩에서도 선교사는 활성(또렷).
+              const opacity = landing ? 1 : !dimActive || sel || first ? 1 : second ? 0.55 : 0.22;
               return (
                 <Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
               );
