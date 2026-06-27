@@ -206,6 +206,8 @@ function FitToSelection({ targets, focusKey, fit, skipFirst, skipRef }: { target
 }
 
 type MapView = { center: [number, number]; zoom: number };
+// 홈(시작 내러티브)의 기본 넓은 지도 뷰 — MapContainer center/zoom과 동일.
+const HOME_VIEW: MapView = { center: [38.4, 127.5], zoom: 6 };
 /** Holds a ref to the map and tracks the last settled view (center+zoom) so the
  *  detail-card back button can restore the previous map state, not just the card. */
 function MapBinder({ mapRef, viewRef }: { mapRef: React.MutableRefObject<L.Map | null>; viewRef: React.MutableRefObject<MapView | null> }) {
@@ -428,8 +430,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     skipFitRef.current = true; // 자동 줌 대신 저장된 지도 상태 복원
     setSelected(entry.sel);
     setHistory((h) => h.slice(0, -1));
-    if (entry.view && mapRef.current) mapRef.current.flyTo(entry.view.center, entry.view.zoom, { duration: 0.5, easeLinearity: 0.25 });
-    else skipFitRef.current = false; // 저장된 뷰 없으면 자동 핏 허용
+    // 시작 내러티브(선택 없음)로 복귀하면 항상 홈의 넓은 지도로, 그 외엔 저장된 뷰로.
+    const target = entry.sel ? entry.view : HOME_VIEW;
+    if (target && mapRef.current) mapRef.current.flyTo(target.center, target.zoom, { duration: 0.5, easeLinearity: 0.25 });
+    else skipFitRef.current = false;
   };
   const [showSettings, setShowSettings] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
@@ -1116,7 +1120,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 return (
                   <section style={{ marginTop: 14 }}>
                     <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>
-                      {isCem ? `이곳에 안장된 선교사 ${buried.length}명` : "이곳의 인물"}
+                      {isCem ? `수록된 대표 선교사 ${buried.length}명` : "이곳의 인물"}
                     </h3>
                     {list.length === 0 ? (
                       <p style={{ margin: 0, fontSize: 12.5, color: C.muted }}>기록된 인물이 없습니다.</p>
