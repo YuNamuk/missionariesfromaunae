@@ -103,6 +103,38 @@ export default function JourneyPage() {
         </div>
       </section>
 
+      {/* 복음의 계보 — 수업이 따라 걸은 길(실제 커리큘럼 흐름) */}
+      <section style={{ padding: "clamp(48px,8vh,84px) 24px", background: "linear-gradient(180deg,#2e2218,#3a2a1c)", color: "#fff8ec" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
+          <span style={{ fontSize: 13, fontWeight: 900, letterSpacing: "0.18em", textTransform: "uppercase", color: "#e8a765" }}>Lineage of the Gospel</span>
+          <h2 className="font-serif" style={{ fontSize: "clamp(26px,4.4vw,40px)", fontWeight: 700, margin: "12px 0 8px", color: "#fff8ec" }}>복음의 계보</h2>
+          <p className="font-serif" style={{ fontSize: "clamp(15px,2vw,17px)", lineHeight: 1.9, color: "rgba(255,248,236,.82)", maxWidth: 600, margin: "0 auto 36px" }}>
+            우리는 한국 선교사만 본 것이 아니라, 복음이 흘러온 긴 강을 거슬러 올랐습니다.
+            초대교회의 순교자들에서 시작해, 중세를 지나, 이 땅의 선교사들에게로 — 그리고
+            그 강이 지금 우리에게 닿았습니다. 같은 한 줄기의 복음입니다.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 0, maxWidth: 460, margin: "0 auto", textAlign: "left" }}>
+            {[
+              { era: "초대교회", note: "기꺼이 밀알이 된 순교자들 (Jesus Freaks)" },
+              { era: "중세 교회", note: "어둠 속에서도 꺼지지 않은 등불" },
+              { era: "조선의 선교사", note: "성경이 먼저 들어온 땅, 양화진에 묻힌 사람들" },
+              { era: "그리고 나", note: "바통을 받은 다음 주자", last: true },
+            ].map((s) => (
+              <div key={s.era} style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: "0 0 auto" }}>
+                  <span style={{ width: 14, height: 14, borderRadius: 99, background: s.last ? "#e8a765" : "rgba(255,248,236,.55)", border: s.last ? "2px solid #e8a765" : "none", boxShadow: "0 0 0 4px rgba(46,28,14,.5)" }} />
+                  {!s.last && <span style={{ width: 2, height: 44, background: "rgba(255,248,236,.25)" }} />}
+                </div>
+                <div style={{ paddingBottom: s.last ? 0 : 18 }}>
+                  <div className="font-serif" style={{ fontSize: 18, fontWeight: 700, color: s.last ? "#e8a765" : "#fff8ec" }}>{s.era}</div>
+                  <div className="font-serif" style={{ fontSize: 14, color: "rgba(255,248,236,.7)", marginTop: 2 }}>{s.note}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* 학생들의 목소리 */}
       <section style={{ padding: "clamp(56px,9vh,96px) 24px clamp(72px,12vh,120px)", background: "linear-gradient(180deg,#efe4cd,#f6efe1)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto" }}>
