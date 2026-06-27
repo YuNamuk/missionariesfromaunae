@@ -1117,32 +1117,28 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           </MapContainer>
         </div>
 
-        {/* 시대별 정세(역사 국경) 토글 + 시대 배너 */}
-        <div style={{ position: "absolute", left: 24, top: 24, zIndex: 500, display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => setShowGeo((v) => !v)} title="시대별 정세(역사 국경) 표시" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 12, border: "1px solid rgba(255,255,255,.2)", background: showGeo ? "#9b3d2d" : "rgba(40,26,14,.78)", color: "#fff8ec", cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>
-            🗺 정세 {showGeo ? "ON" : "OFF"}
+        {/* 정세 토글 + 레이어 토글을 한 열로(너비 동일, stretch) */}
+        <div style={{ position: "absolute", left: 24, top: 24, zIndex: 500, display: "flex", flexDirection: "column", alignItems: "stretch", gap: 6 }}>
+          <button onClick={() => setShowGeo((v) => !v)} title="시대별 정세(역사 국경) 표시" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 11, border: `1px solid ${showGeo ? "#9b3d2d" : "rgba(255,255,255,.2)"}`, background: showGeo ? "#9b3d2d" : "rgba(40,26,14,.78)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, whiteSpace: "nowrap" }}>
+            <span style={{ fontSize: 10, opacity: 0.85 }}>{showGeo ? "●" : "○"}</span> 🗺 정세 {showGeo ? "ON" : "OFF"}
           </button>
-          {showGeo && (
-            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, background: "rgba(40,26,14,.82)", color: "#fff8ec", padding: "6px 11px", borderRadius: 10, fontSize: 12.5, fontWeight: 800 }}>
-              <span>{snapshot ? `${year}년` : `${nearestGeoYear(year)}년경`} · {koreaEra(year)}</span>
-              <span style={{ fontSize: 9.5, fontWeight: 600, opacity: 0.7 }}>경계: historical-basemaps (ODbL)</span>
-            </span>
-          )}
+          {(lens === "people" || lens === "era") && ([
+            { on: showStations, set: setShowStations, label: "⚓ 주요 거점", color: "#bf6b22", title: "항구·선교부 등 주요 거점 마커 표시" },
+            { on: showCemeteries, set: setShowCemeteries, label: "♰ 선교 묘역", color: "#9b3d2d", title: "선교사 묘역 마커 표시" },
+            { on: showHeritage, set: setShowHeritage, label: "⛪ 선교 유적지", color: "#7a4a9e", title: "교회·학교·병원 등 선교 유적지 표시" },
+          ] as const).map((t) => (
+            <button key={t.label} onClick={() => t.set((v: boolean) => !v)} title={t.title}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 11, border: `1px solid ${t.on ? t.color : "rgba(255,255,255,.2)"}`, background: t.on ? t.color : "rgba(40,26,14,.7)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, opacity: t.on ? 1 : 0.62, whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: 10, opacity: 0.85 }}>{t.on ? "●" : "○"}</span> {t.label}
+            </button>
+          ))}
         </div>
 
-        {/* 지도 레이어 토글(주요 거점·선교 묘역·선교 유적지) — 정세 토글 아래로 세로 배치 */}
-        {(lens === "people" || lens === "era") && (
-          <div style={{ position: "absolute", left: 24, top: 66, zIndex: 500, display: "flex", flexDirection: "column", alignItems: "stretch", gap: 6 }}>
-            {([
-              { on: showStations, set: setShowStations, label: "⚓ 주요 거점", color: "#bf6b22", title: "항구·선교부 등 주요 거점 마커 표시" },
-              { on: showCemeteries, set: setShowCemeteries, label: "♰ 선교 묘역", color: "#9b3d2d", title: "선교사 묘역 마커 표시" },
-              { on: showHeritage, set: setShowHeritage, label: "⛪ 선교 유적지", color: "#7a4a9e", title: "교회·학교·병원 등 선교 유적지 표시" },
-            ] as const).map((t) => (
-              <button key={t.label} onClick={() => t.set((v: boolean) => !v)} title={t.title}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 11, border: `1px solid ${t.on ? t.color : "rgba(255,255,255,.2)"}`, background: t.on ? t.color : "rgba(40,26,14,.7)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, opacity: t.on ? 1 : 0.62, whiteSpace: "nowrap" }}>
-                <span style={{ fontSize: 10, opacity: 0.85 }}>{t.on ? "●" : "○"}</span> {t.label}
-              </button>
-            ))}
+        {/* 정세 설명(연도·시대) — 지도 상단 중앙 */}
+        {showGeo && (
+          <div style={{ position: "absolute", top: 24, left: "50%", transform: "translateX(-50%)", zIndex: 500, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.25, background: "rgba(40,26,14,.82)", color: "#fff8ec", padding: "7px 14px", borderRadius: 11, fontSize: 12.5, fontWeight: 800, textAlign: "center", pointerEvents: "none" }}>
+            <span>{snapshot ? `${year}년` : `${nearestGeoYear(year)}년경`} · {koreaEra(year)}</span>
+            <span style={{ fontSize: 9.5, fontWeight: 600, opacity: 0.7 }}>경계: historical-basemaps (ODbL)</span>
           </div>
         )}
 
