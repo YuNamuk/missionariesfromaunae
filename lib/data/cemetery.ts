@@ -88,19 +88,19 @@ export const BURIED_EXTRA: Record<string, BuriedPerson[]> = {
   // roster 개별 수록(헤론·언더우드·원한경·헐버트·홀가·M.스크랜튼·벙커·애니엘러스·
   //  에비슨·레이놀즈) 제외한 주요 안장 인물. 출처: 양화진 공식·위키·기독교역사.
   yanghwajin: [
-    { nameKo: "베델", nameEn: "Ernest T. Bethell", life: "1872–1909", role: "대한매일신보 창간, 항일 언론인" },
+    { nameKo: "베델", nameEn: "Ernest T. Bethell", life: "1872–1909", role: "대한매일신보 창간, 항일 언론인", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/Ernest_Bethell.png?width=240", wiki: "https://ko.wikipedia.org/wiki/어니스트_베델" },
     { nameKo: "무어(모삼열)", nameEn: "Samuel F. Moore", life: "1860–1906", role: "백정 신분해방 운동·곤당골(승동)교회" },
-    { nameKo: "조세핀 캠벨", nameEn: "Josephine E. P. Campbell", life: "1853–1920", role: "남감리회 여선교사·배화학당 설립" },
+    { nameKo: "조세핀 캠벨", nameEn: "Josephine E. P. Campbell", life: "1853–1920", role: "남감리회 여선교사·배화학당 설립", wiki: "https://ko.wikipedia.org/wiki/조세핀_캠벨" },
     { nameKo: "더글러스 에비슨", nameEn: "Douglas B. Avison", life: "1893–1952", role: "에비슨의 아들·세브란스 소아과 교수·병원장" },
-    { nameKo: "앨버트 테일러", nameEn: "Albert W. Taylor", life: "1875–1948", role: "AP 통신원·3·1운동/제암리 보도(딜쿠샤)" },
+    { nameKo: "앨버트 테일러", nameEn: "Albert W. Taylor", life: "1875–1948", role: "AP 통신원·3·1운동/제암리 보도(딜쿠샤)", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/Albert_Wilder_Taylor.jpg?width=240" },
     { nameKo: "앨리스 아펜젤러", nameEn: "Alice R. Appenzeller", life: "1885–1950", role: "아펜젤러의 딸·이화여전 초대 교장" },
     { nameKo: "헨리 닷지 아펜젤러", nameEn: "Henry D. Appenzeller", life: "1889–1953", role: "아펜젤러의 아들·배재학당 교장" },
-    { nameKo: "프란츠 에케르트", nameEn: "Franz Eckert", life: "1852–1916", role: "대한제국 애국가 작곡·서양식 군악대 창설" },
-    { nameKo: "샤를 르장드르", nameEn: "Charles W. Legendre", life: "1830–1899", role: "대한제국 궁내부·내장원 고문" },
+    { nameKo: "프란츠 에케르트", nameEn: "Franz Eckert", life: "1852–1916", role: "대한제국 애국가 작곡·서양식 군악대 창설", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/%D0%A4%D1%80%D0%B0%D0%BD%D1%86%20%D0%95%D0%BA%D0%B5%D1%80%D1%82%2001.png?width=240", wiki: "https://ko.wikipedia.org/wiki/프란츠_에케르트" },
+    { nameKo: "샤를 르장드르", nameEn: "Charles W. Legendre", life: "1830–1899", role: "대한제국 궁내부·내장원 고문", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/C.W._Le_Gendre,_51st_N.Y._LOC_cwpb.05132.jpg?width=240", wiki: "https://ko.wikipedia.org/wiki/샤를_르_장드르" },
     { nameKo: "에밀 마르텔", nameEn: "Émile Martel", life: "1874–1949", role: "관립법어학교 설립·프랑스어 교육", uncertain: true, note: "생몰년 자료 간 차이" },
     { nameKo: "빈튼", nameEn: "Cadwallader C. Vinton", life: "1856–1936", role: "북장로회 의료선교사·제중원 의사", uncertain: true, note: "부인·두 아들 안장 확실, 본인은 추가 확인 필요" },
     { nameKo: "곽안련(클라크)", nameEn: "Charles A. Clark", life: "1878–1961", role: "북장로회 선교사·평양신학교 교수·한국교회사 저술", uncertain: true, note: "안장 경위 추가 확인 권장" },
-    { nameKo: "조마가(트롤로프)", nameEn: "Mark N. Trollope", life: "1862–1930", role: "성공회 제3대 조선교구장 주교", uncertain: true, note: "성 세례자요한성당 안장설이 유력, 안장지 표기 충돌" },
+    { nameKo: "조마가(트롤로프)", nameEn: "Mark N. Trollope", life: "1862–1930", role: "성공회 제3대 조선교구장 주교", uncertain: true, note: "성 세례자요한성당 안장설이 유력, 안장지 표기 충돌", photo: "https://commons.wikimedia.org/wiki/Special:FilePath/1890_08_15_cabinet_print_by_MILLER%27s_of_Yarmouth_(eBay_purchase_2018_01)_-_Revd_M._N._TROLLOPE_%27of_Beckenham%27.jpg?width=240" },
   ],
 
   // ── 국립서울현충원(외국인 안장자) ──
