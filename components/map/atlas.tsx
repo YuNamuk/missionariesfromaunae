@@ -360,6 +360,26 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     // 홈(people)은 자동 선택 없이 '조선 선교의 흐름' 내러티브로 진입.
     return null;
   });
+  // 상세 카드 뒤로가기: 선택 이력 스택. 새 선택은 push, 뒤로가기는 pop.
+  const [history, setHistory] = useState<Selected[]>([]);
+  const selKey = (s: Selected) => (s ? `${s.kind}:${s.id}` : "");
+  const prevSelRef = useRef<Selected>(null);
+  const goingBackRef = useRef(false);
+  const firstSelRun = useRef(true);
+  useEffect(() => {
+    if (firstSelRun.current) { firstSelRun.current = false; prevSelRef.current = selected; return; }
+    if (selKey(prevSelRef.current) !== selKey(selected)) {
+      if (goingBackRef.current) goingBackRef.current = false;
+      else setHistory((h) => [...h, prevSelRef.current]);
+    }
+    prevSelRef.current = selected;
+  }, [selected]);
+  const goBack = () => setHistory((h) => {
+    if (!h.length) return h;
+    goingBackRef.current = true;
+    setSelected(h[h.length - 1]);
+    return h.slice(0, -1);
+  });
   const [showSettings, setShowSettings] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
@@ -952,6 +972,11 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
       {/* ── RIGHT: detail + relationships ── */}
       <article style={{ gridColumn: 3, minWidth: 0, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", display: rightOpen ? "flex" : "none", flexDirection: "column", minHeight: 0, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
+        {history.length > 0 && (selPerson || selPlace || selEvent) && (
+          <button onClick={goBack} title="이전 선택으로" style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 44px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
+            <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> 뒤로
+          </button>
+        )}
         <button onClick={() => setRightOpen(false)} title="상세 접기" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: "1px solid rgba(255,255,255,.25)", background: "rgba(40,26,14,.45)", color: "#fff8ec", cursor: "pointer", zIndex: 10 }}>
           <PanelRightClose size={16} />
         </button>
