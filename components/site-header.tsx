@@ -169,6 +169,7 @@ const PAGES = [
   { href: "/journey", label: "우리의 여정" },
   { href: "/", label: "지도" },
   { href: "/dictionary", label: "인명사전" },
+  { href: "/compare", label: "두 삶 비교" },
 ];
 
 export function SiteHeader() {
