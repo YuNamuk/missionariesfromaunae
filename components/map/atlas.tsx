@@ -13,7 +13,7 @@ import { isFeatured, regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleT
 import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
 import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PERSON_COORD } from "@/lib/data/person-coord";
-import { C, CAT_COLOR, orgTint, personLatLng, labelHtml, placeIcon, personIcon, arrowIcon, bearingDeg, distKm } from "./atlas-icons";
+import { C, CAT_COLOR, orgTint, personLatLng, labelHtml, placeIcon, personIcon, arrowIcon, bearingDeg, distKm, clusterIcon } from "./atlas-icons";
 
 // ── 시대별 정세(역사 국경) 오버레이 ──────────────────────────────
 // 출처: historical-basemaps (github.com/aourednik/historical-basemaps, ODbL).
@@ -150,6 +150,19 @@ function MapBinder({ mapRef, viewRef }: { mapRef: React.MutableRefObject<L.Map |
     map.on("moveend zoomend", grab);
     return () => { map.off("moveend zoomend", grab); };
   }, [map, mapRef, viewRef]);
+  return null;
+}
+
+/** 현재 줌 레벨을 React 상태로 끌어올린다 — 낮은 줌에서 인물 마커를 '지역 묶음'으로
+ *  접고(클러스터링), 줌인하면 펼치기 위해 필요. */
+function ZoomLevel({ onZoom }: { onZoom: (z: number) => void }) {
+  const map = useMap();
+  useEffect(() => {
+    const f = () => onZoom(map.getZoom());
+    f();
+    map.on("zoomend", f);
+    return () => { map.off("zoomend", f); };
+  }, [map, onZoom]);
   return null;
 }
 
@@ -400,6 +413,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [listAll, setListAll] = useState(false); // 리스트바: 대표만/전체
   const [pickerOpen, setPickerOpen] = useState(false); // 인물 드롭다운: 마우스 영역 안이면 유지
   const [showGeo, setShowGeo] = useState(false); // 시대별 정세(역사 국경) 오버레이
+  const [mapZoom, setMapZoom] = useState(6); // 현재 줌(클러스터 접기/펼치기 판단용)
   const [showHeritage, setShowHeritage] = useState(false); // 선교 유적지 레이어 (메뉴/토글로 켤 때만)
   const [showCemeteries, setShowCemeteries] = useState(true); // 선교 묘역 마커 레이어
   const [showStations, setShowStations] = useState(true); // 주요 거점(항구·선교부 등) 마커 레이어
@@ -625,6 +639,34 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
   // edges to draw (only between visible people)
   const visIds = useMemo(() => new Set(mapPeople.map((p) => p.id)), [mapPeople]);
+
+  // ── 클러스터: 낮은 줌 + 미선택일 때 인물 마커를 지역 격자(~44km)로 묶는다 ──
+  // 선택하거나 CLUSTER_Z 이상으로 줌인하면 개별 마커로 펼쳐진다(관계망 로직은 그대로).
+  const CLUSTER_Z = 11;
+  const peopleShown = !((lens === "people" || lens === "era") && !showPeople);
+  const clusterOn = peopleShown && !selected && mapZoom < CLUSTER_Z;
+  const clusters = useMemo(() => {
+    if (!clusterOn) return [] as { id: string; lat: number; lng: number; count: number; label: string; ids: string[] }[];
+    const CELL = 0.4; // ~44km 격자: 서울 메트로는 합치고 도시는 분리
+    const REGION_LABEL: Record<string, string> = Object.fromEntries(REGIONS.map((r) => [r.key, r.label]));
+    const groups = new Map<string, { latSum: number; lngSum: number; ids: string[]; reg: Record<string, number> }>();
+    for (const p of mapPeople) {
+      const ll = personPos.get(p.id);
+      if (!ll) continue;
+      const key = `${Math.round(ll[0] / CELL)}_${Math.round(ll[1] / CELL)}`;
+      let g = groups.get(key);
+      if (!g) { g = { latSum: 0, lngSum: 0, ids: [], reg: {} }; groups.set(key, g); }
+      g.latSum += ll[0]; g.lngSum += ll[1]; g.ids.push(p.id);
+      const rk = regionOf(p.place); g.reg[rk] = (g.reg[rk] ?? 0) + 1;
+    }
+    return [...groups.entries()].map(([key, g]) => {
+      const n = g.ids.length;
+      const topReg = Object.entries(g.reg).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "seoul";
+      return { id: "cl_" + key, lat: g.latSum / n, lng: g.lngSum / n, count: n, label: REGION_LABEL[topReg] ?? topReg, ids: g.ids };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clusterOn, mapPeople, personPos]);
+
   const drawEdges = relations.filter((r) => visIds.has(r.other.id));
   // network lens: every relationship among visible people, drawn faintly
   const netOn = lens === "network" || showNetwork;
@@ -964,6 +1006,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <HistoricalOverlay year={year} on={showGeo} />
             <MapPanes />
             <MapBinder mapRef={mapRef} viewRef={viewRef} />
+            <ZoomLevel onZoom={setMapZoom} />
             <InvalidateOnResize deps={[leftOpen, rightOpen]} />
             <MapControls />
             <FitToSelection targets={focusTargets} focusKey={focusKey} fit={fit} skipFirst skipRef={skipFitRef} />
@@ -1026,20 +1069,49 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               );
             })}
 
-            {(lens === "people" || lens === "era") && !showPeople ? null : mapPeople.map((p) => {
-              const ll = personPos.get(p.id);
-              if (!ll) return null;
-              const sel = selected?.kind === "person" && selected.id === p.id;
-              const first = relatedIds.has(p.id) || eventHi.has(p.id);
-              const second = secondDeg.has(p.id);
-              const dimActive = !!selPerson || !!selEvent;
-              // 투명도는 '특정 선교사(또는 사건) 클릭 시 관계망에서 제외된 인물'에만 적용.
-              // 그 외(미선택·랜딩)에는 토글로 보이는 모든 인물을 또렷하게(활성) 표시.
-              const opacity = !dimActive ? 1 : sel || first ? 1 : 0.22;
-              return (
-                <Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
-              );
-            })}
+            {!peopleShown ? null : clusterOn
+              ? clusters.flatMap((cl) => {
+                  // 단독(1명)은 묶지 않고 개별 마커로, 2명 이상만 묶음 배지로.
+                  if (cl.count === 1) {
+                    const p = mapPeople.find((x) => x.id === cl.ids[0]);
+                    const ll = p && personPos.get(p.id);
+                    return p && ll ? [<Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, false, 1, false)} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />] : [];
+                  }
+                  return [
+                    <Marker
+                      key={cl.id}
+                      position={[cl.lat, cl.lng]}
+                      pane="peoplePane"
+                      icon={clusterIcon(cl.count, cl.label, "#7a4a2e")}
+                      zIndexOffset={60}
+                      eventHandlers={{
+                        click: () => {
+                          const pts = cl.ids.map((id) => personPos.get(id)).filter(Boolean) as [number, number][];
+                          const map = mapRef.current;
+                          if (!pts.length || !map) return;
+                          const b = L.latLngBounds(pts);
+                          // 임계줌(CLUSTER_Z)을 반드시 넘겨 개별 마커로 펼쳐지도록 보장.
+                          const fitZ = map.getBoundsZoom(b, false, L.point(70, 70));
+                          map.flyTo(b.getCenter(), Math.min(Math.max(fitZ, CLUSTER_Z + 0.5), 16), { duration: 0.5, easeLinearity: 0.25 });
+                        },
+                      }}
+                    />,
+                  ];
+                })
+              : mapPeople.map((p) => {
+                  const ll = personPos.get(p.id);
+                  if (!ll) return null;
+                  const sel = selected?.kind === "person" && selected.id === p.id;
+                  const first = relatedIds.has(p.id) || eventHi.has(p.id);
+                  const second = secondDeg.has(p.id);
+                  const dimActive = !!selPerson || !!selEvent;
+                  // 투명도는 '특정 선교사(또는 사건) 클릭 시 관계망에서 제외된 인물'에만 적용.
+                  // 그 외(미선택·랜딩)에는 토글로 보이는 모든 인물을 또렷하게(활성) 표시.
+                  const opacity = !dimActive ? 1 : sel || first ? 1 : 0.22;
+                  return (
+                    <Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
+                  );
+                })}
           </MapContainer>
         </div>
 
