@@ -109,6 +109,7 @@ const HERITAGE_PHOTOS: Record<string, { photo: string; photoSource: string }> = 
   kiholl_hospital: { photo: "https://upload.wikimedia.org/wikipedia/commons/b/b7/Hall_Memorial_Hospital%2C_Pyengang%2C_%28s.d.%29_%28Taylor_box45num26%29.jpg", photoSource: "사진: USC Taylor Collection / Public Domain (옛 사진)" },
   ganggyeong_bukok_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/5/51/%EA%B5%AC_%EA%B0%95%EA%B2%BD%EC%84%B1%EA%B2%B0%EA%B5%90%ED%9A%8C_%EC%98%88%EB%B0%B0%EB%8B%B9.jpg", photoSource: "사진: 문화재청 / 공공누리 제1유형" },
   gwangju_christian_hospital: { photo: "https://upload.wikimedia.org/wikipedia/commons/0/0f/%EA%B4%91%EC%A3%BC%EA%B8%B0%EB%8F%85%EB%B3%91%EC%9B%90_%EB%B3%91%EB%8F%99.jpg", photoSource: "사진: 문화재청 / 공공누리 제1유형" },
+  severance_old: { photo: "https://upload.wikimedia.org/wikipedia/commons/1/18/Severance_Hospital_1904.jpg", photoSource: "사진: Public Domain, Wikimedia Commons (1904 옛 세브란스병원)" },
 };
 for (const h of HERITAGE) {
   const p = HERITAGE_PHOTOS[h.id];
