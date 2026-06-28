@@ -107,10 +107,15 @@ const ZOOM_PRESET: Record<string, { maxZoom: number; pad: number }> = {
 /** Flies the camera to fit the current selection + its relationship network. */
 function FitToSelection({ targets, focusKey, fit, skipFirst, skipRef }: { targets: [number, number][]; focusKey: string; fit: string; skipFirst: boolean; skipRef?: React.MutableRefObject<boolean> }) {
   const map = useMap();
-  const first = useRef(skipFirst);
+  const first = useRef(true);
   useEffect(() => {
-    if (first.current) { first.current = false; return; } // 초기엔 넓은 지도 유지
-    if (skipRef?.current) { skipRef.current = false; return; } // 뒤로가기: 저장된 지도 상태 복원이 우선
+    if (skipRef?.current) { skipRef.current = false; first.current = false; return; } // 뒤로가기: 저장된 지도 상태 복원이 우선
+    if (first.current) {
+      first.current = false;
+      // 첫 실행: 맞출 대상이 없으면(홈 내러티브) 넓은 지도 유지. 단, 딥링크로 진입해
+      // 이미 선택(타깃)이 있으면 그 위치로 줌인한다.
+      if (skipFirst && targets.length === 0) return;
+    }
     if (targets.length === 0) return;
     const { maxZoom, pad } = ZOOM_PRESET[fit] ?? ZOOM_PRESET.tight;
     if (targets.length === 1) {
