@@ -32,6 +32,7 @@ export interface Resource {
   /** title */ t: string;
   /** author / attribution */ a: string;
   /** accent color */ c: string;
+  /** optional free full-text URL (e.g., archive.org) */ u?: string;
 }
 
 export interface Person {

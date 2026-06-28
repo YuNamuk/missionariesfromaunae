@@ -377,9 +377,18 @@ export default async function PersonPage({
               {sources.length > 0 && (
                 <ul className="mt-2 space-y-2">
                   {sources.map((s, i) => (
-                    <li key={i} className="rounded-2xl border border-ink-200 bg-white p-3">
-                      <div className="text-[13px] font-bold text-ink-800">{s.t}</div>
-                      <div className="text-[12px] text-ink-500">{s.a}</div>
+                    <li key={i}>
+                      {s.u ? (
+                        <a href={s.u} target="_blank" rel="noreferrer" className="block rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300">
+                          <div className="text-[13px] font-bold text-sky-700">{s.t} ↗</div>
+                          <div className="text-[12px] text-ink-500">{s.a}</div>
+                        </a>
+                      ) : (
+                        <div className="rounded-2xl border border-ink-200 bg-white p-3">
+                          <div className="text-[13px] font-bold text-ink-800">{s.t}</div>
+                          <div className="text-[12px] text-ink-500">{s.a}</div>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

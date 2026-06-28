@@ -41,8 +41,8 @@ export const RES: Resource[] = [
     { t: '개화와 선교의 요람 정동이야기', a: '이덕주', c: '#4734B0' },
     { t: '처음읽는 이야기 한국 교회사', a: '이종훈', c: '#075776' },
     { t: '조선회상', a: '셔우드 홀', c: '#1E3852' },
-    { t: '아펜젤러', a: '윌리엄 그리피스', c: '#0089C2' },
-    { t: '언더우드', a: '릴리어스 호턴 언더우드', c: '#5742D4' },
+    { t: '아펜젤러', a: '윌리엄 그리피스', c: '#0089C2', u: 'https://archive.org/details/modernpioneerink00grifiala' },
+    { t: '언더우드', a: '릴리어스 호턴 언더우드', c: '#5742D4', u: 'https://archive.org/details/cihm_81067' },
   ];
 export const PEOPLE: Person[] = [
     { id: 'allen', name: '호러스 알렌', en: 'Horace N. Allen', glyph: '⚕', year: 1884, place: 'jeongdong',
@@ -58,7 +58,7 @@ export const PEOPLE: Person[] = [
       facts: [['입국','1885.4.5 (제물포)'],['소속','미국 북장로회'],['사역','교육 · 전도 · 번역'],['대표 업적','새문안교회 · 연희전문']],
       timeline: [['1885','부활절, 제물포 입국'],['1887','새문안교회 설립'],['1886','고아원(경신학교 전신) 시작'],['1900','성서번역위원회 주도'],['1915','연희전문학교 설립']],
       docs: [0,9,4], video: '언더우드, 보이지 않는 손길을 붙잡고',
-      photos: ['새문안교회 초기 교인들','언더우드 일가'], interview: '오, 주여 — 보이지 않아도 믿습니다' },
+      photos: ['새문안교회 초기 교인들','언더우드 일가'], interview: '' },
     { id: 'appenzeller', name: '헨리 아펜젤러', en: 'Henry G. Appenzeller', glyph: '✝', year: 1885, place: 'jeongdong',
       country: '미국', org: '북감리회', role: '교육 · 전도', life: '1858–1902',
       summary: '언더우드와 같은 배로 입국한 북감리회 선교사. 1885년 배재학당을 세워 “욕위대자 당위인역(크게 되려는 자는 남을 섬기라)”을 교훈으로 삼았고 정동제일교회를 설립했다. 1902년 성경 번역 회의로 가던 길에 해상 사고로 순직했다.',
