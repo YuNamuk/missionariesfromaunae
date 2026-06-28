@@ -110,6 +110,17 @@ const HERITAGE_PHOTOS: Record<string, { photo: string; photoSource: string }> = 
   ganggyeong_bukok_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/5/51/%EA%B5%AC_%EA%B0%95%EA%B2%BD%EC%84%B1%EA%B2%B0%EA%B5%90%ED%9A%8C_%EC%98%88%EB%B0%B0%EB%8B%B9.jpg", photoSource: "사진: 문화재청 / 공공누리 제1유형" },
   gwangju_christian_hospital: { photo: "https://upload.wikimedia.org/wikipedia/commons/0/0f/%EA%B4%91%EC%A3%BC%EA%B8%B0%EB%8F%85%EB%B3%91%EC%9B%90_%EB%B3%91%EB%8F%99.jpg", photoSource: "사진: 문화재청 / 공공누리 제1유형" },
   severance_old: { photo: "https://upload.wikimedia.org/wikipedia/commons/1/18/Severance_Hospital_1904.jpg", photoSource: "사진: Public Domain, Wikimedia Commons (1904 옛 세브란스병원)" },
+  // 국가유산청 국가유산포털·한국관광공사(공공누리 제1유형)·PD — /public/heritage에 자체 호스팅.
+  gwangju_wilson_house: { photo: "/heritage/gwangju_wilson_house.jpg", photoSource: "사진: 한국관광공사(VisitKorea) / 공공누리 제1유형" },
+  mokpo_yangdong_church: { photo: "/heritage/mokpo_yangdong_church.jpg", photoSource: "사진: 국가유산청 국가유산포털 / 공공누리 제1유형" },
+  suncheon_coit_house: { photo: "/heritage/suncheon_coit_house.jpg", photoSource: "사진: 국가유산청 국가유산포털 / 공공누리 제1유형" },
+  suncheon_preston_house: { photo: "/heritage/suncheon_preston_house.jpg", photoSource: "사진: 국가유산청 국가유산포털 / 공공누리 제1유형" },
+  suncheon_watts_hall: { photo: "/heritage/suncheon_watts_hall.jpg", photoSource: "사진: 국가유산청 국가유산포털 / 공공누리 제1유형" },
+  busanjin_ilsin: { photo: "/heritage/busanjin_ilsin.jpg", photoSource: "사진: 국가유산청 국가유산포털 / 공공누리 제1유형" },
+  andong_church: { photo: "/heritage/andong_church.jpg", photoSource: "사진: 국가유산청 국가유산포털 / 공공누리 제1유형" },
+  yeongcheon_jacheon_church: { photo: "/heritage/yeongcheon_jacheon_church.jpg", photoSource: "사진: 국가유산청 국가유산포털 / 공공누리 제1유형" },
+  yeongdeok_songcheon_church: { photo: "/heritage/yeongdeok_songcheon_church.jpg", photoSource: "사진: 국가유산청 국가유산포털 / 공공누리 제1유형" },
+  jangdaehyeon_church: { photo: "/heritage/jangdaehyeon_church.jpg", photoSource: "사진: 미상(1907) / 퍼블릭 도메인, Wikimedia Commons" },
 };
 for (const h of HERITAGE) {
   const p = HERITAGE_PHOTOS[h.id];
