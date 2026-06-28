@@ -128,7 +128,6 @@ export const BURIED_SOURCE: Record<string, string[]> = {
     "http://www.gjsgcc.or.kr/ko/29/view?SEQ=946", // 광주 서구문화원: 묘비 21기 판독 명단(1차 출처)
     "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=5a6293ae-075a-44fd-a4bf-a3a7f7807f24", // 대한민국 구석구석
     "https://gwangju.grandculture.net/gwangju/bukgu/toc/GC60005039", // 디지털광주문화대전
-    "http://www.kch.or.kr/sub01/sub0104_1.html", // 광주기독병원 선교사 연혁(한국명 대조)
   ],
   daegu_eunhye: [
     "https://daegu.grandculture.net/daegu/toc/GC40008143", // 대구역사문화대전: 은혜의 정원

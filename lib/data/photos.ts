@@ -50,9 +50,9 @@ export const PHOTOS: Record<string, PersonPhoto> = {
   gilseonju: { qid: "Q4991796", photo: "/portraits/gilseonju.jpg", wiki: "https://ko.wikipedia.org/wiki/길선주", namu: "https://namu.wiki/w/길선주", source: C },
   seogyeongjo: { qid: "Q16169416", photo: "/portraits/seogyeongjo.jpg", wiki: "https://ko.wikipedia.org/wiki/서경조_(목회자)", source: C },
   kimchangsik: { qid: "", photo: "/portraits/kimchangsik.jpg", wiki: "https://ko.wikipedia.org/wiki/김창식_(1857년)", source: "MEC 선교회 'Kim Chang Sik'(1900s) · Internet Archive" },
-  schofield: { qid: "Q5489442", photo: "/portraits/schofield.png", wiki: "https://ko.wikipedia.org/wiki/프랭크_스코필드", wikiEn: "https://en.wikipedia.org/wiki/Frank_Schofield", namu: "https://namu.wiki/w/프랭크_스코필드", source: "이승만 대통령 면담(1958) · 국가기록원 CET0021614 · Wikimedia Commons(PD)" },
+  schofield: { qid: "Q5489442", photo: "/portraits/schofield.png", wiki: "https://ko.wikipedia.org/wiki/프랭크_스코필드", wikiEn: "https://en.wikipedia.org/wiki/Frank_Schofield", namu: "https://namu.wiki/w/프랭크 스코필드", source: "이승만 대통령 면담(1958) · 국가기록원 CET0021614 · Wikimedia Commons(PD)" },
   hhunderwood: { qid: "Q12625227", photo: null, wiki: "https://ko.wikipedia.org/wiki/호러스_호턴_언더우드", source: "한국어 위키백과" },
-  linton: { qid: "", photo: null, wiki: "https://ko.wikipedia.org/wiki/윌리엄_린튼", namu: "https://namu.wiki/w/윌리엄_린튼", source: "한국어 위키백과" },
+  linton: { qid: "", photo: null, wiki: "https://ko.wikipedia.org/wiki/윌리엄_린튼", namu: "https://namu.wiki/w/윌리엄 린튼", source: "한국어 위키백과" },
   // 묘역별 대표 선교사(보강).
   shepping: { qid: "", photo: "/portraits/shepping.jpg", wiki: "https://ko.wikipedia.org/wiki/서서평", wikiEn: "https://en.wikipedia.org/wiki/Elisabeth_Shepping", namu: "https://namu.wiki/w/서서평", source: "The Korea Mission Field 1918.12(세브란스 간호졸업) · Internet Archive" },
   owen: { qid: "", photo: null, wiki: "", source: "" },
