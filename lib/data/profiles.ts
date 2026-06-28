@@ -518,6 +518,14 @@ const QUOTES: Record<string, { text: string; source: string }> = {
     text: "하나님이 내 죄를 용서하셨거늘 내 어찌 그분을 저주하며, 외국인이 내게 정당한 삯을 주었거늘 내 어찌 그를 버리겠소?",
     source: "1894년 평양 박해 중 신앙 고백(‘조선의 바울’) · H. G. Appenzeller, Korea Mission of the M.E. Church, pp.28–29의 영문 기록을 옮김",
   },
+  underwood: {
+    text: "우리는 그분의 교회가 무(無)에서 십만이 넘는 신자의 무리로 자라나는 것을 보았습니다.",
+    source: "“We have seen His Church grow from nothing to a body of believers over one hundred thousand strong.” — Horace G. Underwood, The Call of Korea(1908) 서문",
+  },
+  schofield: {
+    text: "나는 ‘캐나다인’이라기보다 ‘조선인’이라고 생각됩니다.",
+    source: "1931년 성탄절 공개 서한 · 한국독립운동정보시스템 독립운동인명사전(i815.or.kr)",
+  },
 };
 
 // 인물별 검증된 권위 참고 사료 링크(한국민족문화대백과·위키 등). 리서치로 인물 일치 확인된 것만.
