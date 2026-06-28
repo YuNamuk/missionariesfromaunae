@@ -38,7 +38,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const person = getPerson(id);
-  return { title: person ? `${person.name} · 조선 선교사 자료실` : "인물" };
+  return { title: person ? person.name : "인물" };
 }
 
 export default async function PersonPage({

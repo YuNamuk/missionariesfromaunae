@@ -10,27 +10,27 @@ const DESC =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "조선 선교사 온라인 자료실 · Missionaries from Aunae",
-    template: "%s · 조선 선교사 온라인 자료실",
+    default: "우리는 아우내에서 온 선교사입니다 · Missionaries from Aunae",
+    template: "%s · Missionaries from Aunae",
   },
   description: DESC,
-  applicationName: "조선 선교사 온라인 자료실",
+  applicationName: "Missionaries from Aunae",
   keywords: [
     "조선 선교사", "한국 개신교 역사", "초기 선교사", "양화진", "선교 묘역", "선교 유적지",
-    "언더우드", "아펜젤러", "평양 대부흥", "한국 선교", "missionaries to Korea", "Korean church history",
+    "언더우드", "아펜젤러", "평양 대부흥", "한국 선교", "아우내", "missionaries to Korea", "Missionaries from Aunae", "Korean church history",
   ],
-  authors: [{ name: "조선 선교사 온라인 자료실" }],
+  authors: [{ name: "Missionaries from Aunae" }],
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    siteName: "조선 선교사 온라인 자료실",
-    title: "조선 선교사 온라인 자료실 · Missionaries from Aunae",
+    siteName: "Missionaries from Aunae",
+    title: "우리는 아우내에서 온 선교사입니다 · Missionaries from Aunae",
     description: DESC,
     url: SITE_URL,
   },
   twitter: {
     card: "summary_large_image",
-    title: "조선 선교사 온라인 자료실",
+    title: "우리는 아우내에서 온 선교사입니다 · Missionaries from Aunae",
     description: DESC,
   },
 };

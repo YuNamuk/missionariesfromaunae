@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const dynamic = "force-dynamic";
-export const alt = "조선 선교사 온라인 자료실 · Missionaries to Korea";
+export const alt = "우리는 아우내에서 온 선교사입니다 · Missionaries from Aunae";
 
 // ImageResponse 기본 폰트에는 한글 글리프가 없어, 공유 카드는 영문 브랜드로 구성한다.
 export default function OpengraphImage() {
@@ -21,22 +21,7 @@ export default function OpengraphImage() {
           justifyContent: "center",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 84,
-              height: 84,
-              borderRadius: 22,
-              background: "linear-gradient(135deg,#1F6F8B,#3F7F4B)",
-              fontSize: 56,
-              fontWeight: 900,
-            }}
-          >
-            Ð
-          </div>
+        <div style={{ display: "flex", alignItems: "center" }}>
           <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: 6, color: "#7db7d8" }}>
             MISSIONARIES TO KOREA · 1882–1935
           </div>

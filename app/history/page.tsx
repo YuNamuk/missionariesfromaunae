@@ -4,7 +4,7 @@ import { AtlasLoader } from "@/components/map/atlas-loader";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "선교 연혁 · 조선 선교사 자료실" };
+export const metadata: Metadata = { title: "선교 연혁" };
 
 export default async function HistoryPage() {
   return <AtlasLoader data={await buildAtlasData()} lens="history" />;

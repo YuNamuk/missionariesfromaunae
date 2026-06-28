@@ -4,7 +4,7 @@ import { AtlasLoader } from "@/components/map/atlas-loader";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "인물 · 조선 선교사 자료실" };
+export const metadata: Metadata = { title: "인물" };
 
 export default async function PeoplePage() {
   return <AtlasLoader data={await buildAtlasData()} lens="people" />;

@@ -7,7 +7,7 @@ import { PHOTOS } from "@/lib/data/photos";
 import { isFeatured } from "@/lib/data/meta";
 import { DictionaryRoster, type RosterPerson } from "@/components/dictionary-roster";
 
-export const metadata: Metadata = { title: "인명사전 · 조선 선교사 자료실" };
+export const metadata: Metadata = { title: "인명사전" };
 
 function Badge({ verified }: { verified: boolean }) {
   return (

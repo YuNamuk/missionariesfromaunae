@@ -188,8 +188,8 @@ export function SiteHeader() {
     >
       <Link href="/story" className="flex min-w-0 flex-none items-center">
         <span className="block min-w-0">
-          <span className="font-display block truncate text-[16px] font-extrabold leading-tight tracking-tight text-white sm:text-[17px]">Missionaries from Aunae</span>
-          <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-sky-300">Dreamy School</span>
+          <span className="font-serif block truncate text-[15px] font-extrabold leading-tight tracking-tight text-white sm:text-[16.5px]">우리는 아우내에서 온 선교사입니다</span>
+          <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-sky-300">Missionaries from Aunae</span>
         </span>
       </Link>
 

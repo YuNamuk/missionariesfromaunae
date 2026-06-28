@@ -186,7 +186,7 @@ export default function AdminPage() {
       <div style={{ minHeight: "calc(100vh - 4rem)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)", color: C.ink }}>
         <form onSubmit={login} style={{ width: 320, background: "#fffdf7", border: `1px solid ${C.line}`, borderRadius: 18, padding: 24, boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
           <h1 className="font-display" style={{ fontWeight: 900, fontSize: 22, margin: "0 0 4px" }}>관리자 로그인</h1>
-          <p style={{ margin: "0 0 16px", fontSize: 12.5, color: C.muted }}>조선 선교사 자료실 운영</p>
+          <p style={{ margin: "0 0 16px", fontSize: 12.5, color: C.muted }}>Missionaries from Aunae 운영</p>
           <button type="button" onClick={loginGoogle} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: `1px solid ${C.line}`, borderRadius: 10, padding: "10px", background: "#fff", color: "#3c4043", fontWeight: 800, fontSize: 13, cursor: "pointer", marginBottom: 14 }}>
             <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#4285F4" d="M45 24c0-1.6-.1-2.7-.4-3.9H24v7.1h11.8c-.2 1.9-1.5 4.7-4.3 6.6l6.6 5.1C42 41.1 45 33.3 45 24z"/><path fill="#34A853" d="M24 46c5.8 0 10.6-1.9 14.1-5.2l-6.6-5.1c-1.8 1.2-4.2 2.1-7.5 2.1-5.7 0-10.6-3.9-12.3-9.1l-6.8 5.3C8.3 41 15.6 46 24 46z"/><path fill="#FBBC05" d="M11.7 28.7c-.5-1.3-.7-2.7-.7-4.7s.3-3.4.7-4.7l-6.8-5.3C3.6 16.9 3 20.3 3 24s.6 7.1 1.9 10l6.8-5.3z"/><path fill="#EA4335" d="M24 10.7c3.2 0 5.4 1.4 6.6 2.5l5.8-5.7C32.6 4.1 28.8 2 24 2 15.6 2 8.3 7 4.9 14l6.8 5.3C13.4 14.6 18.3 10.7 24 10.7z"/></svg>
             Google로 로그인
