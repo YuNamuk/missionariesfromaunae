@@ -356,9 +356,9 @@ export default async function PersonPage({
         </section>
       )}
 
-      {/* 바깥 링크 · 참고 출처 · 자료 — 아래 새 배치(3열) */}
-      {(extLinks.length > 0 || photoSource || sources.length > 0 || (profile?.refs && profile.refs.length > 0) || person.interview || person.photos.length > 0) && (
-        <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      {/* 참고 출처 · 외부 링크 (2열) */}
+      {(extLinks.length > 0 || photoSource || sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (
+        <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2">
           {(sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (
             <div>
               <h2 className="font-display text-lg font-extrabold text-ink-900">참고 출처</h2>
@@ -393,32 +393,6 @@ export default async function PersonPage({
                   ))}
                 </ul>
               )}
-            </div>
-          )}
-
-          {(person.interview || person.photos.length > 0 || person.video) && (
-            <div>
-              <h2 className="font-display text-lg font-extrabold text-ink-900">자료</h2>
-              <div className="mt-3 space-y-2 text-[13px]">
-                {person.interview && (
-                  <div className="rounded-2xl border border-ink-200 bg-white p-3">
-                    <span className="font-bold text-aqua-700">인터뷰 </span>
-                    <span className="text-ink-700">“{person.interview}”</span>
-                  </div>
-                )}
-                {person.photos.map((ph, i) => (
-                  <div key={i} className="rounded-2xl border border-ink-200 bg-white p-3">
-                    <span className="font-bold text-sky-600">사진 </span>
-                    <span className="text-ink-700">{ph}</span>
-                  </div>
-                ))}
-                {person.video && (
-                  <div className="rounded-2xl border border-ink-200 bg-white p-3">
-                    <span className="font-bold text-iris-600">영상 </span>
-                    <span className="text-ink-700">{person.video}</span>
-                  </div>
-                )}
-              </div>
             </div>
           )}
 
