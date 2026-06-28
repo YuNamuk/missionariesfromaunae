@@ -924,6 +924,27 @@ const REFS: Record<string, { title: string; url: string; publisher?: string }[]>
   "maclay": [
     { "title": "매클레이의 선교 윤허 — 우리역사넷", "url": "https://contents.history.go.kr/mobile/nh/view.do?levelId=nh_046_0030_0040_0010_0020", "publisher": "국사편찬위원회" },
     { "title": "Robert Samuel Maclay — Wikipedia", "url": "https://en.wikipedia.org/wiki/Robert_Samuel_Maclay" }
+  ],
+  "nisbet": [
+    { "title": "내한 선교사 — 유서백·유애나(Nisbet)", "url": "https://kmhistory.com/missionaries/missionaries/", "publisher": "내한선교사" }
+  ],
+  "noble": [
+    { "title": "William Noble (missionary) — Wikipedia", "url": "https://en.wikipedia.org/wiki/William_Noble_(missionary)" }
+  ],
+  "swallen": [
+    { "title": "William Leander Swallen — Find a Grave", "url": "https://www.findagrave.com/memorial/36766014/william-leander-swallen", "publisher": "Find a Grave" }
+  ],
+  "fenwick": [
+    { "title": "펜윅(편위익) — 한국민족문화대백과", "url": "https://encykorea.aks.ac.kr/Article/E0076637", "publisher": "한국학중앙연구원" }
+  ],
+  "paine": [
+    { "title": "이화학당 역대 당장 — 배의례", "url": "https://www.ewha.ac.kr/ewha/intro/dean.do", "publisher": "이화여자대학교" }
+  ],
+  "chaffin": [
+    { "title": "협성여자신학교 초대 교장 채부인", "url": "http://www.kich.org/news/articleView.html?idxno=10654", "publisher": "한국기독교사연구소" }
+  ],
+  "morris": [
+    { "title": "Demons, destruction, fear: Wonju a century ago", "url": "https://www.koreatimes.co.kr/opinion/20190824/demons-destruction-fear-wonju-a-century-ago-under-the-japanese", "publisher": "The Korea Times" }
   ]
 };
 
