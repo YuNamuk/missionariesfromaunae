@@ -13,6 +13,7 @@ import {
 } from "@/lib/data";
 import type { AtlasData, MapPlace, MapPerson, MapEdge, RelLegend, MapEvent } from "./types";
 import { PHOTOS } from "@/lib/data/photos";
+import { isFeaturedWith } from "@/lib/data/meta";
 import { EVENTS } from "@/lib/data/events";
 import { fetchOverlay } from "@/lib/db/content";
 
@@ -72,6 +73,7 @@ export async function buildAtlasData(): Promise<AtlasData> {
       video: p.video,
       photos: p.photos,
       sources: resourcesFor(p).map((r) => ({ t: r.t, a: r.a })),
+      featured: isFeaturedWith(overlay?.featured, p.id),
     };
   }).filter((p) => p.lat !== 0);
 

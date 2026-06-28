@@ -40,6 +40,7 @@ export interface MapPerson {
   video: string;
   photos: string[];
   sources: { t: string; a: string }[];
+  /** 대표 선교사 여부(관리자 오버라이드 반영) */ featured: boolean;
 }
 
 export interface MapEdge {

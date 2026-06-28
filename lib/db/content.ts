@@ -19,6 +19,8 @@ export interface ContentOverlay {
   yearMax?: number;
   terms: Record<string, string>;
   people: Record<string, PersonDbOverride>;
+  /** 관리자 대표(featured) 토글 오버라이드: id→true(대표)/false(검색전용). 코드 FEATURED 위에 덮어씀. */
+  featured: Record<string, boolean>;
 }
 
 /**
@@ -35,12 +37,15 @@ export async function fetchOverlay(): Promise<ContentOverlay | null> {
     ]);
     if (settingsRes.error || peopleRes.error) return null;
 
-    const overlay: ContentOverlay = { terms: {}, people: {} };
+    const overlay: ContentOverlay = { terms: {}, people: {}, featured: {} };
     for (const row of settingsRes.data ?? []) {
       const v = (row as { key: string; value: unknown }).value;
       if (row.key === "year_min") overlay.yearMin = Number(v);
       else if (row.key === "year_max") overlay.yearMax = Number(v);
       else if (row.key.startsWith("term.")) overlay.terms[row.key.slice(5)] = String(v);
+      else if (row.key === "meta.featured" && v && typeof v === "object") {
+        for (const [id, on] of Object.entries(v as Record<string, unknown>)) overlay.featured[id] = !!on;
+      }
     }
     for (const p of peopleRes.data ?? []) {
       overlay.people[(p as { id: string }).id] = p as PersonDbOverride;

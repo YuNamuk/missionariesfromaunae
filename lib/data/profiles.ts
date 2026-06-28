@@ -871,6 +871,11 @@ const REFS: Record<string, { title: string; url: string; publisher?: string }[]>
       "url": "https://ko.wikipedia.org/wiki/앨리스_샤프"
     },
     {
+      "title": "영명학교(사부수·사애리시 설립) — 한국민족문화대백과",
+      "url": "https://encykorea.aks.ac.kr/Article/E0037372",
+      "publisher": "한국학중앙연구원"
+    },
+    {
       "title": "선교사열전: 사애리시 — 유관순을 길러낸 스승",
       "url": "https://www.kosinnews.com/news/articleView.html?idxno=25214",
       "publisher": "고신뉴스"
@@ -878,7 +883,16 @@ const REFS: Record<string, { title: string; url: string; publisher?: string }[]>
   ],
   "williams": [
     {
-      "title": "선교사 우리암(Frank E. C. Williams)",
+      "title": "프랭크 윌리엄스(우리암) — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/프랭크_윌리엄스_(선교사)"
+    },
+    {
+      "title": "영명학교(우리암 교장) — 한국민족문화대백과",
+      "url": "https://encykorea.aks.ac.kr/Article/E0037372",
+      "publisher": "한국학중앙연구원"
+    },
+    {
+      "title": "선교사 우리암",
       "url": "https://www.gongju.go.kr/kr/sub06_10_02_04.do?partCode=08",
       "publisher": "공주시"
     }
@@ -915,12 +929,20 @@ const VIDEOS: Record<string, { url: string; title: string; source?: string }[]> 
   ross: [{ url: "https://www.youtube.com/watch?v=fMrx2zGn2ps", title: "존 로스 (1) — 스코틀랜드에서 온 선교사 (1907 믿음의 사람들)", source: "CGNTV" }],
   linton: [{ url: "https://www.youtube.com/watch?v=ybxCDWfH-5Y", title: "2022년 3월 이달의 독립운동가 — 윌리엄 린튼(한남대 초대총장)", source: "국가보훈처" }],
   kendrick: [{ url: "https://www.youtube.com/watch?v=cJNqMWoCQl8", title: "루비 켄드릭의 생애 — 조선에 심장을 묻은 선교사", source: "믿음의 위인들" }],
+  sharp: [
+    { url: "https://www.youtube.com/watch?v=2jKZaUwki50", title: "목원대, ‘유관순 열사 스승’ 사애리시 선교사 기념관", source: "대전MBC" },
+    { url: "https://www.youtube.com/watch?v=D6mDItlLOrk", title: "유관순 열사 첫 스승 사애리시 선교사 기념관 개관", source: "TJB 대전·세종·충남뉴스" },
+    { url: "https://www.youtube.com/watch?v=j0Pf4xJSoMA", title: "유관순 열사에 기독교를 전한 사애리시 선교사", source: "굿처치뉴스" },
+  ],
+  williams: [{ url: "https://www.youtube.com/watch?v=atLLJOyiOew", title: "2022년 8월의 역사인물, ‘선교사 우리암’", source: "공주시" }],
 };
 
 export function profileFor(id: string): PersonProfile | undefined {
   const p = PROFILES[id];
-  if (!p) return undefined;
-  const merged: PersonProfile = { ...p };
+  // PROFILES 상세가 없어도 QUOTES/STORIES/VIDEOS/REFS 중 하나라도 있으면 병합해 반환
+  // (신규 추가 인물이 서사·영상·링크만 가진 경우 — 필수 필드는 빈 기본값).
+  if (!p && !(QUOTES[id] || STORIES[id] || VIDEOS[id] || REFS[id])) return undefined;
+  const merged: PersonProfile = p ? { ...p } : { ministry: [], journey: "", influence: "" };
   if (QUOTES[id]) merged.quote = QUOTES[id];
   if (STORIES[id]) merged.story = STORIES[id];
   if (VIDEOS[id]) merged.videos = VIDEOS[id];

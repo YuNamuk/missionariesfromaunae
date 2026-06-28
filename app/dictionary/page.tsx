@@ -5,10 +5,12 @@ import { cemeteryPlaceIds, peopleBuriedAt, getPlace, getPeople } from "@/lib/dat
 import { WIKIDATA_VERIFIED } from "@/lib/data/dictionary";
 import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PHOTOS } from "@/lib/data/photos";
-import { isFeatured } from "@/lib/data/meta";
+import { isFeaturedWith } from "@/lib/data/meta";
+import { fetchOverlay } from "@/lib/db/content";
 import { DictionaryRoster, type RosterPerson } from "@/components/dictionary-roster";
 
 export const metadata: Metadata = { title: "인명사전" };
+export const revalidate = 300; // 관리자 대표(featured) 토글 등 오버레이 반영
 
 function Badge({ verified }: { verified: boolean }) {
   return (
@@ -21,9 +23,10 @@ function Badge({ verified }: { verified: boolean }) {
   );
 }
 
-export default function DictionaryPage() {
+export default async function DictionaryPage() {
   // cemeteries that have either roster burials or dictionary-only entries
   const ids = [...new Set([...cemeteryPlaceIds(), ...Object.keys(BURIED_EXTRA)])];
+  const overlay = await fetchOverlay();
   const roster: RosterPerson[] = getPeople().map((p) => ({
     id: p.id,
     name: p.name,
@@ -34,7 +37,7 @@ export default function DictionaryPage() {
     year: p.year,
     glyph: p.glyph,
     photo: PHOTOS[p.id]?.photo ?? null,
-    featured: isFeatured(p.id),
+    featured: isFeaturedWith(overlay?.featured, p.id),
   }));
 
   return (

@@ -11,6 +11,9 @@ export const FEATURED = new Set<string>([
   "shepping", "owen", "sharp", "williams",
 ]);
 export const isFeatured = (id: string) => FEATURED.has(id);
+/** 관리자 오버라이드(app_settings meta.featured)를 코드 FEATURED 위에 덮어 판정. */
+export const isFeaturedWith = (override: Record<string, boolean> | undefined, id: string): boolean =>
+  override && id in override ? override[id] : FEATURED.has(id);
 
 /** 사역지(place id) → 권역. 지도 필터의 '지역' 축. */
 const PLACE_REGION: Record<string, string> = {

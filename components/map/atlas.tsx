@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Search, X, ArrowRight, Settings, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Share2, Check } from "lucide-react";
 import type { AtlasData, MapPerson, MapPlace } from "./types";
-import { isFeatured, regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleTagsOf, ROLE_LIST, peakYear } from "@/lib/data/meta";
+import { regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleTagsOf, ROLE_LIST, peakYear } from "@/lib/data/meta";
 import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
 import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PERSON_COORD } from "@/lib/data/person-coord";
@@ -572,7 +572,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     if (lens !== "cemetery") {
       const filtering = q !== "" || facetCount > 0;
       // 대표만 보기: 검색·필터 중이 아니면 대표 인물만. 단 선택 인물과 1·2차 관계망은 맥락상 포함.
-      let out = visiblePeople.filter((p) => !featuredOnly || filtering || isFeatured(p.id));
+      let out = visiblePeople.filter((p) => !featuredOnly || filtering || p.featured);
       if (selPerson) {
         const have = new Set(out.map((p) => p.id));
         for (const p of visiblePeople)
@@ -740,7 +740,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
   // 상세 패널 위 리스트바: 대표만(기본) / 전체, 연도순. 선택 칩은 자동 스크롤.
   const peopleList = useMemo(
-    () => [...data.people].filter((p) => listAll || isFeatured(p.id)).sort((a, b) => a.year - b.year),
+    () => [...data.people].filter((p) => listAll || p.featured).sort((a, b) => a.year - b.year),
     [data.people, listAll],
   );
   // 검색 중이면 전체에서 검색, 아니면 대표/전체 토글 목록
