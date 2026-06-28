@@ -22,6 +22,10 @@ export interface HeritageSite {
   source: string[];
   /** 좌표 근사치 여부 */
   coordUncertain?: boolean;
+  /** 대표 사진 URL(검증된 자유 라이선스만 — Wikimedia Commons 등). 없으면 미표시 */
+  photo?: string;
+  /** 사진 출처·라이선스 표기(예: "© 촬영자 / CC BY-SA 4.0, Wikimedia Commons") */
+  photoSource?: string;
 }
 
 // 리서치 에이전트가 위키백과·국가유산청·지자체 자료로 교차검증해 채운 53곳.
@@ -80,3 +84,33 @@ export const HERITAGE: HeritageSite[] = [
   { id: "leegipung_memorial", name: "이기풍 목사 선교기념관", city: "제주", region: "제주", type: "기념관", lat: 33.539, lng: 126.635, year: 1998, summary: "한국인 첫 제주 선교사 이기풍의 사역을 기리는 기념관. 그는 제주 7개 교회를 개척하고 1942년 순교.", people: ["이기풍"], unesco: "", source: ["https://jeju.grandculture.net/jeju/toc/GC00701577"] },
   { id: "younghung_jeju", name: "제주 영흥학교", city: "제주", region: "제주", type: "학교", lat: 33.5128, lng: 126.5219, year: 1908, summary: "이기풍이 제주성내교회에 세운 남녀 소학교가 발전한 학교. 제주 근대교육에 기여.", people: ["이기풍"], unesco: "", source: ["http://www.jejugidok.com/"], coordUncertain: true },
 ];
+
+// 검증된 자유 라이선스(Wikimedia Commons / 공공누리 제1유형) 대표 사진.
+// 파일 존재·MIME·라이선스·동일성 확인된 것만 수록. 없는 유적은 사진 없이 표시.
+// 직접 URL(upload.wikimedia.org)이라 리다이렉트 없이 로드된다.
+const HERITAGE_PHOTOS: Record<string, { photo: string; photoSource: string }> = {
+  jeongdong_first_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/e/ef/Jeongdong_First_Church.JPG", photoSource: "사진: Ryuch / CC BY-SA 3.0, Wikimedia Commons" },
+  saemunan_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/6/64/Saemoonan_hall.JPG", photoSource: "사진: Ryuch / CC BY-SA 3.0, Wikimedia Commons" },
+  paejae_hakdang: { photo: "https://upload.wikimedia.org/wikipedia/commons/3/38/East_hall_of_Pai_Chai_school.JPG", photoSource: "사진: Ryuch / CC BY-SA 3.0, Wikimedia Commons" },
+  ewha_hakdang: { photo: "https://upload.wikimedia.org/wikipedia/commons/e/e9/Ehwa_Simpson_memorial-2.jpg", photoSource: "사진: Gapo / CC BY-SA 3.0, Wikimedia Commons" },
+  jeongdong_district: { photo: "https://upload.wikimedia.org/wikipedia/commons/4/48/Jeongdong-gil_%28%EC%A0%95%EB%8F%99%EA%B8%B8%29%2C_One_of_the_most_popular_pedestrian_alleys_in_Seoul_by_the_lovers.jpg", photoSource: "사진: Joongwon Lee / CC BY-SA 4.0, Wikimedia Commons" },
+  jejungwon: { photo: "https://upload.wikimedia.org/wikipedia/commons/3/3f/Jejungwon_Gwanghyewon.jpg", photoSource: "사진: Thinkinglex / CC BY 4.0, Wikimedia Commons" },
+  seungdong_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/c/c5/%EC%8A%B9%EB%8F%99%EA%B5%90%ED%9A%8C%2C_Insadong%2C_Seoul_01.jpg", photoSource: "사진: Braveheart / CC BY-SA 4.0, Wikimedia Commons" },
+  yeondong_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/7/78/%EC%97%B0%EB%8F%99%EA%B5%90%ED%9A%8C%28AMJ%29.jpg", photoSource: "사진: 칼빈500 / CC BY-SA 3.0, Wikimedia Commons" },
+  sangdong_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/9/99/Sangdong_Church_%281%29.jpg", photoSource: "사진: Wikimedia Commons / Public Domain" },
+  naeri_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/0/0a/Naeri_Methodist_church.JPG", photoSource: "사진: Dalgial / CC BY-SA 4.0, Wikimedia Commons" },
+  gwangju_owen_hall: { photo: "https://upload.wikimedia.org/wikipedia/commons/a/a5/%EC%98%A4%EC%9B%AC%EA%B8%B0%EB%85%90%EA%B0%81.jpg", photoSource: "사진: Kimge2020 / CC BY 4.0, Wikimedia Commons" },
+  jeonju_seomun_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/d/d5/%EC%A0%84%EC%A3%BC_%EC%84%9C%EB%AC%B8%EA%B5%90%ED%9A%8C.jpg", photoSource: "사진: DAYEON LEE / CC BY-SA 4.0, Wikimedia Commons" },
+  jeonju_shinheung: { photo: "https://upload.wikimedia.org/wikipedia/commons/c/cb/%EC%8A%A4%EB%AF%B8%EC%8A%A4_%ED%99%80.jpg", photoSource: "사진: 고통분담 / CC BY-SA 4.0, Wikimedia Commons" },
+  daegu_cheongna_houses: { photo: "https://upload.wikimedia.org/wikipedia/commons/d/d8/House_of_American_Christian_Missionary_Switzer_in_Daegu.JPG", photoSource: "사진: Namoroka / CC BY-SA 3.0, Wikimedia Commons" },
+  daegu_dongsan_hospital: { photo: "https://upload.wikimedia.org/wikipedia/commons/b/b2/Dongsan_Hospital.jpg", photoSource: "사진: Rushanziatdinov / CC BY-SA 4.0, Wikimedia Commons" },
+  daegu_first_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/c/ce/%EB%8C%80%EA%B5%AC_%EC%A0%9C%EC%9D%BC%EA%B5%90%ED%9A%8C_%283%29.jpg", photoSource: "사진: 최옥석 / CC BY-SA 4.0, Wikimedia Commons" },
+  daegu_keisung: { photo: "https://upload.wikimedia.org/wikipedia/commons/b/bc/%EB%8C%80%EA%B5%AC_%EA%B3%84%EC%84%B1%EA%B3%A0%EB%93%B1%ED%95%99%EA%B5%90_%EC%A0%84%EA%B2%BD_%28Daegu_Keisung_High_school%29.jpg", photoSource: "사진: Kjy0002 / CC BY 4.0, Wikimedia Commons" },
+  kiholl_hospital: { photo: "https://upload.wikimedia.org/wikipedia/commons/b/b7/Hall_Memorial_Hospital%2C_Pyengang%2C_%28s.d.%29_%28Taylor_box45num26%29.jpg", photoSource: "사진: USC Taylor Collection / Public Domain (옛 사진)" },
+  ganggyeong_bukok_church: { photo: "https://upload.wikimedia.org/wikipedia/commons/5/51/%EA%B5%AC_%EA%B0%95%EA%B2%BD%EC%84%B1%EA%B2%B0%EA%B5%90%ED%9A%8C_%EC%98%88%EB%B0%B0%EB%8B%B9.jpg", photoSource: "사진: 문화재청 / 공공누리 제1유형" },
+  gwangju_christian_hospital: { photo: "https://upload.wikimedia.org/wikipedia/commons/0/0f/%EA%B4%91%EC%A3%BC%EA%B8%B0%EB%8F%85%EB%B3%91%EC%9B%90_%EB%B3%91%EB%8F%99.jpg", photoSource: "사진: 문화재청 / 공공누리 제1유형" },
+};
+for (const h of HERITAGE) {
+  const p = HERITAGE_PHOTOS[h.id];
+  if (p) { h.photo = p.photo; h.photoSource = p.photoSource; }
+}

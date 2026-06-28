@@ -1465,6 +1465,12 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               <p style={{ margin: 0, fontSize: 13, color: "rgba(255,248,235,.85)" }}>{selHeritage.city} · {selHeritage.region}{selHeritage.year ? ` · ${selHeritage.year}년` : ""}{selHeritage.coordUncertain ? " · 좌표 근사치" : ""}</p>
             </div>
             <div style={{ padding: "18px 20px 24px", overflowY: "auto" }}>
+              {selHeritage.photo && (
+                <figure style={{ margin: "0 0 14px" }}>
+                  <img loading="lazy" onError={(e) => { const f = e.currentTarget.parentElement; if (f) f.style.display = "none"; }} src={selHeritage.photo} alt={selHeritage.name} style={{ width: "100%", height: 170, objectFit: "cover", borderRadius: 14, background: "#efe1c3", display: "block" }} />
+                  {selHeritage.photoSource && <figcaption style={{ margin: "5px 2px 0", fontSize: 10.5, lineHeight: 1.4, color: C.faint }}>{selHeritage.photoSource}</figcaption>}
+                </figure>
+              )}
               <section style={{ padding: 15, background: "#fff9ee", border: `1px solid ${C.line}`, borderRadius: 18, marginBottom: 14 }}>
                 <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.75, color: "#594935" }}>{selHeritage.summary}</p>
               </section>
