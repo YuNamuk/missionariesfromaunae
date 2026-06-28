@@ -61,6 +61,12 @@ export const PHOTOS: Record<string, PersonPhoto> = {
   switzer: { qid: "", photo: "/portraits/switzer.png", wiki: "", source: "대구 근대여성 인물 아카이브(연령 PD)" },
   davis: { qid: "", photo: "/portraits/davis.jpg", wiki: "", source: "Nisbet, Day In and Day Out in Korea(1919) · Internet Archive" },
   rankin: { qid: "", photo: null, wiki: "", source: "" },
+  kendrick: { qid: "", photo: null, wiki: "https://ko.wikipedia.org/wiki/루비_캔드릭", source: "한국어 위키백과" },
+  campbell: { qid: "", photo: null, wiki: "https://ko.wikipedia.org/wiki/조세핀_캠벨", source: "한국어 위키백과" },
+  soda: { qid: "", photo: null, wiki: "https://ko.wikipedia.org/wiki/소다_가이치", wikiEn: "https://en.wikipedia.org/wiki/Soda_Kaichi", source: "위키백과" },
+  aliceappenzeller: { qid: "", photo: null, wiki: "", wikiEn: "https://en.wikipedia.org/wiki/Alice_Rebecca_Appenzeller", source: "Wikipedia" },
+  mckenzie: { qid: "", photo: "/portraits/mckenzie.jpg", wiki: "", wikiEn: "https://en.wikipedia.org/wiki/William_McKenzie_(missionary)", source: "Wikimedia Commons (PD)" },
+  maclay: { qid: "", photo: "/portraits/maclay.jpg", wiki: "", wikiEn: "https://en.wikipedia.org/wiki/Robert_Samuel_Maclay", source: "Wikimedia Commons (PD)" },
 };
 
 export function photoFor(id: string): PersonPhoto | undefined {

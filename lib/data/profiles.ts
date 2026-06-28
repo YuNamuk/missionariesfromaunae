@@ -896,6 +896,34 @@ const REFS: Record<string, { title: string; url: string; publisher?: string }[]>
       "url": "https://www.gongju.go.kr/kr/sub06_10_02_04.do?partCode=08",
       "publisher": "공주시"
     }
+  ],
+  "kendrick": [
+    { "title": "루비 캔드릭 — 위키백과", "url": "https://ko.wikipedia.org/wiki/루비_캔드릭" }
+  ],
+  "moore": [
+    { "title": "승동교회 — 위키백과", "url": "https://ko.wikipedia.org/wiki/승동교회" },
+    { "title": "백정을 일으킨 선교사 무어", "url": "https://www.kich.org/news/articleView.html?idxno=10389", "publisher": "한국기독교사연구소" }
+  ],
+  "campbell": [
+    { "title": "조세핀 캠벨 — 위키백과", "url": "https://ko.wikipedia.org/wiki/조세핀_캠벨" },
+    { "title": "종교교회 — 한국민족문화대백과", "url": "https://encykorea.aks.ac.kr/Article/E0076585", "publisher": "한국학중앙연구원" }
+  ],
+  "hmoffett": [
+    { "title": "하워드 모펫(마포화열) — 대구역사문화대전", "url": "https://www.grandculture.net/daegu/toc/GC40008141", "publisher": "한국학중앙연구원" }
+  ],
+  "soda": [
+    { "title": "소다 가이치 — 위키백과", "url": "https://ko.wikipedia.org/wiki/소다_가이치" }
+  ],
+  "aliceappenzeller": [
+    { "title": "Alice Rebecca Appenzeller — Wikipedia", "url": "https://en.wikipedia.org/wiki/Alice_Rebecca_Appenzeller" }
+  ],
+  "mckenzie": [
+    { "title": "William McKenzie (missionary) — Wikipedia", "url": "https://en.wikipedia.org/wiki/William_McKenzie_(missionary)" },
+    { "title": "소래교회와 매켄지", "url": "https://www.kich.org/news/articleView.html?idxno=10388", "publisher": "한국기독교사연구소" }
+  ],
+  "maclay": [
+    { "title": "매클레이의 선교 윤허 — 우리역사넷", "url": "https://contents.history.go.kr/mobile/nh/view.do?levelId=nh_046_0030_0040_0010_0020", "publisher": "국사편찬위원회" },
+    { "title": "Robert Samuel Maclay — Wikipedia", "url": "https://en.wikipedia.org/wiki/Robert_Samuel_Maclay" }
   ]
 };
 

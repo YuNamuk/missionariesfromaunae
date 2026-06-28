@@ -9,6 +9,7 @@ export const FEATURED = new Set<string>([
   "hulbert", "gale", "hardie", "rosetta", "wjhall", "eugenebell",
   "junkin", "gilseonju", "schofield", "ross", "baird", "leegipung",
   "shepping", "owen", "sharp", "williams",
+  "kendrick", "moore", "campbell", "hmoffett", "soda", "aliceappenzeller", "mckenzie", "maclay",
 ]);
 export const isFeatured = (id: string) => FEATURED.has(id);
 /** 관리자 오버라이드(app_settings meta.featured)를 코드 FEATURED 위에 덮어 판정. */
