@@ -141,6 +141,7 @@ function MapPanes() {
     mk("placesPane", 590);   // 기본 markerPane(600) 아래
     mk("heritagePane", 605);
     mk("peoplePane", 620);   // 항상 위
+    mk("selectedPane", 650); // 선택된 마커는 종류 불문 겹친 마커들 위로
   }, [map]);
   return null;
 }
@@ -1063,7 +1064,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               const sel = (selected?.kind === "place" && selected.id === p.id) || (!!selEvent && selEvent.placeId === p.id);
               // 거점·묘역 마커는 토글로만 표시/숨김 — 인물 선택과 무관하게 항상 또렷(흐려지지 않음).
               return (
-                <Marker key={p.id} position={[p.lat, p.lng]} pane="placesPane" icon={placeIcon(p, sel, false)} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
+                <Marker key={p.id} position={[p.lat, p.lng]} pane={sel ? "selectedPane" : "placesPane"} icon={placeIcon(p, sel, false)} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
               );
             })}
 
@@ -1072,7 +1073,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               const sel = selected?.kind === "heritage" && selected.id === h.id;
               // 유적지도 토글로만 표시 — 선택된 유적만 강조하고 나머지는 흐리지 않고 또렷하게.
               return (
-                <Marker key={h.id} position={[h.lat, h.lng]} pane="heritagePane" icon={heritageIcon(h, sel, false)} zIndexOffset={sel ? 800 : 0} eventHandlers={{ click: () => setSelected({ kind: "heritage", id: h.id }) }} />
+                <Marker key={h.id} position={[h.lat, h.lng]} pane={sel ? "selectedPane" : "heritagePane"} icon={heritageIcon(h, sel, false)} zIndexOffset={sel ? 800 : 0} eventHandlers={{ click: () => setSelected({ kind: "heritage", id: h.id }) }} />
               );
             })}
 
@@ -1116,7 +1117,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   // 그 외(미선택·랜딩)에는 토글로 보이는 모든 인물을 또렷하게(활성) 표시.
                   const opacity = !dimActive ? 1 : sel || first ? 1 : 0.22;
                   return (
-                    <Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
+                    <Marker key={p.id} position={ll} pane={sel ? "selectedPane" : "peoplePane"} icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
                   );
                 })}
           </MapContainer>
