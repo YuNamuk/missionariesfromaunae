@@ -96,10 +96,12 @@ function InvalidateOnResize({ deps }: { deps: unknown[] }) {
 
 const ZOOM_PRESET: Record<string, { maxZoom: number; pad: number }> = {
   loose: { maxZoom: 8.5, pad: 90 },
-  normal: { maxZoom: 11, pad: 58 },
+  normal: { maxZoom: 12.5, pad: 58 },
   // 서울권은 인물이 실제 사역지(정동·새문안·세브란스·연동·연희…)에 수백 m 간격으로
-  // 몰려 있어, 관계선을 또렷이 보려면 더 깊이 들어가야 한다.
-  tight: { maxZoom: 14, pad: 28 },
+  // 몰려 있어, 관계선을 또렷이 보려면 깊이 들어가야 한다. maxZoom은 '상한'이라
+  // 관계가 넓게 퍼진 인물은 flyToBounds가 알아서 덜 확대하고, 정동처럼 좁게
+  // 뭉친 경우에만 16~17까지 파고들어 마커가 서로 떨어져 보인다.
+  tight: { maxZoom: 16.5, pad: 24 },
 };
 
 /** Flies the camera to fit the current selection + its relationship network. */
@@ -956,7 +958,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       {/* ── CENTER: map ── */}
       <section style={{ gridColumn: 2, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", minHeight: 420, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
         <div style={{ position: "absolute", inset: 14, borderRadius: 18, overflow: "hidden", border: `1px solid ${C.line}` }}>
-          <MapContainer center={[38.4, 127.5]} zoom={6} minZoom={4} maxZoom={17} zoomControl={false} scrollWheelZoom={false} zoomSnap={0} zoomDelta={0.6} zoomAnimationThreshold={4} style={{ height: "100%", width: "100%" }}>
+          <MapContainer center={[38.4, 127.5]} zoom={6} minZoom={4} maxZoom={18} zoomControl={false} scrollWheelZoom={false} zoomSnap={0} zoomDelta={0.6} zoomAnimationThreshold={4} style={{ height: "100%", width: "100%" }}>
             <SmoothWheelZoom />
             <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" subdomains="abcd" attribution="&copy; OpenStreetMap &copy; CARTO" maxZoom={19} maxNativeZoom={19} />
             <HistoricalOverlay year={year} on={showGeo} />
