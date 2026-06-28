@@ -648,21 +648,23 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const clusters = useMemo(() => {
     if (!clusterOn) return [] as { id: string; lat: number; lng: number; count: number; label: string; ids: string[] }[];
     const CELL = 0.4; // ~44km 격자: 서울 메트로는 합치고 도시는 분리
-    const REGION_LABEL: Record<string, string> = Object.fromEntries(REGIONS.map((r) => [r.key, r.label]));
-    const groups = new Map<string, { latSum: number; lngSum: number; ids: string[]; reg: Record<string, number> }>();
+    // 우세 '활동지'를 대표로: 라벨도 좌표도 그 활동지 기준(통계 숫자는 두지 않음).
+    const groups = new Map<string, { ids: string[]; place: Record<string, number>; placeCoord: Record<string, [number, number]> }>();
     for (const p of mapPeople) {
       const ll = personPos.get(p.id);
       if (!ll) continue;
       const key = `${Math.round(ll[0] / CELL)}_${Math.round(ll[1] / CELL)}`;
       let g = groups.get(key);
-      if (!g) { g = { latSum: 0, lngSum: 0, ids: [], reg: {} }; groups.set(key, g); }
-      g.latSum += ll[0]; g.lngSum += ll[1]; g.ids.push(p.id);
-      const rk = regionOf(p.place); g.reg[rk] = (g.reg[rk] ?? 0) + 1;
+      if (!g) { g = { ids: [], place: {}, placeCoord: {} }; groups.set(key, g); }
+      g.ids.push(p.id);
+      const pn = p.placeName || "활동지";
+      g.place[pn] = (g.place[pn] ?? 0) + 1;
+      if (!g.placeCoord[pn]) g.placeCoord[pn] = ll;
     }
     return [...groups.entries()].map(([key, g]) => {
-      const n = g.ids.length;
-      const topReg = Object.entries(g.reg).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "seoul";
-      return { id: "cl_" + key, lat: g.latSum / n, lng: g.lngSum / n, count: n, label: REGION_LABEL[topReg] ?? topReg, ids: g.ids };
+      const top = Object.entries(g.place).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "활동지";
+      const c = g.placeCoord[top];
+      return { id: "cl_" + key, lat: c[0], lng: c[1], count: g.ids.length, label: top, ids: g.ids };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clusterOn, mapPeople, personPos]);
@@ -1082,7 +1084,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                       key={cl.id}
                       position={[cl.lat, cl.lng]}
                       pane="peoplePane"
-                      icon={clusterIcon(cl.count, cl.label, "#7a4a2e")}
+                      icon={clusterIcon(cl.label, "#7a4a2e")}
                       zIndexOffset={60}
                       eventHandlers={{
                         click: () => {

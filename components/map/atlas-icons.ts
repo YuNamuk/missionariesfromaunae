@@ -93,17 +93,20 @@ export function arrowIcon(angleDeg: number, color: string, label: string) {
   });
 }
 
-/** 묶음(클러스터) 배지 — 낮은 줌·미선택 상태에서 한 지역에 몰린 인물을 'N명'으로
- *  합쳐 보여준다. 클릭하면 그 지역으로 확대되어 개별 마커로 펼쳐진다. */
-export function clusterIcon(count: number, label: string, color: string) {
-  const size = count >= 12 ? 50 : count >= 6 ? 44 : 38;
+/** 묶음(클러스터) 지점 마커 — 낮은 줌·미선택 상태에서 한 활동지 일대에 몰린 인물을
+ *  '클릭해 펼치는 지점'으로 보여준다. 숫자(통계 오해 소지)는 두지 않고, 활동지 이름만
+ *  라벨로 둔다. 클릭하면 그 일대로 확대되어 개별 마커로 펼쳐진다. */
+export function clusterIcon(label: string, color: string) {
+  const size = 34;
   return L.divIcon({
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     html: `<div style="position:relative;width:${size}px;height:${size}px;cursor:pointer;">
-      <div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:50%;background:${color};color:#fff8ec;font-size:${size * 0.4}px;font-weight:900;border:3px solid #fff8ec;box-shadow:0 6px 16px rgba(46,28,14,.45);">${count}</div>
-      <div style="position:absolute;top:${size + 3}px;left:50%;transform:translateX(-50%);white-space:nowrap;background:rgba(50,35,21,.86);color:#fff8ed;border-radius:99px;padding:2px 8px;font-size:10.5px;font-weight:800;box-shadow:0 2px 6px rgba(46,28,14,.2);pointer-events:none;">${label} ${count}명</div>
+      <div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:50%;background:${color};border:3px solid #fff8ec;box-shadow:0 5px 14px rgba(46,28,14,.4);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff8ec" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8.5v7M8.5 12h7"/></svg>
+      </div>
+      ${labelHtml(label, size + 3, true)}
     </div>`,
   });
 }
