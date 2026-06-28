@@ -506,6 +506,18 @@ const QUOTES: Record<string, { text: string; source: string }> = {
     text: "하나님의 아들이 나를 사랑하사, 나를 위하여 자기 자신을 버리셨느니라.",
     source: "양화진 묘비명(갈라디아서 2:20) · 양화진 외국인선교사묘원 최초 안장자",
   },
+  bunker: {
+    text: "날이 새고 그림자가 사라질 때까지.",
+    source: "“Until the day break, and the shadows flee away.”(아가 2:17) · 양화진 묘비명",
+  },
+  gilseonju: {
+    text: "나는 아간과 같은 죄인이올시다.",
+    source: "1907년 평양 장대현교회 사경회 공개 회개 · W. N. Blair, The Korean Pentecost · 박용규 『평양대부흥운동사』",
+  },
+  kimchangsik: {
+    text: "하나님이 내 죄를 용서하셨거늘 내 어찌 그분을 저주하며, 외국인이 내게 정당한 삯을 주었거늘 내 어찌 그를 버리겠소?",
+    source: "1894년 평양 박해 중 신앙 고백(‘조선의 바울’) · H. G. Appenzeller, Korea Mission of the M.E. Church, pp.28–29의 영문 기록을 옮김",
+  },
 };
 
 // 인물별 검증된 권위 참고 사료 링크(한국민족문화대백과·위키 등). 리서치로 인물 일치 확인된 것만.
