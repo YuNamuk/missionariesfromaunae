@@ -457,6 +457,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   // 클라이언트 상태가 전담(즉시 반응) → 필터를 URL과 동기화하지 않아 빠르다.
   const sp = useSearchParams();
   const navSig = `${sp.get("person") ?? ""}|${sp.get("focus") ?? ""}|${sp.get("heritage") ?? ""}|${sp.get("buried") ?? ""}|${sp.get("y") ?? ""}`;
+  // 딥링크(다른 화면→지도)로 진입하면 마운트 시점에 이미 선택이 있어, FitToSelection의
+  // skipFirst(첫 fit 스킵)에 걸려 줌인이 안 된다. 그래서 초기 nav 파라미터(또는 lens
+  // 사전선택)가 있으면 첫 fit을 살린다.
+  const hadInitialNav = useRef(navSig !== "||||");
   useEffect(() => {
     const person = sp.get("person");
     const focus = sp.get("focus");
@@ -1011,7 +1015,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <ZoomLevel onZoom={setMapZoom} />
             <InvalidateOnResize deps={[leftOpen, rightOpen]} />
             <MapControls />
-            <FitToSelection targets={focusTargets} focusKey={focusKey} fit={fit} skipFirst skipRef={skipFitRef} />
+            <FitToSelection targets={focusTargets} focusKey={focusKey} fit={fit} skipFirst={!(hadInitialNav.current || lens === "history" || lens === "cemetery")} skipRef={skipFitRef} />
             <OffscreenIndicators targets={farConnected} origin={selPerson ? coordOf(selPerson.id) : null} onPick={(id) => setSelected({ kind: "person", id })} />
 
             {networkEdges.map((e, i) => {
