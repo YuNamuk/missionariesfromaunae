@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { cemeteryPlaceIds, peopleBuriedAt, getPlace, getPeople } from "@/lib/data";
 import { WIKIDATA_VERIFIED } from "@/lib/data/dictionary";
 import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
@@ -87,7 +88,7 @@ export default function DictionaryPage() {
                   <li key={p.id}>
                     <Link href={`/people/${p.id}`} className="flex items-center gap-3 py-3 transition-colors hover:bg-ink-50">
                       {photo ? (
-                        <img src={photo} alt={`${p.name} 초상`} loading="lazy" decoding="async" className="h-10 w-10 flex-none rounded-full object-cover" style={{ background: "var(--ink-100)" }} />
+                        <Image src={photo} alt={`${p.name} 초상`} width={40} height={40} className="h-10 w-10 flex-none rounded-full object-cover" style={{ background: "var(--ink-100)" }} />
                       ) : (
                         <span className="font-display flex h-10 w-10 flex-none items-center justify-center rounded-full text-lg" style={{ background: "var(--ink-100)", color: "var(--ink-700)" }}>{p.glyph}</span>
                       )}
