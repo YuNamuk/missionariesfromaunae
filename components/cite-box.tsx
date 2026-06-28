@@ -9,7 +9,7 @@ export function CiteBox({ name, en, life, url }: { name: string; en?: string; li
   const today = new Date();
   const ymd = `${today.getFullYear()}. ${today.getMonth() + 1}. ${today.getDate()}.`;
   const who = [name, en && `(${en}${life ? `, ${life}` : ""})`].filter(Boolean).join(" ");
-  const citation = `우리는 아우내에서 온 선교사입니다(Missionaries from Aunae). 「${who}」. ${url} (열람: ${ymd})`;
+  const citation = `Missionaries from Aunae (Dreamy School). 「${who}」. ${url} (열람: ${ymd})`;
 
   const copy = async () => {
     try {

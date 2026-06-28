@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const dynamic = "force-dynamic";
-export const alt = "우리는 아우내에서 온 선교사입니다 · Missionaries from Aunae";
+export const alt = "Missionaries from Aunae · Dreamy School";
 
 // ImageResponse 기본 폰트에는 한글 글리프가 없어, 공유 카드는 영문 브랜드로 구성한다.
 export default function OpengraphImage() {
@@ -28,6 +28,9 @@ export default function OpengraphImage() {
         </div>
         <div style={{ fontSize: 82, fontWeight: 900, marginTop: 30, lineHeight: 1.08 }}>
           Missionaries from Aunae
+        </div>
+        <div style={{ fontSize: 26, fontWeight: 800, marginTop: 8, letterSpacing: 3, color: "#7db7d8" }}>
+          Dreamy School
         </div>
         <div style={{ fontSize: 33, marginTop: 26, color: "rgba(255,248,236,.85)" }}>
           An online archive of Korea&#39;s early Protestant missionaries —

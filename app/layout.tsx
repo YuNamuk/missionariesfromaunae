@@ -10,7 +10,7 @@ const DESC =
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "우리는 아우내에서 온 선교사입니다 · Missionaries from Aunae",
+    default: "Missionaries from Aunae · Dreamy School",
     template: "%s · Missionaries from Aunae",
   },
   description: DESC,
@@ -24,13 +24,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
     siteName: "Missionaries from Aunae",
-    title: "우리는 아우내에서 온 선교사입니다 · Missionaries from Aunae",
+    title: "Missionaries from Aunae · Dreamy School",
     description: DESC,
     url: SITE_URL,
   },
   twitter: {
     card: "summary_large_image",
-    title: "우리는 아우내에서 온 선교사입니다 · Missionaries from Aunae",
+    title: "Missionaries from Aunae · Dreamy School",
     description: DESC,
   },
 };
