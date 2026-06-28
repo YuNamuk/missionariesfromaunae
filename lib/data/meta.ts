@@ -8,7 +8,7 @@ export const FEATURED = new Set<string>([
   "underwood", "appenzeller", "allen", "mscranton", "moffett", "avison",
   "hulbert", "gale", "hardie", "rosetta", "wjhall", "eugenebell",
   "junkin", "gilseonju", "schofield", "ross", "baird", "leegipung",
-  "shepping", "owen",
+  "shepping", "owen", "sharp", "williams",
 ]);
 export const isFeatured = (id: string) => FEATURED.has(id);
 

@@ -864,6 +864,24 @@ const REFS: Record<string, { title: string; url: string; publisher?: string }[]>
       "url": "http://suncheon.grandculture.net/suncheon/toc/GC07600673",
       "publisher": "한국학중앙연구원"
     }
+  ],
+  "sharp": [
+    {
+      "title": "앨리스 샤프(사애리시) — 위키백과",
+      "url": "https://ko.wikipedia.org/wiki/앨리스_샤프"
+    },
+    {
+      "title": "선교사열전: 사애리시 — 유관순을 길러낸 스승",
+      "url": "https://www.kosinnews.com/news/articleView.html?idxno=25214",
+      "publisher": "고신뉴스"
+    }
+  ],
+  "williams": [
+    {
+      "title": "선교사 우리암(Frank E. C. Williams)",
+      "url": "https://www.gongju.go.kr/kr/sub06_10_02_04.do?partCode=08",
+      "publisher": "공주시"
+    }
   ]
 };
 
