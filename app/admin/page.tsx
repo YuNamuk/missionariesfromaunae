@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { browserSupabase } from "@/lib/db/browser";
 import { PEOPLE } from "@/lib/data";
+import { isFeatured } from "@/lib/data/meta";
 import { profileFor } from "@/lib/data/profiles";
 import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
 
@@ -29,7 +30,10 @@ export default function AdminPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [tab, setTab] = useState<"people" | "pages" | "settings" | "admins">("people");
+  const [tab, setTab] = useState<"people" | "featured" | "pages" | "settings" | "admins">("people");
+  // 대표(featured) 토글 — 코드 FEATURED 위에 덮어쓸 오버라이드(app_settings 'meta.featured').
+  const [feat, setFeat] = useState<Record<string, boolean>>({});
+  const [featQ, setFeatQ] = useState("");
   const [pc, setPc] = useState<{ story: Record<string, string>; journey: Record<string, string> }>({ story: {}, journey: {} });
   const [adminEmails, setAdminEmails] = useState<string[]>([]);
   const [newAdmin, setNewAdmin] = useState("");
@@ -179,6 +183,21 @@ export default function AdminPage() {
   const upd = (k: keyof PersonRow, v: string) => setDraft((d) => (d ? { ...d, [k]: v } : d));
   const cdu = (k: string, v: string) => setCd((s) => ({ ...s, [k]: v }));
 
+  // 대표(featured) 토글: settings 로드 시 동기화, 토글은 코드 FEATURED 위에 덮어씀.
+  useEffect(() => {
+    const f = settings["meta.featured"];
+    if (f && typeof f === "object") setFeat(f as Record<string, boolean>);
+  }, [settings]);
+  const featOn = (id: string) => (id in feat ? feat[id] : isFeatured(id));
+  const toggleFeat = (id: string) => setFeat((s) => ({ ...s, [id]: !(id in s ? s[id] : isFeatured(id)) }));
+  async function saveFeatured() {
+    setSaving(true); setMsg("");
+    const err = await post({ kind: "settings", settings: { "meta.featured": feat } });
+    setSaving(false);
+    setMsg(err ? "저장 실패: " + err : "✓ 대표 설정 저장됨 (지도·인명사전에 곧 반영)");
+    if (!err) loadData();
+  }
+
   if (!ready) return <div style={{ padding: 40, fontFamily: "var(--font-body)" }}>로딩…</div>;
 
   if (!session) {
@@ -216,9 +235,9 @@ export default function AdminPage() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {(["people", "pages", "settings", "admins"] as const).map((t) => (
+        {(["people", "featured", "pages", "settings", "admins"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} style={{ border: `1px solid ${tab === t ? "#2f2419" : C.line}`, borderRadius: 11, padding: "8px 16px", background: tab === t ? "#2f2419" : "transparent", color: tab === t ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
-            {t === "people" ? "선교사 정보" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : "관리자 계정"}
+            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : "관리자 계정"}
           </button>
         ))}
       </div>
@@ -274,6 +293,35 @@ export default function AdminPage() {
           ) : <p style={{ color: C.muted, fontSize: 13 }}>왼쪽에서 선교사를 선택하세요.</p>}
         </div>
       )}
+
+      {tab === "featured" && (() => {
+        const list = PEOPLE.filter((p) => !featQ || `${p.name} ${p.en}`.toLowerCase().includes(featQ.toLowerCase())).slice().sort((a, b) => a.year - b.year);
+        const count = PEOPLE.filter((p) => featOn(p.id)).length;
+        return (
+          <div>
+            <p style={{ margin: "0 0 12px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
+              지도·목록에서 <b>대표(★)</b>로 보일 선교사와, <b>검색을 통해서만</b> 조회되는 선교사를 정합니다. 토글한 뒤 아래 저장을 누르세요. (지도 ‘대표만’ 기본 보기·인명사전 ★ 표기에 반영)
+            </p>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+              <input placeholder="이름·영문 검색" value={featQ} onChange={(e) => setFeatQ(e.target.value)} style={{ ...input, flex: 1 }} />
+              <span style={{ fontSize: 12.5, fontWeight: 800, color: C.muted, whiteSpace: "nowrap" }}>대표 {count} / 전체 {PEOPLE.length}</span>
+            </div>
+            <div style={{ maxHeight: 440, overflowY: "auto", border: `1px solid ${C.line}`, borderRadius: 12, background: "#fff8ec" }}>
+              {list.map((p) => {
+                const on = featOn(p.id);
+                return (
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderBottom: `1px solid ${C.line}` }}>
+                    <span style={{ fontSize: 13, color: C.ink }}>{p.name} <span style={{ color: C.muted, fontSize: 11 }}>· {p.en} · {p.year}</span></span>
+                    <button onClick={() => toggleFeat(p.id)} style={{ border: `1px solid ${C.line}`, borderRadius: 99, padding: "4px 13px", background: on ? "#bf6b22" : "transparent", color: on ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>{on ? "★ 대표" : "검색전용"}</button>
+                  </div>
+                );
+              })}
+              {list.length === 0 && <div style={{ padding: 14, fontSize: 13, color: C.muted }}>검색 결과 없음</div>}
+            </div>
+            <button onClick={saveFeatured} disabled={saving} style={{ ...btn, marginTop: 14 }}>{saving ? "저장 중…" : "대표 설정 저장"}</button>
+          </div>
+        );
+      })()}
 
       {tab === "pages" && (
         <div style={{ display: "grid", gap: 28, maxWidth: 680 }}>
