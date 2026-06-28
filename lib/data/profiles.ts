@@ -526,6 +526,10 @@ const QUOTES: Record<string, { text: string; source: string }> = {
     text: "나는 ‘캐나다인’이라기보다 ‘조선인’이라고 생각됩니다.",
     source: "1931년 성탄절 공개 서한 · 한국독립운동정보시스템 독립운동인명사전(i815.or.kr)",
   },
+  allen: {
+    text: "슬픈 점은, 그들이 가장 어려울 때 우리가 그들을 저버렸다는 것이다.",
+    source: "“…we deserted them in their time of need.” — Horace N. Allen, Things Korean(1908) 서문, 을사늑약(1905) 후 미국의 조선 외면을 두고",
+  },
 };
 
 // 인물별 검증된 권위 참고 사료 링크(한국민족문화대백과·위키 등). 리서치로 인물 일치 확인된 것만.
