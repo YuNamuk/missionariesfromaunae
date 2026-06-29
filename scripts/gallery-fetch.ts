@@ -36,6 +36,9 @@ async function fetchCategory(cat: string): Promise<Entry[]> {
     if (!isFree) continue; // PD/CC만
     const descRaw = strip(em.ImageDescription?.value ?? "");
     const caption = descRaw && descRaw.length <= 110 ? descRaw : titleCaption(p.title);
+    // 비초상(묘비·동상·기념물·간행물·친족·거리/건물) 자동 제외 — 카테고리에 섞여 들어오는 것들.
+    const SKIP = /grab|grave|묘비|묘소|tomb|동상|bronze|statue|기념|memorial|손녀|손자|granddaughter|grandson|advocate|herald\b|congress|정동|학당|building|지도|\bmap\b/i;
+    if (SKIP.test(caption) || SKIP.test(p.title)) { continue; }
     out.push({
       src: ii.thumburl || ii.url,
       caption,
