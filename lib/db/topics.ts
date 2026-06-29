@@ -12,7 +12,7 @@ export async function fetchDbTopics(): Promise<Topic[]> {
     const out: Topic[] = [];
     for (const row of data as { key: string; value: unknown }[]) {
       const id = row.key.replace("topic.", "");
-      const v = row.value as { title?: string; intro?: string; people?: unknown; by?: string } | null;
+      const v = row.value as { title?: string; intro?: string; people?: unknown; by?: string; era?: string; analysis?: string } | null;
       // people가 빈 배열이면 삭제된 것으로 보고 건너뛴다.
       if (v && typeof v === "object" && Array.isArray(v.people) && v.people.length > 0) {
         out.push({
@@ -21,6 +21,8 @@ export async function fetchDbTopics(): Promise<Topic[]> {
           intro: String(v.intro || ""),
           people: (v.people as unknown[]).map(String),
           by: v.by ? String(v.by) : undefined,
+          era: v.era ? String(v.era) : undefined,
+          analysis: v.analysis ? String(v.analysis) : undefined,
         });
       }
     }

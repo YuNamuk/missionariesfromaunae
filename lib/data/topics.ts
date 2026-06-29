@@ -11,6 +11,10 @@ export interface Topic {
   people: string[];
   /** 작성자 표기(선택) */
   by?: string;
+  /** 시대/배경 메모(분석 입력) */
+  era?: string;
+  /** AI 분석 결과(관리자가 생성·저장). 사이트 데이터에 근거. */
+  analysis?: string;
 }
 
 export const TOPICS: Topic[] = [

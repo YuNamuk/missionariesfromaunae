@@ -35,8 +35,10 @@ export default function AdminPage() {
   const [feat, setFeat] = useState<Record<string, boolean>>({});
   const [featQ, setFeatQ] = useState("");
   // 주제연구 등록 — app_settings 'topic.<id>'.
-  const [tdraft, setTdraft] = useState<{ id: string; title: string; intro: string; people: string[] }>({ id: "", title: "", intro: "", people: [] });
+  const [tdraft, setTdraft] = useState<{ id: string; title: string; intro: string; people: string[]; era: string; analysis: string }>({ id: "", title: "", intro: "", people: [], era: "", analysis: "" });
   const [tq, setTq] = useState("");
+  const [tPrompt, setTPrompt] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
   const [pc, setPc] = useState<{ story: Record<string, string>; journey: Record<string, string> }>({ story: {}, journey: {} });
   const [adminEmails, setAdminEmails] = useState<string[]>([]);
   const [newAdmin, setNewAdmin] = useState("");
@@ -204,17 +206,29 @@ export default function AdminPage() {
   // 주제연구 등록(app_settings 'topic.<id>')
   const dbTopics = Object.entries(settings)
     .filter(([k, v]) => k.startsWith("topic.") && v && typeof v === "object" && Array.isArray((v as { people?: unknown }).people) && (v as { people: unknown[] }).people.length > 0)
-    .map(([k, v]) => ({ id: k.replace("topic.", ""), ...(v as { title: string; intro: string; people: string[] }) }));
-  const loadTopic = (t: { id: string; title: string; intro: string; people: string[] }) => setTdraft({ id: t.id, title: t.title || "", intro: t.intro || "", people: t.people || [] });
+    .map(([k, v]) => ({ id: k.replace("topic.", ""), ...(v as { title: string; intro: string; people: string[]; era?: string; analysis?: string }) }));
+  const loadTopic = (t: { id: string; title: string; intro: string; people: string[]; era?: string; analysis?: string }) => { setTdraft({ id: t.id, title: t.title || "", intro: t.intro || "", people: t.people || [], era: t.era || "", analysis: t.analysis || "" }); setTPrompt(""); };
   const toggleTopicPerson = (pid: string) => setTdraft((d) => ({ ...d, people: d.people.includes(pid) ? d.people.filter((x) => x !== pid) : [...d.people, pid] }));
   async function saveTopic() {
     const id = tdraft.id.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
     if (!id || !tdraft.title.trim() || tdraft.people.length === 0) { setMsg("저장 실패: id·제목·선교사(1명+)는 필수입니다"); return; }
     setSaving(true); setMsg("");
-    const err = await post({ kind: "settings", settings: { [`topic.${id}`]: { title: tdraft.title.trim(), intro: tdraft.intro.trim(), people: tdraft.people } } });
+    const err = await post({ kind: "settings", settings: { [`topic.${id}`]: { title: tdraft.title.trim(), intro: tdraft.intro.trim(), people: tdraft.people, era: tdraft.era.trim(), analysis: tdraft.analysis } } });
     setSaving(false);
     setMsg(err ? "저장 실패: " + err : `✓ 주제 '${tdraft.title}' 저장됨 (/research에 곧 반영)`);
     if (!err) loadData();
+  }
+  async function analyzeTopic() {
+    if (tdraft.people.length === 0) { setMsg("분석 실패: 선교사를 1명 이상 선택하세요"); return; }
+    setAnalyzing(true); setMsg("");
+    try {
+      const token = (await sb.auth.getSession()).data.session?.access_token;
+      const r = await fetch("/api/research/analyze", { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token}` }, body: JSON.stringify({ people: tdraft.people, era: tdraft.era, prompt: tPrompt }) });
+      const j = await r.json();
+      if (!r.ok) { setMsg("분석 실패: " + (j.error ?? "오류")); }
+      else { setTdraft((d) => ({ ...d, analysis: j.analysis })); setMsg("✓ 분석 생성됨 — 검토 후 '주제 저장'을 누르면 리포트에 실립니다"); }
+    } catch (e) { setMsg("분석 실패: " + String(e).slice(0, 120)); }
+    setAnalyzing(false);
   }
   async function deleteTopic(id: string) {
     setSaving(true); setMsg("");
@@ -386,6 +400,22 @@ export default function AdminPage() {
                 <span style={{ fontWeight: 700 }}>{p.name}</span><span style={{ color: C.muted, fontSize: 11 }}>· {p.en} · {p.year}</span>
               </button>
             ))}
+          </div>
+          {/* AI 분석 */}
+          <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.line}` }}>
+            <div style={{ ...hdr, marginBottom: 8 }}>AI 분석 (선택 선교사·시대 기반)</div>
+            <label style={label}>시대/배경 메모 (분석 입력, 선택)</label>
+            <input style={{ ...input, marginBottom: 8 }} value={tdraft.era} onChange={(e) => setTdraft((d) => ({ ...d, era: e.target.value }))} placeholder="예: 1885–1910 개항기, 갑신정변 이후 선교 개방" />
+            <label style={label}>분석 프롬프트</label>
+            <textarea style={{ ...input, minHeight: 60, marginBottom: 8 }} value={tPrompt} onChange={(e) => setTPrompt(e.target.value)} placeholder="예: 이 인물들의 상관관계와 평양 대부흥에 미친 영향을 분석해줘" />
+            <button onClick={analyzeTopic} disabled={analyzing} style={{ ...btn, background: "#1f6f8b" }}>{analyzing ? "분석 중… (최대 1분)" : "🤖 AI 분석 생성"}</button>
+            {tdraft.analysis && (
+              <div style={{ marginTop: 10 }}>
+                <label style={label}>분석 결과 (수정 가능 — 주제 저장 시 리포트에 실림)</label>
+                <textarea style={{ ...input, minHeight: 220, fontFamily: "var(--font-serif)", lineHeight: 1.7, fontSize: 13 }} value={tdraft.analysis} onChange={(e) => setTdraft((d) => ({ ...d, analysis: e.target.value }))} />
+              </div>
+            )}
+            <p style={{ margin: "8px 0 0", fontSize: 11.5, lineHeight: 1.5, color: C.muted }}>※ 분석은 선택한 선교사의 사이트 검증 데이터(요약·연표·관계·인용)를 근거로 생성됩니다. 작동하려면 Vercel 환경변수 <b>ANTHROPIC_API_KEY</b>가 필요합니다.</p>
           </div>
           <button onClick={saveTopic} disabled={saving} style={{ ...btn, marginTop: 14 }}>{saving ? "저장 중…" : "주제 저장"}</button>
         </div>

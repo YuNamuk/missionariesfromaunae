@@ -67,7 +67,15 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
       <p className="mt-4 text-[12px] font-extrabold uppercase tracking-[0.18em] text-sky-600">Topic Research · 통합 리포트</p>
       <h1 className="font-serif mt-2 text-3xl font-bold tracking-tight text-ink-900 sm:text-[40px]">{topic.title}</h1>
       <p className="font-serif mt-4 text-[17px] leading-[2.0] text-ink-700">{topic.intro}</p>
-      <p className="mt-3 text-[12.5px] font-bold text-ink-400">선교사 {people.length}명{topic.by ? ` · ${topic.by}` : ""}</p>
+      <p className="mt-3 text-[12.5px] font-bold text-ink-400">선교사 {people.length}명{topic.era ? ` · ${topic.era}` : ""}{topic.by ? ` · ${topic.by}` : ""}</p>
+
+      {topic.analysis && (
+        <section className="mt-8 rounded-3xl border p-6 sm:p-7" style={{ borderColor: "rgba(31,111,139,.3)", background: "var(--aqua-50)" }}>
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-aqua-700">AI 분석 · 상관관계·시대 배경·역할·영향</div>
+          <div className="font-serif mt-3 whitespace-pre-wrap text-[15px] leading-[1.95] text-ink-800">{topic.analysis}</div>
+          <p className="mt-3 text-[11px] text-ink-400">선택 선교사의 사이트 검증 데이터(요약·연표·관계·인용)를 근거로 생성·검토된 분석입니다.</p>
+        </section>
+      )}
 
       {/* 활동기간 */}
       <section className="mt-10">
