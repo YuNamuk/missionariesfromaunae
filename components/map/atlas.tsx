@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Search, X, ArrowRight, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Share2, Check } from "lucide-react";
 import type { AtlasData, MapPerson, MapPlace } from "./types";
@@ -1348,6 +1347,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   <p style={{ margin: "7px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.72)" }}>
                     {selPerson.life}{ageFromLife(selPerson.life) ? <span style={{ color: "#f0c98a", fontWeight: 700 }}> · 향년 {ageFromLife(selPerson.life)}세</span> : ""}
                   </p>
+                  <a href={`/people/${selPerson.id}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 11, padding: "7px 13px", borderRadius: 11, border: "1px solid rgba(255,248,236,.4)", background: "rgba(255,248,236,.16)", color: "#fff8ed", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
+                    상세 프로필 바로가기 <span aria-hidden>→</span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -1362,10 +1364,6 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   <span style={pill("rgba(74,58,40,.12)", "#4a3a28")}>🪦 안장 · {selPerson.burial}</span>
                 )}
               </div>
-
-              <a href={`/people/${selPerson.id}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, padding: "10px 14px", borderRadius: 14, border: `1px solid ${C.line}`, background: "#2f2419", color: "#fff8ed", fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
-                <span>상세 페이지에서 이야기 전체 보기</span><span aria-hidden>→</span>
-              </a>
 
               <section style={{ padding: 15, background: "#fff9ee", border: `1px solid ${C.line}`, borderRadius: 18, marginBottom: 14 }}>
                 <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: "#594935" }}>{selPerson.summary}</p>
@@ -1473,11 +1471,6 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 )}
               </section>
 
-              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
-                <Link href={`/people/${selPerson.id}`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 14px", borderRadius: 999, background: "#2f2419", color: "#fff8ed", fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
-                  상세 프로필 <ArrowRight size={14} />
-                </Link>
-              </div>
               {selPerson.photo && (
                 <p style={{ margin: "10px 0 0", fontSize: 10.5, color: C.faint }}>사진 출처: {selPerson.photoSource} (CC/PD)</p>
               )}
