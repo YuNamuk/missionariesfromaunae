@@ -13,14 +13,15 @@ export function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
         원본 사진 모음 <span className="text-[12px] font-semibold text-ink-400">· {photos.length}점</span>
       </h2>
       <p className="mt-1 text-[12px] text-ink-400">공개 자료에서 본인으로 확인된 사진. 컬러는 같은 톤의 AI 복원본입니다(설정 🎨로 전환).</p>
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+      {/* 원본 비율을 살린 메이슨리(벽돌형) 갤러리 — 세로/가로 사진이 자연스럽게 어우러진다. */}
+      <div className="mt-4 columns-2 gap-4 md:columns-3">
         {photos.map((g, i) => {
           const showColor = color && !!g.srcColor;
           return (
-            <figure key={i} className="m-0 overflow-hidden rounded-2xl border border-ink-200 bg-white">
+            <figure key={i} className="mb-4 break-inside-avoid overflow-hidden rounded-2xl border border-ink-200 bg-white">
               <span className="relative block">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={showColor ? (g.srcColor as string) : g.src} alt={g.caption} loading="lazy" className="aspect-[3/4] w-full object-cover" style={{ background: "#efe1c3" }} />
+                <img src={showColor ? (g.srcColor as string) : g.src} alt={g.caption} loading="lazy" className="block h-auto w-full" style={{ background: "#efe1c3" }} />
                 {showColor && (
                   <span className="absolute left-1.5 top-1.5 rounded-full px-1.5 py-0.5 text-[8.5px] font-extrabold" style={{ background: "rgba(40,26,14,.78)", color: "#ffe7c2" }}>AI 복원</span>
                 )}
