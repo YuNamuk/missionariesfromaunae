@@ -389,15 +389,19 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   }, [selected]);
   const goBack = () => {
     // 이력이 있으면 직전 상태로, 없으면(이력 소실 등) 항상 시작 화면으로 복귀.
-    const entry: Hist = history.length > 0 ? history[history.length - 1] : { sel: null, view: HOME_VIEW };
+    const hasHist = history.length > 0;
+    const entry: Hist = hasHist ? history[history.length - 1] : { sel: null, view: HOME_VIEW };
     goingBackRef.current = true;
     skipFitRef.current = true; // 자동 줌 대신 저장된 지도 상태 복원
+    if (hasHist) setHistory((h) => h.slice(0, -1));
+    // 카드(선택)와 지도(뷰)를 '한 묶음'으로 되돌린다. setSelected가 같은 값이어도
+    // 이력이 어긋나지 않도록 prevSelRef를 직접 동기화(효과가 안 돌 때 대비).
     setSelected(entry.sel);
-    if (history.length > 0) setHistory((h) => h.slice(0, -1));
+    prevSelRef.current = entry.sel;
     // 시작 내러티브(선택 없음)로 복귀하면 항상 홈의 넓은 지도로, 그 외엔 저장된 뷰로.
     const target = entry.sel ? entry.view : HOME_VIEW;
     if (target && mapRef.current) mapRef.current.flyTo(target.center, target.zoom, { duration: 0.5, easeLinearity: 0.25 });
-    else skipFitRef.current = false;
+    else skipFitRef.current = false; // 저장된 뷰가 없으면 복원된 선택에 맞춰 자동 줌
   };
   const [showSettings, setShowSettings] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
