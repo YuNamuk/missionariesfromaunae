@@ -108,7 +108,7 @@ export function DictionaryRoster({ people }: { people: RosterPerson[] }) {
       {list.length === 0 ? (
         <p className="mt-6 text-[14px] text-ink-500">해당 조건의 인물이 없습니다.</p>
       ) : view === "album" ? (
-        <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {list.map((p) => (
             <li key={p.id}>
               <Link href={`/people/${p.id}`} className="group block overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:shadow-[var(--shadow-sky)]">
