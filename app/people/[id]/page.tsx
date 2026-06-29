@@ -16,7 +16,7 @@ import {
 } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 import { profileFor } from "@/lib/data/profiles";
-import { fetchPersonContent } from "@/lib/db/editable";
+import { fetchPersonContent, fetchReview } from "@/lib/db/editable";
 
 // 관리자 카드 편집(DB 오버레이)을 반영하기 위해 ISR. /admin 저장 시 revalidate로 즉시 반영.
 export const revalidate = 300;
@@ -71,7 +71,9 @@ export default async function PersonPage({
   const ph = PHOTOS[person.id];
   const photo = ph?.photo ?? null;
   const photoSource = ph?.source ?? "";
-  const gallery = galleryFor(person.id);
+  const review = await fetchReview();
+  // 검수에서 '숨김(rejected)'된 갤러리 사진은 공개에서 제외. 대기·승인은 노출(바로 적용).
+  const gallery = galleryFor(person.id).filter((_, i) => review[`g:${person.id}:${i}`] !== "rejected");
   const extLinks = [
     ph?.wiki ? { label: "위키백과", href: ph.wiki } : null,
     ph?.wikiEn ? { label: "Wikipedia (EN)", href: ph.wikiEn } : null,

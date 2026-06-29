@@ -5,6 +5,7 @@ import type { Session } from "@supabase/supabase-js";
 import { browserSupabase } from "@/lib/db/browser";
 import { PEOPLE } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
+import { GALLERY } from "@/lib/data/gallery";
 import { isFeatured } from "@/lib/data/meta";
 import { profileFor } from "@/lib/data/profiles";
 import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
@@ -31,7 +32,7 @@ export default function AdminPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "admins" | "stats">("people");
+  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "admins" | "stats" | "review">("people");
   // 대표(featured) 토글 — 코드 FEATURED 위에 덮어쓸 오버라이드(app_settings 'meta.featured').
   const [feat, setFeat] = useState<Record<string, boolean>>({});
   const [featQ, setFeatQ] = useState("");
@@ -39,6 +40,7 @@ export default function AdminPage() {
   const [tdraft, setTdraft] = useState<{ id: string; title: string; intro: string; people: string[]; era: string; analysis: string }>({ id: "", title: "", intro: "", people: [], era: "", analysis: "" });
   const [tq, setTq] = useState("");
   const [tcat, setTcat] = useState<string | null>(null); // 주제연구 인물 선택 분류 필터
+  const [review, setReview] = useState<Record<string, "approved" | "rejected">>({}); // 검수 상태(g:<id>:<n>)
   const [tPrompt, setTPrompt] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [pc, setPc] = useState<{ story: Record<string, string>; journey: Record<string, string> }>({ story: {}, journey: {} });
@@ -73,6 +75,7 @@ export default function AdminPage() {
     for (const r of (st.data ?? []) as { key: string; value: unknown }[]) s[r.key] = r.value;
     setSettings(s);
     setAdminEmails(Array.isArray(s.admins) ? (s.admins as string[]) : []);
+    setReview((s.review && typeof s.review === "object" ? s.review : {}) as Record<string, "approved" | "rejected">);
   }, [sb]);
 
   useEffect(() => { if (session) loadData(); }, [session, loadData]);
@@ -281,9 +284,9 @@ export default function AdminPage() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {(["people", "featured", "research", "pages", "settings", "admins", "stats"] as const).map((t) => (
+        {(["people", "featured", "research", "pages", "settings", "admins", "stats", "review"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} style={{ border: `1px solid ${tab === t ? "#2f2419" : C.line}`, borderRadius: 11, padding: "8px 16px", background: tab === t ? "#2f2419" : "transparent", color: tab === t ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
-            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "research" ? "주제연구" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : t === "admins" ? "관리자 계정" : "방문 통계"}
+            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "research" ? "주제연구" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : t === "admins" ? "관리자 계정" : t === "stats" ? "방문 통계" : "검수"}
           </button>
         ))}
       </div>
@@ -570,6 +573,52 @@ export default function AdminPage() {
                 ))}
                 {dates.length === 0 && <span style={{ fontSize: 12.5, color: C.muted }}>아직 집계된 방문이 없습니다(배포 후 방문부터 기록됩니다).</span>}
               </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {tab === "review" && (() => {
+        const setKey = async (key: string, val: "approved" | "rejected" | null) => {
+          const next = { ...review };
+          if (val === null) delete next[key]; else next[key] = val;
+          setReview(next);
+          await post({ kind: "settings", settings: { review: next } });
+        };
+        const items = Object.entries(GALLERY).flatMap(([pid, arr]) =>
+          arr.map((g, i) => ({ pid, i, g, key: `g:${pid}:${i}`, status: review[`g:${pid}:${i}`] })),
+        );
+        const pending = items.filter((x) => !x.status).length;
+        const rejected = items.filter((x) => x.status === "rejected").length;
+        const segBtn = (on: boolean, color: string, label: string, onClick: () => void) => (
+          <button onClick={onClick} style={{ border: `1px solid ${on ? color : C.line}`, borderRadius: 8, padding: "3px 9px", background: on ? color : "transparent", color: on ? "#fff8ed" : C.muted, cursor: "pointer", fontSize: 11, fontWeight: 800 }}>{label}</button>
+        );
+        return (
+          <div>
+            <p style={{ margin: "0 0 6px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
+              수집·컬러화된 원본 사진 검수 큐입니다. <b>지금은 개발 단계라 바로 적용</b>되며, 여기서 본인 확인(✓ 확인)하거나 잘못된 사진(친족·동명이인·기념물 등)을 <b>숨김</b> 처리합니다. 숨김은 공개 사이트에서 즉시 제외됩니다.
+            </p>
+            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#9b3d2d" }}>총 {items.length}장 · 대기 {pending} · 숨김 {rejected}</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 10 }}>
+              {items.map(({ pid, i, g, key, status }) => {
+                const person = PEOPLE.find((p) => p.id === pid);
+                return (
+                  <div key={key} style={{ border: `1.5px solid ${status === "rejected" ? "#c2453a" : status === "approved" ? "#3f7f4b" : C.line}`, borderRadius: 12, overflow: "hidden", background: "#fff8ec", opacity: status === "rejected" ? 0.6 : 1 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={g.srcColor || g.src} alt="" loading="lazy" style={{ width: "100%", height: 150, objectFit: "cover", background: "#efe1c3", display: "block" }} />
+                    <div style={{ padding: "7px 9px" }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 800, color: C.ink }}>{person?.name ?? pid} <span style={{ color: C.muted, fontWeight: 500 }}>#{i + 1}{g.srcColor ? " · 컬러" : ""}</span></div>
+                      <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.4, marginTop: 1, maxHeight: 28, overflow: "hidden" }}>{g.caption}</div>
+                      <div style={{ display: "flex", gap: 5, marginTop: 7 }}>
+                        {segBtn(status === "approved", "#3f7f4b", "✓ 확인", () => setKey(key, status === "approved" ? null : "approved"))}
+                        {segBtn(status === "rejected", "#c2453a", "숨김", () => setKey(key, status === "rejected" ? null : "rejected"))}
+                        <a href={g.sourceUrl} target="_blank" rel="noreferrer" style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#1f6f8b", textDecoration: "none", alignSelf: "center" }}>출처↗</a>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {items.length === 0 && <p style={{ fontSize: 13, color: C.muted }}>아직 수집된 갤러리 사진이 없습니다.</p>}
             </div>
           </div>
         );

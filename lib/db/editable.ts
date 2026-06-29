@@ -55,3 +55,11 @@ export async function fetchPersonContent(id: string): Promise<PersonContentOverr
 export async function fetchPageContent(page: string): Promise<Record<string, string> | null> {
   return (await readSetting(`content.page.${page}`)) as Record<string, string> | null;
 }
+
+// 검수/승인 큐 — 수집·컬러화 항목의 사람 검수 상태. key 예: "g:<id>:<n>"(갤러리 사진).
+// 값 "approved" | "rejected"(없으면 대기). 거부 항목은 공개 사이트에서 숨긴다.
+export type ReviewMap = Record<string, "approved" | "rejected">;
+export async function fetchReview(): Promise<ReviewMap> {
+  const v = await readSetting("review");
+  return (v && typeof v === "object" ? v : {}) as ReviewMap;
+}
