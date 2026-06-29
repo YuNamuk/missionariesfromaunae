@@ -102,6 +102,7 @@ async function main() {
     }
   }
   if (approvedMode) console.log(`채택 후보 컬러화 — 신규 ${done}장`);
+  if (done === 0) { console.log("변경 없음 — gallery.ts 미수정"); return; } // 잡음 diff 방지
   // gallery.ts 재작성(srcColor 포함)
   const body =
     `// 인물별 '원본 사진 모음' — Wikimedia Commons 카테고리에서 수집(PD/CC). 카테고리 소속 = 본인 확인.\n` +
