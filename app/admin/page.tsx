@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { browserSupabase } from "@/lib/db/browser";
 import { PEOPLE } from "@/lib/data";
+import { PHOTOS } from "@/lib/data/photos";
 import { isFeatured } from "@/lib/data/meta";
 import { profileFor } from "@/lib/data/profiles";
 import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
@@ -37,6 +38,7 @@ export default function AdminPage() {
   // 주제연구 등록 — app_settings 'topic.<id>'.
   const [tdraft, setTdraft] = useState<{ id: string; title: string; intro: string; people: string[]; era: string; analysis: string }>({ id: "", title: "", intro: "", people: [], era: "", analysis: "" });
   const [tq, setTq] = useState("");
+  const [tcat, setTcat] = useState<string | null>(null); // 주제연구 인물 선택 분류 필터
   const [tPrompt, setTPrompt] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [pc, setPc] = useState<{ story: Record<string, string>; journey: Record<string, string> }>({ story: {}, journey: {} });
@@ -392,14 +394,43 @@ export default function AdminPage() {
               ); })}
             </div>
           )}
-          <input style={{ ...input, marginBottom: 6 }} value={tq} onChange={(e) => setTq(e.target.value)} placeholder="이름·영문 검색해 추가" />
-          <div style={{ maxHeight: 220, overflowY: "auto", border: `1px solid ${C.line}`, borderRadius: 10, background: "#fff8ec" }}>
-            {PEOPLE.filter((p) => !tq || `${p.name} ${p.en}`.toLowerCase().includes(tq.toLowerCase())).map((p) => (
-              <button key={p.id} onClick={() => toggleTopicPerson(p.id)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "6px 12px", borderBottom: `1px solid ${C.line}`, background: tdraft.people.includes(p.id) ? "rgba(155,61,45,.08)" : "transparent", border: 0, cursor: "pointer", color: C.ink, fontSize: 13 }}>
-                <span style={{ width: 16 }}>{tdraft.people.includes(p.id) ? "✓" : ""}</span>
-                <span style={{ fontWeight: 700 }}>{p.name}</span><span style={{ color: C.muted, fontSize: 11 }}>· {p.en} · {p.year}</span>
-              </button>
-            ))}
+          <input style={{ ...input, marginBottom: 8 }} value={tq} onChange={(e) => setTq(e.target.value)} placeholder="이름·영문 검색" />
+          {/* 분류 토글: 역할(role) 키워드 기반 — 의료·교육·번역·목회/전도 */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+            {([["전체", null], ["의료", "의료"], ["교육", "교육"], ["번역", "번역"], ["목회·전도", "목회"]] as const).map(([lbl, key]) => {
+              const on = tcat === key;
+              return <button key={lbl} onClick={() => setTcat(key)} style={{ border: `1px solid ${on ? "#9b3d2d" : C.line}`, borderRadius: 99, padding: "4px 12px", background: on ? "#9b3d2d" : "transparent", color: on ? "#fff8ed" : C.muted, cursor: "pointer", fontSize: 12, fontWeight: 800 }}>{lbl}</button>;
+            })}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 8, maxHeight: 360, overflowY: "auto", padding: 2 }}>
+            {PEOPLE.filter((p) => {
+              if (tq && !`${p.name} ${p.en}`.toLowerCase().includes(tq.toLowerCase())) return false;
+              if (tcat) {
+                const r = p.role;
+                const ok = tcat === "의료" ? /의료|간호/.test(r) : tcat === "교육" ? /교육|한글|학/.test(r) : tcat === "번역" ? /번역|성경/.test(r) : /전도|목회|부흥|반포/.test(r);
+                if (!ok) return false;
+              }
+              return true;
+            }).map((p) => {
+              const on = tdraft.people.includes(p.id);
+              const photo = PHOTOS[p.id]?.photo;
+              return (
+                <button key={p.id} onClick={() => toggleTopicPerson(p.id)} title={p.summary} style={{ display: "flex", flexDirection: "column", gap: 6, textAlign: "left", padding: 8, borderRadius: 12, border: `1.5px solid ${on ? "#9b3d2d" : C.line}`, background: on ? "rgba(155,61,45,.08)" : "#fff8ec", cursor: "pointer", position: "relative" }}>
+                  {on && <span style={{ position: "absolute", right: 6, top: 6, width: 18, height: 18, borderRadius: 99, background: "#9b3d2d", color: "#fff8ed", fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>✓</span>}
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    {photo
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={photo} alt="" style={{ width: 38, height: 46, flex: "0 0 auto", borderRadius: 7, objectFit: "cover", background: "#efe1c3" }} />
+                      : <span style={{ width: 38, height: 46, flex: "0 0 auto", borderRadius: 7, background: "var(--grad-dream,#7a4a2e)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 18 }}>{p.glyph}</span>}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: C.ink }}>{p.name}</div>
+                      <div style={{ fontSize: 10, color: C.muted }}>{p.year} · {p.role}</div>
+                    </div>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 10.5, lineHeight: 1.45, color: "#6b5e4b", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.summary}</p>
+                </button>
+              );
+            })}
           </div>
           {/* AI 분석 */}
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.line}` }}>
