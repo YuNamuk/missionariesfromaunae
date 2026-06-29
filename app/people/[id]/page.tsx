@@ -74,7 +74,7 @@ export default async function PersonPage({
   const review = await fetchReview();
   // 검수에서 '숨김(rejected)'된 갤러리 사진은 공개에서 제외. 대기·승인은 노출(바로 적용).
   const gallery = galleryFor(person.id).filter((_, i) => review[`g:${person.id}:${i}`] !== "rejected");
-  const extLinks = [
+  const defaultExtLinks = [
     ph?.wiki ? { label: "위키백과", href: ph.wiki } : null,
     ph?.wikiEn ? { label: "Wikipedia (EN)", href: ph.wikiEn } : null,
     ph?.namu ? { label: "나무위키", href: ph.namu } : null,
@@ -95,6 +95,8 @@ export default async function PersonPage({
   };
   // 관련 영상: 관리자 오버레이(있으면 우선) ?? 코드 기본. 여러 개 가능.
   const videos = ov?.videos ?? profile?.videos ?? [];
+  // 외부 링크: 관리자 오버레이(있으면 우선) ?? PHOTOS 기본.
+  const extLinks = ov?.links?.length ? ov.links.filter((l) => l.href) : defaultExtLinks;
   const hasNarrative = !!(c.story?.length || c.journey || c.ministry.length || c.influence || c.beauty);
 
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://missionaries-khaki.vercel.app";

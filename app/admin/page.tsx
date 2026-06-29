@@ -7,6 +7,7 @@ import { PEOPLE } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 import { GALLERY } from "@/lib/data/gallery";
 import { STATUS_LABEL, type DevReq } from "@/lib/data/devreq";
+import { colorSrc } from "@/lib/data/colorized";
 import { isFeatured } from "@/lib/data/meta";
 import { profileFor } from "@/lib/data/profiles";
 import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
@@ -61,6 +62,11 @@ export default function AdminPage() {
   // 상세 페이지 카드 글(스토리텔링 등) 편집 — content.person.<id> 오버레이로 저장.
   const [cd, setCd] = useState<Record<string, string>>({});
   const [cdVideos, setCdVideos] = useState<{ url: string; title: string; source?: string }[]>([]); // 관련 영상(유튜브) 링크들
+  const [cdLinks, setCdLinks] = useState<{ label: string; href: string }[]>([]); // 외부 링크
+  const [roleAdd, setRoleAdd] = useState(""); // 사역 수동 추가 입력
+  // 소속·사역 자동완성 후보(기존 데이터 + 통상값)
+  const ORG_LIST = [...new Set(PEOPLE.map((p) => p.org).filter(Boolean))].sort();
+  const ROLE_SUGGEST = ["의료", "간호", "교육", "여성 교육", "번역", "성경 반포", "전도", "목회", "부흥", "외교", "문서·출판", "고아·구제", "신학 교육"];
 
   useEffect(() => {
     sb.auth.getSession().then(({ data }) => { setSession(data.session); setReady(true); });
@@ -96,9 +102,16 @@ export default function AdminPage() {
       const base = profileFor(sel);
       const tsPerson = PEOPLE.find((x) => x.id === sel);
       const ovStored = (settings[`content.person.${sel}`] ?? {}) as {
-        summary?: string; story?: string[]; journey?: string; ministry?: string[]; influence?: string; beauty?: string; quote?: { text: string; source: string }; videos?: { url: string; title: string; source?: string }[];
+        summary?: string; story?: string[]; journey?: string; ministry?: string[]; influence?: string; beauty?: string; quote?: { text: string; source: string }; videos?: { url: string; title: string; source?: string }[]; links?: { label: string; href: string }[];
       };
       setCdVideos(ovStored.videos ?? base?.videos ?? []);
+      const ph = PHOTOS[sel];
+      const defLinks = [
+        ph?.wiki ? { label: "위키백과", href: ph.wiki } : null,
+        ph?.wikiEn ? { label: "Wikipedia (EN)", href: ph.wikiEn } : null,
+        ph?.namu ? { label: "나무위키", href: ph.namu } : null,
+      ].filter(Boolean) as { label: string; href: string }[];
+      setCdLinks(ovStored.links ?? defLinks);
       setCd({
         summary: ovStored.summary ?? tsPerson?.summary ?? "",
         story: (ovStored.story ?? base?.story ?? []).join("\n\n"),
@@ -109,7 +122,7 @@ export default function AdminPage() {
         quoteText: ovStored.quote?.text ?? base?.quote?.text ?? "",
         quoteSource: ovStored.quote?.source ?? base?.quote?.source ?? "",
       });
-    } else { setCd({}); setCdVideos([]); }
+    } else { setCd({}); setCdVideos([]); setCdLinks([]); }
   }, [sel, people, settings]);
 
   async function login(e: React.FormEvent) {
@@ -187,6 +200,8 @@ export default function AdminPage() {
     if (t(cd.quoteText)) value.quote = { text: t(cd.quoteText), source: t(cd.quoteSource) };
     const vids = cdVideos.map((v) => ({ url: v.url.trim(), title: v.title.trim(), ...(v.source?.trim() ? { source: v.source.trim() } : {}) })).filter((v) => v.url);
     if (vids.length) value.videos = vids;
+    const lks = cdLinks.map((l) => ({ label: l.label.trim(), href: l.href.trim() })).filter((l) => l.href);
+    if (lks.length) value.links = lks;
     const err = await post({ kind: "settings", settings: { [`content.person.${sel}`]: value } });
     setSaving(false);
     setMsg(err ? "저장 실패: " + err : "✓ 카드 글 저장됨 (상세 페이지에 곧 반영)");
@@ -203,6 +218,10 @@ export default function AdminPage() {
   const set = (k: string, v: unknown) => setSettings((s) => ({ ...s, [k]: v }));
   const upd = (k: keyof PersonRow, v: string) => setDraft((d) => (d ? { ...d, [k]: v } : d));
   const cdu = (k: string, v: string) => setCd((s) => ({ ...s, [k]: v }));
+  // 사역(role)을 ' · ' 구분 칩으로 다룬다.
+  const roleChips = (draft?.role ?? "").split("·").map((s) => s.trim()).filter(Boolean);
+  const addRole = (c: string) => { const t = c.trim(); if (t && !roleChips.includes(t)) upd("role", [...roleChips, t].join(" · ")); };
+  const removeRole = (c: string) => upd("role", roleChips.filter((x) => x !== c).join(" · "));
 
   // 대표(featured) 토글: settings 로드 시 동기화, 토글은 코드 FEATURED 위에 덮어씀.
   useEffect(() => {
@@ -311,8 +330,11 @@ export default function AdminPage() {
                 <div><label style={label}>이름</label><input style={input} value={draft.name ?? ""} onChange={(e) => upd("name", e.target.value)} /></div>
                 <div><label style={label}>영문명</label><input style={input} value={draft.name_en ?? ""} onChange={(e) => upd("name_en", e.target.value)} /></div>
                 <div><label style={label}>생몰 (예: 1858–1902)</label><input style={input} value={draft.life ?? ""} onChange={(e) => upd("life", e.target.value)} /></div>
-                <div><label style={label}>소속</label><input style={input} value={draft.org ?? ""} onChange={(e) => upd("org", e.target.value)} /></div>
-                <div><label style={label}>사역</label><input style={input} value={draft.role ?? ""} onChange={(e) => upd("role", e.target.value)} /></div>
+                <div>
+                  <label style={label}>소속 (선택 또는 직접 입력)</label>
+                  <input style={input} list="org-list" value={draft.org ?? ""} onChange={(e) => upd("org", e.target.value)} placeholder="예: 북장로회" />
+                  <datalist id="org-list">{ORG_LIST.map((o) => <option key={o} value={o} />)}</datalist>
+                </div>
                 <div>
                   <label style={label}>안장 묘역</label>
                   <select style={input} value={draft.burial_place_id ?? ""} onChange={(e) => upd("burial_place_id", e.target.value)}>
@@ -321,9 +343,41 @@ export default function AdminPage() {
                   </select>
                 </div>
               </div>
+              {/* 사역 — 여러 개 칩(추천 클릭 추가 + 수동 입력) */}
+              <div>
+                <label style={label}>사역 (여러 개 · 클릭 추가/수동 입력)</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "2px 0 6px" }}>
+                  {roleChips.length === 0 && <span style={{ fontSize: 12, color: C.muted }}>아직 없음</span>}
+                  {roleChips.map((c) => (
+                    <button key={c} onClick={() => removeRole(c)} style={{ background: "#2f2419", color: "#fff8ed", border: 0, borderRadius: 99, padding: "3px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>{c} ✕</button>
+                  ))}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 6 }}>
+                  {ROLE_SUGGEST.filter((s) => !roleChips.includes(s)).map((s) => (
+                    <button key={s} onClick={() => addRole(s)} style={{ border: `1px dashed ${C.line}`, borderRadius: 99, padding: "3px 9px", background: "transparent", color: C.muted, cursor: "pointer", fontSize: 11.5, fontWeight: 700 }}>+ {s}</button>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <input style={{ ...input, flex: 1 }} value={roleAdd} onChange={(e) => setRoleAdd(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { addRole(roleAdd); setRoleAdd(""); } }} placeholder="직접 입력 후 Enter 또는 추가" />
+                  <button onClick={() => { addRole(roleAdd); setRoleAdd(""); }} style={{ ...btn }}>추가</button>
+                </div>
+              </div>
               <div><label style={label}>요약</label><textarea style={{ ...input, minHeight: 90, resize: "vertical" }} value={draft.summary ?? ""} onChange={(e) => upd("summary", e.target.value)} /></div>
-              <div><label style={label}>사진 URL</label><input style={input} value={draft.photo ?? ""} onChange={(e) => upd("photo", e.target.value)} /></div>
-              <div><label style={label}>위키 링크</label><input style={input} value={draft.wiki ?? ""} onChange={(e) => upd("wiki", e.target.value)} /></div>
+              {/* 사진 — 현재 사진 + 컬러본 미리보기 */}
+              <div>
+                <label style={label}>사진</label>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
+                  {[["원본", draft.photo], ["컬러", colorSrc(draft.photo)]].map(([lbl, src]) => src ? (
+                    <figure key={lbl as string} style={{ margin: 0 }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src as string} alt={lbl as string} style={{ width: 92, height: 118, objectFit: "cover", borderRadius: 10, border: `1px solid ${C.line}`, background: "#efe1c3", display: "block" }} />
+                      <figcaption style={{ fontSize: 10.5, color: C.muted, textAlign: "center", marginTop: 3 }}>{lbl as string}</figcaption>
+                    </figure>
+                  ) : (lbl === "컬러" ? <figcaption key="nc" style={{ fontSize: 10.5, color: C.muted }}>컬러본 없음</figcaption> : null))}
+                  <input style={{ ...input, flex: 1 }} value={draft.photo ?? ""} onChange={(e) => upd("photo", e.target.value)} placeholder="/portraits/<id>.jpg 또는 URL" />
+                </div>
+                <p style={{ margin: "5px 0 0", fontSize: 11, color: C.muted }}>※ 파일 업로드+서버 컬러 변환은 스토리지 연동(추후) 후 지원. 지금은 경로/URL 입력으로 표시·확인합니다.</p>
+              </div>
               <div><label style={label}>조선 사역 구간 (예: 1885-1902; 1949-1949)</label><input style={input} value={activeText} onChange={(e) => setActiveText(e.target.value)} /></div>
               <button onClick={savePerson} disabled={saving} style={{ ...btn, justifySelf: "start", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "기본 정보 저장 (지도)"}</button>
 
@@ -356,7 +410,21 @@ export default function AdminPage() {
                     </div>
                     <button onClick={() => setCdVideos((arr) => [...arr, { url: "", title: "" }])} style={{ marginTop: 8, border: `1px dashed ${C.line}`, borderRadius: 10, padding: "7px 14px", background: "transparent", color: C.muted, cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>+ 링크 추가</button>
                   </div>
-                  <button onClick={saveContent} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "카드 글 저장 (상세 페이지)"}</button>
+                  {/* 외부 링크 — 수정·추가·삭제 */}
+                  <div>
+                    <label style={label}>외부 링크 · {cdLinks.length}개 (위키·나무위키 등)</label>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {cdLinks.map((l, i) => (
+                        <div key={i} style={{ display: "grid", gridTemplateColumns: "0.7fr 1.5fr auto", gap: 6, alignItems: "center" }}>
+                          <input style={input} value={l.label} onChange={(e) => setCdLinks((arr) => arr.map((x, j) => j === i ? { ...x, label: e.target.value } : x))} placeholder="표기 (예: 위키백과)" />
+                          <input style={input} value={l.href} onChange={(e) => setCdLinks((arr) => arr.map((x, j) => j === i ? { ...x, href: e.target.value } : x))} placeholder="https://…" />
+                          <button onClick={() => setCdLinks((arr) => arr.filter((_, j) => j !== i))} style={{ border: `1px solid ${C.line}`, borderRadius: 99, padding: "6px 12px", background: "transparent", color: C.accent, cursor: "pointer", fontSize: 12, fontWeight: 800 }}>삭제</button>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={() => setCdLinks((arr) => [...arr, { label: "", href: "" }])} style={{ marginTop: 8, border: `1px dashed ${C.line}`, borderRadius: 10, padding: "7px 14px", background: "transparent", color: C.muted, cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>+ 링크 추가</button>
+                  </div>
+                  <button onClick={saveContent} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "카드 글·링크 저장 (상세 페이지)"}</button>
                 </div>
               </div>
             </div>
