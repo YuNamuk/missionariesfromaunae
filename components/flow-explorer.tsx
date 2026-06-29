@@ -21,10 +21,20 @@ export type RelItem = { id: string; name: string; type: string; label: string; c
 
 // 흐름 카드: 이미지·내용을 그대로 유지한 채 화면 폭에 맞춰 작아지고(폭 공유),
 // 마우스를 올리면 그 카드만 넓어지며 요약 전문이 펼쳐진다. 가로 스크롤 없음.
-function FlowCard({ p, n }: { p: FlowPerson; n: number }) {
+function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelItem; fromName: string } }) {
   return (
     <div className="group relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white hover:grow-[5]" style={{ height: 384, maxWidth: 300, transition: "flex-grow 520ms cubic-bezier(0.22,0.61,0.36,1)" }}>
       <span className="font-display absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-extrabold text-white" style={{ background: "#9b3d2d", boxShadow: "0 1px 5px rgba(155,61,45,.4)" }}>{n}</span>
+      {/* 직전 인물과의 관계 서술(누가 누구에게서 어떤 영향을 받았는지) */}
+      {step && (
+        <div className="flex-none border-b px-3 py-1.5" style={{ background: "rgba(31,111,139,.07)", borderColor: "var(--ink-100)" }}>
+          <div className="flex items-center gap-1.5 text-[11px]">
+            <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ background: step.rel.color }}>{step.rel.label}</span>
+            <span className="font-bold text-aqua-700">{step.rel.dir === "→" ? `${step.fromName}에게서` : `${step.fromName}와(과) 함께`}</span>
+          </div>
+          {step.rel.note && <p className="mt-0.5 text-[11px] leading-snug text-ink-500">{step.rel.note}</p>}
+        </div>
+      )}
       {/* 상단: 사진(세로 초상) + 기본 인적정보 옆으로 */}
       <div className="flex flex-none gap-3 p-3 pb-2">
         {p.photo ? (
@@ -67,16 +77,14 @@ function Column({ title, sub, children }: { title: string; sub?: string; childre
 
 export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Record<string, RelItem[]> }) {
   const byId = useMemo(() => Object.fromEntries(people.map((p) => [p.id, p])), [people]);
-  const [path, setPath] = useState<string[]>([]);
+  // 각 단계: 인물 id + 직전 인물에게서 따라온 관계(rel). 처음 선택은 rel=null.
+  const [path, setPath] = useState<{ id: string; rel: RelItem | null }[]>([]);
   const [q, setQ] = useState("");
 
   const starters = useMemo(
     () => people.filter((p) => !q || `${p.name} ${p.en}`.toLowerCase().includes(q.toLowerCase())),
     [people, q],
   );
-
-  // 시작 선택 + 각 단계의 연관 선교사 컬럼
-  const pick = (k: number, id: string) => setPath((pp) => [...pp.slice(0, k), id]);
 
   return (
     <div className="mx-auto max-w-6xl px-5 pb-24 pt-12 sm:px-7">
@@ -93,7 +101,7 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
         <Column title="① 처음 선교사" sub={`${people.length}명 · 입국·활동 연도순`}>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="이름 검색" className="mb-1.5 w-full rounded-lg border border-ink-200 px-2.5 py-1.5 text-[12.5px]" />
           {starters.map((p) => (
-            <button key={p.id} onClick={() => pick(0, p.id)} className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] hover:bg-ink-50" style={path[0] === p.id ? { background: "#2f2419", color: "#fff8ed" } : { color: "var(--ink-800)" }}>
+            <button key={p.id} onClick={() => setPath([{ id: p.id, rel: null }])} className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] hover:bg-ink-50" style={path[0]?.id === p.id ? { background: "#2f2419", color: "#fff8ed" } : { color: "var(--ink-800)" }}>
               <span className="font-bold">{p.name}</span>
               <span className="text-[10.5px]" style={{ opacity: 0.6 }}>{p.year}</span>
             </button>
@@ -101,29 +109,30 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
         </Column>
 
         {/* 각 선택 단계의 연관 선교사 컬럼 */}
-        {path.map((id, k) => {
+        {path.map((node, k) => {
+          const id = node.id;
           // 흐름은 '영향을 준' 방향으로만 진행 — 역방향(나에게 영향 준 사람)과
           // 이미 지나온 인물(현재 노드 포함 이전 단계)을 빼서 계속 돌고 도는 것을 막는다.
           // 단, 이미 고른 다음 인물(path[k+1])은 보여야 하므로 0..k까지만 제외.
-          const upstream = path.slice(0, k + 1);
+          const upstream = path.slice(0, k + 1).map((nd) => nd.id);
           const list = (rels[id] ?? [])
             .filter((r) => r.flow !== "reverse" && !upstream.includes(r.id))
             .slice()
             .sort((a, b) => a.name.localeCompare(b.name, "ko"));
           // 이어질 연관이 없으면 컬럼을 만들지 않는다(끊긴 느낌 방지 — 흐름은 그냥 마무리).
           if (list.length === 0) return null;
-          const chosen = path[k + 1];
+          const chosenId = path[k + 1]?.id;
           return (
             <div key={`${id}-${k}`} className="flex flex-none items-center gap-3">
               <span className="text-ink-300">→</span>
               <Column title={`${["②", "③", "④", "⑤", "⑥"][k] ?? "·"} ${byId[id]?.name}의 연관`} sub={`${list.length}명`}>
                 {list.map((r) => (
-                  <button key={r.id + r.type} onClick={() => pick(k + 1, r.id)} className="w-full rounded-lg px-2.5 py-1.5 text-left hover:bg-ink-50" style={chosen === r.id ? { background: "#2f2419" } : undefined}>
+                  <button key={r.id + r.type} onClick={() => setPath((pp) => [...pp.slice(0, k + 1), { id: r.id, rel: r }])} className="w-full rounded-lg px-2.5 py-1.5 text-left hover:bg-ink-50" style={chosenId === r.id ? { background: "#2f2419" } : undefined}>
                     <span className="flex items-center gap-1.5">
                       <span className="rounded-full px-1.5 py-0.5 text-[9.5px] font-bold text-white" style={{ background: r.color }}>{r.label}</span>
-                      <span className="text-[13px] font-bold" style={{ color: chosen === r.id ? "#fff8ed" : "var(--ink-800)" }}>{r.dir} {r.name}</span>
+                      <span className="text-[13px] font-bold" style={{ color: chosenId === r.id ? "#fff8ed" : "var(--ink-800)" }}>{r.dir} {r.name}</span>
                     </span>
-                    {r.note && <span className="mt-0.5 block text-[11px] leading-snug" style={{ color: chosen === r.id ? "rgba(255,248,236,.7)" : "var(--ink-400)" }}>{r.note}</span>}
+                    {r.note && <span className="mt-0.5 block text-[11px] leading-snug" style={{ color: chosenId === r.id ? "rgba(255,248,236,.7)" : "var(--ink-400)" }}>{r.note}</span>}
                   </button>
                 ))}
               </Column>
@@ -145,7 +154,7 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
               <button onClick={() => setPath([])} className="rounded-full border border-ink-200 px-3 py-1 text-[12px] font-bold text-ink-500 hover:border-sky-300 hover:text-sky-700">처음부터</button>
             </div>
             <div className="flex w-full gap-2">
-              {path.map((id, i) => byId[id] && <FlowCard key={id + i} p={byId[id]} n={i + 1} />)}
+              {path.map((node, i) => byId[node.id] && <FlowCard key={node.id + i} p={byId[node.id]} n={i + 1} step={i > 0 && node.rel ? { rel: node.rel, fromName: byId[path[i - 1].id]?.name ?? "" } : undefined} />)}
             </div>
             <p className="mt-2 text-[12px] text-ink-400">카드는 화면 폭에 맞춰 접히고, 마우스를 올리면 그 카드가 펼쳐집니다.</p>
           </>
