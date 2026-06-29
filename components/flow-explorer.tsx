@@ -23,41 +23,41 @@ export type RelItem = { id: string; name: string; type: string; label: string; c
 // 마우스를 올리면 그 카드만 넓어지며 요약 전문이 펼쳐진다. 가로 스크롤 없음.
 function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelItem; fromName: string } }) {
   return (
-    <div className="group relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white hover:grow-[5]" style={{ height: 384, maxWidth: 300, transition: "flex-grow 520ms cubic-bezier(0.22,0.61,0.36,1)" }}>
-      <span className="font-display absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-extrabold text-white" style={{ background: "#9b3d2d", boxShadow: "0 1px 5px rgba(155,61,45,.4)" }}>{n}</span>
-      {/* 직전 인물과의 관계 서술(누가 누구에게서 어떤 영향을 받았는지) */}
-      {step && (
-        <div className="flex-none border-b px-3 py-1.5" style={{ background: "rgba(31,111,139,.07)", borderColor: "var(--ink-100)" }}>
-          <div className="flex items-center gap-1.5 text-[11px]">
-            <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ background: step.rel.color }}>{step.rel.label}</span>
-            <span className="font-bold text-aqua-700">{step.rel.dir === "→" ? `${step.fromName}에게서` : `${step.fromName}와(과) 함께`}</span>
-          </div>
-          {step.rel.note && <p className="mt-0.5 text-[11px] leading-snug text-ink-500">{step.rel.note}</p>}
-        </div>
-      )}
-      {/* 상단: 사진(세로 초상) + 기본 인적정보 옆으로 */}
-      <div className="flex flex-none gap-3 p-3 pb-2">
+    <div className="group relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border hover:grow-[5]" style={{ height: 392, maxWidth: 300, borderColor: "rgba(77,56,34,.18)", background: "#fdf6ea", boxShadow: "0 10px 26px rgba(46,28,14,.12)", transition: "flex-grow 520ms cubic-bezier(0.22,0.61,0.36,1)" }}>
+      <span className="font-display absolute right-2.5 top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-extrabold" style={{ background: "rgba(255,248,236,.18)", color: "#fff8ed", border: "1px solid rgba(255,248,236,.25)" }}>{n}</span>
+      {/* 다크 헤더: 초상 + 이름 (인물 카드 분위기) */}
+      <div className="flex flex-none items-start gap-3 p-3.5" style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb" }}>
         {p.photo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.photo} alt={`${p.name} 초상`} className="flex-none rounded-xl object-cover" style={{ width: 76, height: 96, background: "#efe1c3" }} />
+          <img src={p.photo} alt={`${p.name} 초상`} className="flex-none rounded-2xl object-cover" style={{ width: 66, height: 84, border: "2px solid rgba(255,248,236,.3)", background: "#efe1c3" }} />
         ) : (
-          <span className="font-display flex flex-none items-center justify-center rounded-xl text-3xl text-white" style={{ width: 76, height: 96, background: "var(--grad-dream)" }}>{p.glyph}</span>
+          <span className="font-display flex flex-none items-center justify-center rounded-2xl text-3xl" style={{ width: 66, height: 84, background: "rgba(255,248,236,.14)", color: "#fff8eb" }}>{p.glyph}</span>
         )}
-        <div className="min-w-0">
-          <h2 className="font-serif text-[16px] font-bold leading-tight text-ink-900">{p.name}</h2>
-          <p className="font-serif mt-0.5 text-[11.5px] text-ink-500">{p.life}</p>
-          <div className="mt-1.5 flex flex-col items-start gap-1">
-            <span className="rounded-full bg-sky-500 px-2 py-0.5 text-[10px] font-bold text-white">{p.org}</span>
-            <span className="rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-bold text-ink-700">{p.role}</span>
-          </div>
+        <div className="min-w-0 pt-0.5">
+          <span className="inline-block rounded-full px-2 py-0.5 text-[9.5px] font-extrabold" style={{ background: "rgba(255,255,255,.16)" }}>{p.year}년</span>
+          <h2 className="font-serif mt-1 text-[18px] font-bold leading-tight" style={{ color: "#fff8eb" }}>{p.name}</h2>
+          <p className="font-serif text-[11px]" style={{ color: "rgba(255,248,235,.8)" }}>{p.en}</p>
+          <p className="font-serif text-[11px]" style={{ color: "rgba(255,248,235,.62)" }}>{p.life}</p>
         </div>
       </div>
-      <div className="flex min-h-0 flex-1 flex-col px-3 pb-3">
-        {p.quote && (
-          <p className="font-serif line-clamp-2 border-l-4 pl-2 text-[12.5px] leading-snug text-ink-800 group-hover:line-clamp-none" style={{ borderColor: "#bf6b22" }}>&ldquo;{p.quote.text}&rdquo;</p>
+      {/* 크림 바디 */}
+      <div className="flex min-h-0 flex-1 flex-col gap-2 p-3">
+        {step && (
+          <div className="flex-none rounded-2xl border px-2.5 py-2" style={{ borderColor: "rgba(31,111,139,.25)", background: "#eef5f7" }}>
+            <div className="flex items-center gap-1.5">
+              <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ background: step.rel.color }}>{step.rel.label}</span>
+              <span className="text-[11.5px] font-extrabold text-aqua-700">{step.rel.dir === "→" ? `${step.fromName}에게서` : `${step.fromName}와(과) 함께`}</span>
+            </div>
+            {step.rel.note && <p className="mt-1 text-[11px] leading-snug text-ink-600">{step.rel.note}</p>}
+          </div>
         )}
-        <p className="font-serif mt-2 line-clamp-4 flex-1 overflow-y-auto text-[12.5px] leading-[1.7] text-ink-700 group-hover:line-clamp-none">{p.summary}</p>
-        <Link href={`/people/${p.id}`} className="mt-2 flex-none text-[12px] font-bold text-sky-600 hover:text-sky-700">상세 →</Link>
+        {p.quote && (
+          <figure className="m-0 flex-none border-l-4 pl-2.5" style={{ borderColor: "#bf6b22" }}>
+            <blockquote className="font-serif line-clamp-2 text-[12.5px] leading-snug text-ink-800 group-hover:line-clamp-none">&ldquo;{p.quote.text}&rdquo;</blockquote>
+          </figure>
+        )}
+        <p className="font-serif line-clamp-4 flex-1 overflow-y-auto text-[12.5px] leading-[1.75] text-ink-700 group-hover:line-clamp-none">{p.summary}</p>
+        <Link href={`/people/${p.id}`} className="flex-none text-[12px] font-bold text-sky-600 hover:text-sky-700">상세 페이지 →</Link>
       </div>
     </div>
   );
