@@ -1332,7 +1332,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         {selPerson && (
           <>
             <div style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb", padding: "22px 22px 20px", position: "relative" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+              <div style={{ display: "flex", alignItems: "stretch", gap: 16 }}>
                 {selPerson.photo ? (
                   <span style={{ flex: "0 0 auto" }}>
                     <Portrait id={selPerson.id} src={selPerson.photo} alt={selPerson.name} controls badge style={{ width: 96, height: 124, borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)", display: "block" }} />
@@ -1340,14 +1340,14 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 ) : (
                   <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, background: orgTint(selPerson.org), fontSize: 48 }}>{selPerson.glyph}</span>
                 )}
-                <div style={{ minWidth: 0, paddingTop: 2 }}>
+                <div style={{ minWidth: 0, paddingTop: 2, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                   <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}년 {selPerson.country === "조선" ? "활동" : "입국"}</span>
                   <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26, margin: "10px 0 0", letterSpacing: "-.03em" }}>{selPerson.name}</h2>
                   {selPerson.en && <p style={{ margin: "3px 0 0", fontSize: 13.5, fontWeight: 600, color: "rgba(255,248,235,.82)" }}>{selPerson.en}</p>}
                   <p style={{ margin: "7px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.72)" }}>
                     {selPerson.life}{ageFromLife(selPerson.life) ? <span style={{ color: "#f0c98a", fontWeight: 700 }}> · 향년 {ageFromLife(selPerson.life)}세</span> : ""}
                   </p>
-                  <a href={`/people/${selPerson.id}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 11, padding: "7px 13px", borderRadius: 11, border: "1px solid rgba(255,248,236,.4)", background: "rgba(255,248,236,.16)", color: "#fff8ed", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>
+                  <a href={`/people/${selPerson.id}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: "auto", padding: "3px 11px", borderRadius: 9, border: "1px solid rgba(255,248,236,.4)", background: "rgba(255,248,236,.16)", color: "#fff8ed", fontSize: 11.5, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" }}>
                     상세 프로필 바로가기 <span aria-hidden>→</span>
                   </a>
                 </div>
