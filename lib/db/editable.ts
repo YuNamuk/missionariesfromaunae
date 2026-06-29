@@ -14,6 +14,7 @@ export interface PersonContentOverride {
   beauty?: string;
   quote?: { text: string; source: string };
   story?: string[];
+  videos?: { url: string; title: string; source?: string }[];
 }
 
 async function readSetting(key: string): Promise<unknown | null> {

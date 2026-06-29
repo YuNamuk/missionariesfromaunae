@@ -90,6 +90,8 @@ export default async function PersonPage({
     beauty: ov?.beauty ?? profile?.beauty,
     quote: ov?.quote ?? profile?.quote,
   };
+  // 관련 영상: 관리자 오버레이(있으면 우선) ?? 코드 기본. 여러 개 가능.
+  const videos = ov?.videos ?? profile?.videos ?? [];
   const hasNarrative = !!(c.story?.length || c.journey || c.ministry.length || c.influence || c.beauty);
 
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://missionaries-khaki.vercel.app";
@@ -328,11 +330,11 @@ export default async function PersonPage({
       </div>
 
       {/* 관련 영상 — 페이지 안에서 재생(유튜브 로고 누르면 유튜브로 이동) */}
-      {profile?.videos && profile.videos.length > 0 && (
+      {videos.length > 0 && (
         <section className="mt-10">
           <h2 className="font-display text-lg font-extrabold text-ink-900">관련 영상</h2>
           <div className="mt-4 space-y-6">
-            {profile.videos.map((v) => {
+            {videos.map((v) => {
               const id = ytId(v.url);
               return (
                 <figure key={v.url} className="m-0">

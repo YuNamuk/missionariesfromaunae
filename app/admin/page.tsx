@@ -53,6 +53,7 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   // 상세 페이지 카드 글(스토리텔링 등) 편집 — content.person.<id> 오버레이로 저장.
   const [cd, setCd] = useState<Record<string, string>>({});
+  const [cdVideos, setCdVideos] = useState<{ url: string; title: string; source?: string }[]>([]); // 관련 영상(유튜브) 링크들
 
   useEffect(() => {
     sb.auth.getSession().then(({ data }) => { setSession(data.session); setReady(true); });
@@ -85,8 +86,9 @@ export default function AdminPage() {
       const base = profileFor(sel);
       const tsPerson = PEOPLE.find((x) => x.id === sel);
       const ovStored = (settings[`content.person.${sel}`] ?? {}) as {
-        summary?: string; story?: string[]; journey?: string; ministry?: string[]; influence?: string; beauty?: string; quote?: { text: string; source: string };
+        summary?: string; story?: string[]; journey?: string; ministry?: string[]; influence?: string; beauty?: string; quote?: { text: string; source: string }; videos?: { url: string; title: string; source?: string }[];
       };
+      setCdVideos(ovStored.videos ?? base?.videos ?? []);
       setCd({
         summary: ovStored.summary ?? tsPerson?.summary ?? "",
         story: (ovStored.story ?? base?.story ?? []).join("\n\n"),
@@ -97,7 +99,7 @@ export default function AdminPage() {
         quoteText: ovStored.quote?.text ?? base?.quote?.text ?? "",
         quoteSource: ovStored.quote?.source ?? base?.quote?.source ?? "",
       });
-    } else setCd({});
+    } else { setCd({}); setCdVideos([]); }
   }, [sel, people, settings]);
 
   async function login(e: React.FormEvent) {
@@ -173,6 +175,8 @@ export default function AdminPage() {
     if (t(cd.influence)) value.influence = t(cd.influence);
     if (t(cd.beauty)) value.beauty = t(cd.beauty);
     if (t(cd.quoteText)) value.quote = { text: t(cd.quoteText), source: t(cd.quoteSource) };
+    const vids = cdVideos.map((v) => ({ url: v.url.trim(), title: v.title.trim(), ...(v.source?.trim() ? { source: v.source.trim() } : {}) })).filter((v) => v.url);
+    if (vids.length) value.videos = vids;
     const err = await post({ kind: "settings", settings: { [`content.person.${sel}`]: value } });
     setSaving(false);
     setMsg(err ? "저장 실패: " + err : "✓ 카드 글 저장됨 (상세 페이지에 곧 반영)");
@@ -327,6 +331,20 @@ export default function AdminPage() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     <div><label style={label}>1차 자료 인용</label><textarea style={{ ...input, minHeight: 60, resize: "vertical" }} value={cd.quoteText ?? ""} onChange={(e) => cdu("quoteText", e.target.value)} /></div>
                     <div><label style={label}>인용 출처</label><textarea style={{ ...input, minHeight: 60, resize: "vertical" }} value={cd.quoteSource ?? ""} onChange={(e) => cdu("quoteSource", e.target.value)} /></div>
+                  </div>
+                  {/* 관련 영상(유튜브) — 여러 개 추가·수정·삭제 */}
+                  <div>
+                    <label style={label}>관련 영상 (유튜브 등) · {cdVideos.length}개</label>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {cdVideos.map((v, i) => (
+                        <div key={i} style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr auto", gap: 6, alignItems: "center" }}>
+                          <input style={input} value={v.url} onChange={(e) => setCdVideos((arr) => arr.map((x, j) => j === i ? { ...x, url: e.target.value } : x))} placeholder="https://youtu.be/… (영상 URL)" />
+                          <input style={input} value={v.title} onChange={(e) => setCdVideos((arr) => arr.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} placeholder="제목/설명" />
+                          <button onClick={() => setCdVideos((arr) => arr.filter((_, j) => j !== i))} style={{ border: `1px solid ${C.line}`, borderRadius: 99, padding: "6px 12px", background: "transparent", color: C.accent, cursor: "pointer", fontSize: 12, fontWeight: 800 }}>삭제</button>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={() => setCdVideos((arr) => [...arr, { url: "", title: "" }])} style={{ marginTop: 8, border: `1px dashed ${C.line}`, borderRadius: 10, padding: "7px 14px", background: "transparent", color: C.muted, cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>+ 링크 추가</button>
                   </div>
                   <button onClick={saveContent} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "카드 글 저장 (상세 페이지)"}</button>
                 </div>
