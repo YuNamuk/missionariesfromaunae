@@ -47,8 +47,9 @@ export function Portrait({
   const effective = override ?? color;
   const showColor = effective && !!cSrc;
   return (
-    <span style={{ display: "inline-flex", flexDirection: "column", gap: 4, lineHeight: 0 }}>
-      <span style={{ position: "relative", lineHeight: 0 }}>
+    // inline-block + 블록 스택: 분절 컨트롤이 이미지보다 넓어도 이미지가 늘어나지(비율 깨지지) 않게.
+    <span style={{ display: "inline-block", flex: "none", lineHeight: 0, verticalAlign: "top" }}>
+      <span style={{ position: "relative", display: "block", lineHeight: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={showColor ? (cSrc as string) : src} alt={alt} className={className} style={style} />
         {badge && showColor && (
@@ -56,7 +57,7 @@ export function Portrait({
         )}
       </span>
       {controls && cSrc && (
-        <span style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: "1px solid rgba(77,56,34,.22)", lineHeight: 1 }}>
+        <span style={{ display: "flex", marginTop: 4, borderRadius: 8, overflow: "hidden", border: "1px solid rgba(77,56,34,.22)", lineHeight: 1 }}>
           {([["원본", false], ["컬러", true]] as const).map(([lbl, val]) => {
             const on = effective === val;
             return (

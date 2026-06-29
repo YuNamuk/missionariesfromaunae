@@ -212,8 +212,8 @@ export function SiteHeader() {
 
         <BrowseDrop open={open} setOpen={setOpen} onPickPerson={goPerson} onPickFocus={goFocus} onPickYear={goYear} onPickHeritage={goHeritage} />
 
-        {/* 지도 표시 설정 — 지도 페이지에서만 노출(헤더 우측 끝) */}
-        {pathname === "/" && <MapSettingsButton />}
+        {/* 설정 ⚙ — 전 페이지(헤더 우측 끝). 지도 전용 항목은 지도 페이지에서만 노출 */}
+        <MapSettingsButton />
       </nav>
     </header>
   );

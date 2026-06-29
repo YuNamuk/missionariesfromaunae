@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { ColorToggle } from "@/components/color-mode";
 
 // 지도 표시 설정(줌 강도·마커 크기·이름표)을 전역으로 끌어올려, 상단 헤더의 ⚙ 버튼에서
@@ -38,6 +39,8 @@ export const useMapSettings = () => useContext(Ctx);
 /** 헤더 우측 ⚙ — 지도 표시 설정 드롭다운. 지도 페이지에서만 노출한다. */
 export function MapSettingsButton() {
   const { fit, setFit, markerScale, setMarkerScale, showLabels, setShowLabels } = useMapSettings();
+  const pathname = usePathname();
+  const onMap = pathname === "/"; // 지도 페이지에서만 줌·마커·뷰초기화 등 지도 전용 항목 노출
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -62,22 +65,31 @@ export function MapSettingsButton() {
       </button>
       {open && (
         <div style={{ position: "absolute", top: 42, right: 0, width: 214, background: "rgba(255,250,237,.99)", border: `1px solid ${line}`, borderRadius: 14, boxShadow: "0 14px 32px rgba(46,28,14,.28)", padding: 12, zIndex: 1100 }}>
-          <div style={{ ...hdr, marginBottom: 8 }}>줌 강도</div>
-          <div style={{ display: "flex", gap: 6 }}>
-            {([["loose", "느슨"], ["normal", "보통"], ["tight", "타이트"]] as const).map(([k, label]) => seg(label, fit === k, () => setFit(k)))}
+          {onMap && (
+            <>
+              <div style={{ ...hdr, marginBottom: 8 }}>줌 강도</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {([["loose", "느슨"], ["normal", "보통"], ["tight", "타이트"]] as const).map(([k, label]) => seg(label, fit === k, () => setFit(k)))}
+              </div>
+              <div style={{ ...hdr, margin: "12px 0 8px" }}>마커 크기</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {([["작게", 0.85], ["보통", 1], ["크게", 1.2]] as const).map(([label, s]) => seg(label, markerScale === s, () => setMarkerScale(s)))}
+              </div>
+              <button onClick={() => setShowLabels(!showLabels)} style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${line}`, borderRadius: 10, padding: "9px 11px", background: showLabels ? "#2f2419" : "rgba(255,255,255,.6)", color: showLabels ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>
+                <span>마커 이름표</span><span>{showLabels ? "● 표시" : "○ 숨김"}</span>
+              </button>
+            </>
+          )}
+          <div style={{ marginTop: onMap ? 8 : 0 }}>
+            <div style={{ ...hdr, marginBottom: 8 }}>초상</div>
+            <ColorToggle />
           </div>
-          <div style={{ ...hdr, margin: "12px 0 8px" }}>마커 크기</div>
-          <div style={{ display: "flex", gap: 6 }}>
-            {([["작게", 0.85], ["보통", 1], ["크게", 1.2]] as const).map(([label, s]) => seg(label, markerScale === s, () => setMarkerScale(s)))}
-          </div>
-          <button onClick={() => setShowLabels(!showLabels)} style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${line}`, borderRadius: 10, padding: "9px 11px", background: showLabels ? "#2f2419" : "rgba(255,255,255,.6)", color: showLabels ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>
-            <span>마커 이름표</span><span>{showLabels ? "● 표시" : "○ 숨김"}</span>
-          </button>
-          <div style={{ marginTop: 8 }}><ColorToggle /></div>
           <div style={{ borderTop: `1px solid ${line}`, margin: "12px 0 0", paddingTop: 12, display: "grid", gap: 8 }}>
-            <button onClick={() => { window.dispatchEvent(new Event("atlas:reset")); setOpen(false); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${line}`, borderRadius: 10, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#5f4d39", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
-              <span>뷰 초기화</span><span aria-hidden style={{ opacity: 0.55 }}>⤾</span>
-            </button>
+            {onMap && (
+              <button onClick={() => { window.dispatchEvent(new Event("atlas:reset")); setOpen(false); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${line}`, borderRadius: 10, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#5f4d39", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
+                <span>뷰 초기화</span><span aria-hidden style={{ opacity: 0.55 }}>⤾</span>
+              </button>
+            )}
             <a href="/admin" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", textDecoration: "none", border: `1px solid ${line}`, borderRadius: 10, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#5f4d39", fontSize: 12.5, fontWeight: 800 }}>
               <span>관리자 페이지</span><span aria-hidden style={{ opacity: 0.55 }}>↗</span>
             </a>
