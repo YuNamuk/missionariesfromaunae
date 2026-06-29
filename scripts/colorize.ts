@@ -26,7 +26,7 @@ const PROMPT =
   "gaze and expression, hairstyle, facial hair, and clothing exactly as in the original. " +
   "Do NOT change who they are, do NOT beautify, slim, youthen or alter their features — only restore and enhance the image quality. " +
   "Do NOT add anything that is not clearly in the original: no pipe, cigarette, glasses, hat, or any object in the mouth or hands; " +
-  "do NOT modernize the clothing — keep the exact same garments, and if they wear traditional period dress (e.g. Korean hanbok and gat), keep it accurate to the late 19th / early 20th century. " +
+  "do NOT modernize the clothing — keep the exact same garments. CONTEXT: subjects lived in late-Joseon Korea (1880s–1930s); if they wear traditional Korean dress, render it AUTHENTICALLY — a round wide-brimmed black hat is a Korean 'gat' (갓, translucent horsehair hat), NOT a modern Western hat/bowler/fedora; robes are white/ivory hanbok or durumagi, NOT a modern suit or shirt. " +
   "Output only the restored photograph, framed as a clean head-and-shoulders studio portrait of the single subject.";
 
 // 흑백 정돈본(-bw): 합성/테두리 원본(사진+글귀, 타원, 주변 인물)을 인물만 크롭해

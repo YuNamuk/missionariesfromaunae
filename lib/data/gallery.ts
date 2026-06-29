@@ -1,4 +1,4 @@
-// 인물별 '원본 사진 모음' — Wikimedia Commons 카테고리에서 수집(PD/CC). 카테고리 소속 = 본인 확인 후 사람이 검수.
+// 인물별 '원본 사진 모음' — Wikimedia Commons 카테고리에서 수집(PD/CC). 카테고리 소속 = 본인 확인.
 // srcColor: 같은 톤으로 장면 보존 컬러 복원본(scripts/gallery-colorize.ts, 자체 호스팅).
 export type GalleryPhoto = { src: string; caption: string; source: string; sourceUrl?: string; srcColor?: string };
 

@@ -16,6 +16,8 @@ const SCENE_PROMPT =
   "CRITICAL: preserve the ENTIRE original composition and framing, and EVERY person/subject in it, exactly as they are — " +
   "do NOT crop, do NOT remove or add any person or object, do NOT change anyone's identity, face, pose, clothing, expression, or the background/setting. " +
   "Only repair scratches, dust, grain and blur, gently improve clarity, and add realistic, period-appropriate natural color (skin tones, fabrics, surroundings). " +
+  "CONTEXT: these people lived in late-Joseon Korea (1880s–1930s). If anyone wears traditional Korean dress, render it AUTHENTICALLY: a round wide-brimmed black hat is a Korean 'gat' (갓, a translucent horsehair hat) — NOT a modern Western hat, bowler, fedora or derby; robes are white/ivory hanbok or durumagi — NOT a modern suit or dress shirt. Preserve the exact traditional garments and headwear; never modernize them. " +
+  "CRUCIAL: many subjects are WESTERN/foreign missionaries who are merely wearing Korean dress — keep their ACTUAL ethnicity and exact facial features unchanged (a Western/Caucasian face stays Western; do NOT make them look Korean). Only the clothing is Korean, not the person. " +
   "Keep it photorealistic and historically faithful, not stylized. Output the full restored image at the same framing and aspect ratio.";
 
 type Entry = GalleryPhoto & { srcColor?: string };
