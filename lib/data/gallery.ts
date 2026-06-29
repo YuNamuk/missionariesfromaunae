@@ -1,5 +1,5 @@
-// 인물별 '원본 사진 모음' — Commons 자동 스캔(scripts/gallery-scan.ts) + 카테고리 수집. 후보는 검수 '채택' 전까지 비공개.
-// srcColor: 채택 후 같은 톤 컬러 복원본(scripts/gallery-colorize.ts).
+// 인물별 '원본 사진 모음' — Wikimedia Commons 카테고리에서 수집(PD/CC). 카테고리 소속 = 본인 확인.
+// srcColor: 같은 톤으로 장면 보존 컬러 복원본(scripts/gallery-colorize.ts, 자체 호스팅).
 export type GalleryPhoto = { src: string; caption: string; source: string; sourceUrl?: string; srcColor?: string };
 
 export const GALLERY: Record<string, GalleryPhoto[]> = {
@@ -339,19 +339,22 @@ export const GALLERY: Record<string, GalleryPhoto[]> = {
       "src": "https://upload.wikimedia.org/wikipedia/commons/a/a7/%EA%B8%B8%EC%84%A0%EC%A3%BC%28%EB%8F%99%EC%95%84%EC%9D%BC%EB%B3%B4_1935%29.jpg",
       "caption": "길선주(동아일보 1935)",
       "source": "Wikimedia Commons · Public domain",
-      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EA%B8%B8%EC%84%A0%EC%A3%BC(%EB%8F%99%EC%95%84%EC%9D%BC%EB%B3%B4_1935).jpg"
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EA%B8%B8%EC%84%A0%EC%A3%BC(%EB%8F%99%EC%95%84%EC%9D%BC%EB%B3%B4_1935).jpg",
+      "srcColor": "/portraits/gallery/gilseonju-0-color.jpg"
     },
     {
       "src": "https://upload.wikimedia.org/wikipedia/commons/1/1b/%EA%B8%B8%EC%84%A0%EC%A3%BC%28%EC%A1%B0%EC%84%A0%EC%9D%BC%EB%B3%B4_1934%29.jpg",
       "caption": "길선주(조선일보 1934)",
       "source": "Wikimedia Commons · Public domain",
-      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EA%B8%B8%EC%84%A0%EC%A3%BC(%EC%A1%B0%EC%84%A0%EC%9D%BC%EB%B3%B4_1934).jpg"
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EA%B8%B8%EC%84%A0%EC%A3%BC(%EC%A1%B0%EC%84%A0%EC%9D%BC%EB%B3%B4_1934).jpg",
+      "srcColor": "/portraits/gallery/gilseonju-1-color.jpg"
     },
     {
       "src": "https://upload.wikimedia.org/wikipedia/commons/e/ee/%EA%B8%B8%EC%84%A0%EC%A3%BC.jpg",
       "caption": "길선주 목사의 사진",
       "source": "Wikimedia Commons · Public domain",
-      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EA%B8%B8%EC%84%A0%EC%A3%BC.jpg"
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EA%B8%B8%EC%84%A0%EC%A3%BC.jpg",
+      "srcColor": "/portraits/gallery/gilseonju-2-color.jpg"
     },
     {
       "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Korean_Declaration_of_Independence.jpg/960px-Korean_Declaration_of_Independence.jpg",
@@ -365,7 +368,8 @@ export const GALLERY: Record<string, GalleryPhoto[]> = {
       "src": "https://upload.wikimedia.org/wikipedia/commons/b/b3/%EC%9D%B4%EA%B8%B0%ED%92%8D.jpg",
       "caption": "이기풍의 모습.",
       "source": "Wikimedia Commons · Public domain",
-      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EC%9D%B4%EA%B8%B0%ED%92%8D.jpg"
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EC%9D%B4%EA%B8%B0%ED%92%8D.jpg",
+      "srcColor": "/portraits/gallery/leegipung-0-color.jpg"
     }
   ],
   "seogyeongjo": [
@@ -373,7 +377,8 @@ export const GALLERY: Record<string, GalleryPhoto[]> = {
       "src": "https://upload.wikimedia.org/wikipedia/commons/6/69/%EC%84%9C%EA%B2%BD%EC%A1%B0%28%E5%BE%90%E6%99%AF%E7%A5%9A%29.jpg",
       "caption": "서경조(徐景祚)",
       "source": "Wikimedia Commons · Public domain",
-      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EC%84%9C%EA%B2%BD%EC%A1%B0(%E5%BE%90%E6%99%AF%E7%A5%9A).jpg"
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EC%84%9C%EA%B2%BD%EC%A1%B0(%E5%BE%90%E6%99%AF%E7%A5%9A).jpg",
+      "srcColor": "/portraits/gallery/seogyeongjo-0-color.jpg"
     }
   ],
   "kimchangsik": [
