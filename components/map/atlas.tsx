@@ -425,6 +425,16 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showStations, setShowStations] = useState(true); // 주요 거점(항구·선교부 등) 마커 레이어
   const [showPeople, setShowPeople] = useState(true); // 선교사(인물) 마커 레이어
   const [showNetwork, setShowNetwork] = useState(false); // 관계망(인물 간 관계선) 표시
+  const [showLabels, setShowLabels] = useState(true); // 마커 이름표(라벨) 표시
+  const [markerScale, setMarkerScale] = useState(1); // 마커 크기 배율(0.85 / 1 / 1.2)
+  // 뷰 초기화: 지도 시점·선택·필터·관계 집중을 기본값으로 되돌린다.
+  const resetView = () => {
+    mapRef.current?.flyTo([38.4, 127.5], 6, { duration: 0.5 });
+    setSelected(null);
+    clearFilters();
+    setNetFocus(false);
+    setShowSettings(false);
+  };
   const toggleFacet = (axis: keyof typeof filters, key: string) =>
     setFilters((f) => ({ ...f, [axis]: f[axis].includes(key) ? f[axis].filter((k) => k !== key) : [...f[axis], key] }));
   const setFacet = (axis: keyof typeof filters, keys: string[]) => setFilters((f) => ({ ...f, [axis]: keys }));
@@ -945,7 +955,20 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   return <button key={k} onClick={() => changeFit(k)} style={{ flex: 1, border: `1px solid ${on ? "#9b3d2d" : C.line}`, borderRadius: 10, padding: "7px 4px", background: on ? "#9b3d2d" : "rgba(255,255,255,.6)", color: on ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>{label}</button>;
                 })}
               </div>
-              <div style={{ borderTop: `1px solid ${C.line}`, margin: "12px 0 0", paddingTop: 12 }}>
+              <div style={{ ...hdr, margin: "12px 0 8px" }}>마커 크기</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {([["작게", 0.85], ["보통", 1], ["크게", 1.2]] as const).map(([label, s]) => {
+                  const on = markerScale === s;
+                  return <button key={label} onClick={() => setMarkerScale(s)} style={{ flex: 1, border: `1px solid ${on ? "#9b3d2d" : C.line}`, borderRadius: 10, padding: "7px 4px", background: on ? "#9b3d2d" : "rgba(255,255,255,.6)", color: on ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>{label}</button>;
+                })}
+              </div>
+              <button onClick={() => setShowLabels((v) => !v)} style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 10, padding: "9px 11px", background: showLabels ? "#2f2419" : "rgba(255,255,255,.6)", color: showLabels ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>
+                <span>마커 이름표</span><span>{showLabels ? "● 표시" : "○ 숨김"}</span>
+              </button>
+              <div style={{ borderTop: `1px solid ${C.line}`, margin: "12px 0 0", paddingTop: 12, display: "grid", gap: 8 }}>
+                <button onClick={resetView} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 10, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#5f4d39", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
+                  <span>뷰 초기화</span><span aria-hidden style={{ opacity: 0.55 }}>⤾</span>
+                </button>
                 <a href="/admin" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", textDecoration: "none", border: `1px solid ${C.line}`, borderRadius: 10, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#5f4d39", fontSize: 12.5, fontWeight: 800 }}>
                   <span>관리자 페이지</span><span aria-hidden style={{ opacity: 0.55 }}>↗</span>
                 </a>
@@ -1064,7 +1087,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               const sel = (selected?.kind === "place" && selected.id === p.id) || (!!selEvent && selEvent.placeId === p.id);
               // 거점·묘역 마커는 토글로만 표시/숨김 — 인물 선택과 무관하게 항상 또렷(흐려지지 않음).
               return (
-                <Marker key={p.id} position={[p.lat, p.lng]} pane={sel ? "selectedPane" : "placesPane"} icon={placeIcon(p, sel, false)} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
+                <Marker key={p.id} position={[p.lat, p.lng]} pane={sel ? "selectedPane" : "placesPane"} icon={placeIcon(p, sel, false, markerScale, showLabels)} eventHandlers={{ click: () => setSelected({ kind: "place", id: p.id }) }} />
               );
             })}
 
@@ -1083,7 +1106,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   if (cl.count === 1) {
                     const p = mapPeople.find((x) => x.id === cl.ids[0]);
                     const ll = p && personPos.get(p.id);
-                    return p && ll ? [<Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, false, 1, false)} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />] : [];
+                    return p && ll ? [<Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, false, 1, false, markerScale, showLabels)} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />] : [];
                   }
                   return [
                     <Marker
@@ -1117,7 +1140,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   // 그 외(미선택·랜딩)에는 토글로 보이는 모든 인물을 또렷하게(활성) 표시.
                   const opacity = !dimActive ? 1 : sel || first ? 1 : 0.22;
                   return (
-                    <Marker key={p.id} position={ll} pane={sel ? "selectedPane" : "peoplePane"} icon={personIcon(p, sel, opacity, first)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
+                    <Marker key={p.id} position={ll} pane={sel ? "selectedPane" : "peoplePane"} icon={personIcon(p, sel, opacity, first, markerScale, showLabels)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
                   );
                 })}
           </MapContainer>

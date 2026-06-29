@@ -46,23 +46,23 @@ export function labelHtml(text: string, top: number, dark: boolean) {
   return `<div style="position:absolute;top:${top}px;left:50%;transform:translateX(-50%);white-space:nowrap;background:${bg};color:${color};border:${border};border-radius:99px;padding:2px 7px;font-size:10.5px;font-weight:800;letter-spacing:-.01em;box-shadow:0 2px 6px rgba(46,28,14,.2);pointer-events:none;">${text}</div>`;
 }
 
-export function placeIcon(p: MapPlace, sel: boolean, dim: boolean) {
+export function placeIcon(p: MapPlace, sel: boolean, dim: boolean, scale = 1, labels = true) {
   const color = CAT_COLOR[p.cat] ?? p.color;
-  const size = sel ? 38 : 30;
+  const size = Math.round((sel ? 38 : 30) * scale);
   return L.divIcon({
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     html: `<div style="position:relative;width:${size}px;height:${size}px;opacity:${dim ? 0.4 : 1};transition:opacity .2s;">
       <div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;border-radius:50%;background:${color};color:#fff8ec;font-size:${size * 0.46}px;font-weight:800;border:3px solid #fff8ec;box-shadow:0 5px 14px rgba(46,28,14,.4);${sel ? "outline:3px solid rgba(155,61,45,.4);outline-offset:2px;" : ""}">${p.glyph}</div>
-      ${labelHtml(p.name, size + 3, true)}
+      ${labels ? labelHtml(p.name, size + 3, true) : ""}
     </div>`,
   });
 }
 
-export function personIcon(p: MapPerson, sel: boolean, opacity: number, related: boolean) {
+export function personIcon(p: MapPerson, sel: boolean, opacity: number, related: boolean, scale = 1, labels = true) {
   const color = orgTint(p.org);
-  const size = sel ? 44 : related ? 36 : 30;
+  const size = Math.round((sel ? 44 : related ? 36 : 30) * scale);
   const ring = sel ? "3px solid #9b3d2d" : related ? "2px solid #bf6b22" : `2px solid #fff8ec`;
   const inner = p.photo
     ? `background:#efe1c3 center/cover url('${p.photo}');`
@@ -73,7 +73,7 @@ export function personIcon(p: MapPerson, sel: boolean, opacity: number, related:
     iconAnchor: [size / 2, size / 2],
     html: `<div style="position:relative;width:${size}px;height:${size}px;opacity:${opacity};transition:opacity .2s;">
       <div style="${inner}width:${size}px;height:${size}px;border-radius:50%;border:${ring};box-shadow:0 4px 11px rgba(46,28,14,.45);">${p.photo ? "" : p.glyph}</div>
-      ${labelHtml(p.name, size + 3, false)}
+      ${labels ? labelHtml(p.name, size + 3, false) : ""}
     </div>`,
   });
 }
