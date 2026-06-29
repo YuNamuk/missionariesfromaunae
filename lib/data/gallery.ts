@@ -159,7 +159,7 @@ export const GALLERY: Record<string, GalleryPhoto[]> = {
       "caption": "Henry Gerhart Appenzeller, 1901.",
       "source": "Wikimedia Commons · Public domain",
       "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_Modern_Pioneer_in_Korea_-_Henry_Gerhart_Appenzeller,_1901.jpg",
-      "srcColor": "/portraits/gallery/appenzeller-4-color.jpg"
+      "srcColor": "/portraits/gallery/appenzeller-0-color.jpg"
     }
   ],
   "hulbert": [

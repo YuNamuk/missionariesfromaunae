@@ -592,12 +592,15 @@ export default function AdminPage() {
           setReview(next);
           await post({ kind: "settings", settings: { review: next } });
         };
-        const items = Object.entries(GALLERY).flatMap(([pid, arr]) =>
+        const allItems = Object.entries(GALLERY).flatMap(([pid, arr]) =>
           arr.map((g, i) => ({ pid, i, g, key: `g:${pid}:${i}`, status: review[`g:${pid}:${i}`] })),
         );
-        const pending = items.filter((x) => !x.status).length;
-        const rejected = items.filter((x) => x.status === "rejected").length;
-        const reworkCnt = items.filter((x) => rework[x.key]).length;
+        const pending = allItems.filter((x) => !x.status).length;
+        const rejected = allItems.filter((x) => x.status === "rejected").length;
+        const approved = allItems.filter((x) => x.status === "approved").length;
+        const reworkCnt = allItems.filter((x) => rework[x.key]).length;
+        // 확인(✓)된 항목은 검수 목록에서 제외 — 아직 볼 게 남은 것만 보인다.
+        const items = allItems.filter((x) => x.status !== "approved");
         const requestRework = async (key: string) => {
           const note = window.prompt("재작업 사유 (예: 색이 일부만 입혀짐 / 얼굴만 컬러 / 화질 저하 / 인물 오인)", rework[key] ?? "");
           if (note === null) return;
@@ -614,7 +617,7 @@ export default function AdminPage() {
             <p style={{ margin: "0 0 6px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
               수집·컬러화된 원본 사진 검수 큐입니다. <b>지금은 개발 단계라 바로 적용</b>되며, 여기서 본인 확인(✓ 확인)하거나 잘못된 사진(친족·동명이인·기념물 등)을 <b>숨김</b> 처리합니다. 숨김은 공개 사이트에서 즉시 제외됩니다.
             </p>
-            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#9b3d2d" }}>총 {items.length}장 · 대기 {pending} · 숨김 {rejected} · 재작업 {reworkCnt}</p>
+            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#9b3d2d" }}>전체 {allItems.length}장 · 확인 {approved}(목록 제외) · 대기 {pending} · 숨김 {rejected} · 재작업 {reworkCnt}</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 10 }}>
               {items.map(({ pid, i, g, key, status }) => {
                 const person = PEOPLE.find((p) => p.id === pid);
@@ -636,7 +639,7 @@ export default function AdminPage() {
                   </div>
                 );
               })}
-              {items.length === 0 && <p style={{ fontSize: 13, color: C.muted }}>아직 수집된 갤러리 사진이 없습니다.</p>}
+              {items.length === 0 && <p style={{ fontSize: 13, color: C.muted }}>{allItems.length === 0 ? "아직 수집된 갤러리 사진이 없습니다." : "검수할 항목이 없습니다 — 모두 확인 완료. ✓"}</p>}
             </div>
           </div>
         );

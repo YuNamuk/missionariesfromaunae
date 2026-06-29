@@ -6,6 +6,16 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { GALLERY, type GalleryPhoto } from "../lib/data/gallery";
+import { getServiceSupabase } from "../lib/db/supabase";
+
+// 검수 재작업 사유(app_settings rework)를 읽어, 해당 사진 컬러화 시 프롬프트에 그대로 반영.
+let REWORK: Record<string, string> = {};
+async function loadRework() {
+  try {
+    const { data } = await getServiceSupabase().from("app_settings").select("value").eq("key", "rework").maybeSingle();
+    if (data?.value && typeof data.value === "object") REWORK = data.value as Record<string, string>;
+  } catch {}
+}
 
 const KEY = process.env.GEMINI_API_KEY;
 const MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
@@ -52,7 +62,7 @@ async function colorizeEntry(id: string, e: Entry, n: number): Promise<boolean> 
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: SCENE_PROMPT }, { inline_data: { mime_type: mime, data: buf.toString("base64") } }] }],
+      contents: [{ parts: [{ text: SCENE_PROMPT + (REWORK[`g:${id}:${n}`] ? ` ADDITIONAL FIX REQUESTED BY REVIEWER (address this specifically): ${REWORK[`g:${id}:${n}`]}` : "") }, { inline_data: { mime_type: mime, data: buf.toString("base64") } }] }],
       generationConfig: { responseModalities: ["IMAGE"] },
     }),
   });
@@ -71,6 +81,7 @@ async function colorizeEntry(id: string, e: Entry, n: number): Promise<boolean> 
 async function main() {
   if (!KEY) { console.error("GEMINI_API_KEY 미설정"); process.exit(1); }
   await mkdir(DIR, { recursive: true });
+  await loadRework();
   const only = process.argv[2];
   const ids = only ? [only] : Object.keys(GALLERY);
   for (const id of ids) {
