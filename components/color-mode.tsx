@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { COLORIZED, colorSrc } from "@/lib/data/colorized";
+import { COLORIZED, colorSrc, bwSrc } from "@/lib/data/colorized";
 
 // 사이트 전역 '컬러 복원본 보기' 선호 — localStorage에 저장하고, 한 번 켜면
 // 지도·흐름·상세 등 모든 초상이 함께 컬러로 바뀐다(설정·카드 어디서 켜든 동기화).
@@ -44,6 +44,8 @@ export function Portrait({
   const { color } = useColorMode();
   const [override, setOverride] = useState<boolean | null>(null);
   const cSrc = colorSrc(src) ?? (id && COLORIZED.has(id) ? `/portraits/${id}-color.jpg` : null);
+  // 원본(흑백) 보기: 합성·테두리 원본이면 정돈된 흑백본(-bw)을 대신 표시.
+  const origSrc = bwSrc(src) ?? src;
   const effective = override ?? color;
   const showColor = effective && !!cSrc;
   return (
@@ -52,7 +54,7 @@ export function Portrait({
     <span style={block ? { display: "block", lineHeight: 0 } : { display: "inline-block", flex: "none", lineHeight: 0, verticalAlign: "top" }}>
       <span style={{ position: "relative", display: "block", lineHeight: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={showColor ? (cSrc as string) : src} alt={alt} className={className} style={style} />
+        <img src={showColor ? (cSrc as string) : origSrc} alt={alt} className={className} style={style} />
         {badge && showColor && (
           <span style={{ position: "absolute", left: 4, top: 4, padding: "1px 6px", borderRadius: 99, background: "rgba(40,26,14,.78)", color: "#ffe7c2", fontSize: 8.5, fontWeight: 800, letterSpacing: ".02em", pointerEvents: "none" }}>AI 복원</span>
         )}

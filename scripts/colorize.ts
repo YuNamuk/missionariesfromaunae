@@ -27,6 +27,18 @@ const PROMPT =
   "Do NOT change who they are, do NOT beautify, slim, youthen or alter their features — only restore and enhance the image quality. " +
   "Output only the restored photograph, framed as a clean head-and-shoulders studio portrait of the single subject.";
 
+// 흑백 정돈본(-bw): 합성/테두리 원본(사진+글귀, 타원, 주변 인물)을 인물만 크롭해
+// '안정적인' 흑백 초상으로 정돈. 색은 입히지 않는다(원본 보기용).
+const BW_PROMPT =
+  "This is a damaged historical photograph of a real person from the late 19th / early 20th century, " +
+  "often a composite scan (a portrait beside a block of text/calligraphy, or an oval frame with neighboring faces, or off-center). " +
+  "Produce a clean, restored, HIGH-QUALITY BLACK-AND-WHITE (grayscale) head-and-shoulders portrait of the SINGLE main subject only. " +
+  "Crop tightly to that one person, centered and upright; REMOVE any adjacent text/calligraphy panel, oval/vignette frame, neighboring partial faces, and clutter, replacing them with a clean neutral grayscale studio background. " +
+  "Repair scratches, halftone dots, grain and blur; keep it sharp and photorealistic. " +
+  "Keep it strictly BLACK-AND-WHITE / grayscale — do NOT add any color. " +
+  "CRITICAL: preserve the person's exact identity, facial features, proportions, age, expression, hairstyle, facial hair, headwear and clothing — do not alter who they are. " +
+  "Output only the restored grayscale portrait.";
+
 // 저품질 원본에서 AI가 정체성(특히 성별)을 오인하지 않도록 인물별 보강 힌트.
 const HINTS: Record<string, string> = {
   shepping: " IMPORTANT IDENTITY: the subject is a WOMAN — Elisabeth Shepping (서서평), a female missionary nurse with round eyeglasses and center-parted hair, wearing a dark high-collar dress. She is female; render her as a woman and never as a man.",
@@ -44,8 +56,8 @@ async function srcFor(id: string): Promise<{ file: string; mime: string } | null
   return null;
 }
 
-async function colorizeOne(id: string): Promise<"ok" | "skip" | "fail"> {
-  const out = path.join(DIR, `${id}-color.jpg`);
+async function colorizeOne(id: string, bw = false): Promise<"ok" | "skip" | "fail"> {
+  const out = path.join(DIR, `${id}-${bw ? "bw" : "color"}.jpg`);
   try { await readFile(out); return "skip"; } catch {}            // 이미 생성됨 → 건너뜀
   const src = await srcFor(id);
   if (!src) { console.log(`· ${id}: 원본 없음`); return "fail"; }
@@ -57,7 +69,7 @@ async function colorizeOne(id: string): Promise<"ok" | "skip" | "fail"> {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: PROMPT + (HINTS[id] ?? "") }, { inline_data: { mime_type: src.mime, data: b64 } }] }],
+        contents: [{ parts: [{ text: (bw ? BW_PROMPT : PROMPT) + (HINTS[id] ?? "") }, { inline_data: { mime_type: src.mime, data: b64 } }] }],
         generationConfig: { responseModalities: ["IMAGE"] },
       }),
     },
@@ -83,20 +95,23 @@ async function colorizeOne(id: string): Promise<"ok" | "skip" | "fail"> {
 
 async function main() {
   if (!KEY) { console.error("GEMINI_API_KEY 미설정 (.env.local)"); process.exit(1); }
-  const arg = process.argv[2];
+  // --bw: 흑백 정돈본(-bw) 생성 모드. 나머지 인자는 동일(<id> | --all).
+  const bw = process.argv.includes("--bw");
+  const rest = process.argv.slice(2).filter((a) => a !== "--bw");
+  const arg = rest[0];
   let ids: string[];
   if (arg === "--all") {
     const files = await readdir(DIR);
-    ids = [...new Set(files.filter((f) => /\.(jpe?g|png)$/i.test(f) && !/-color\./i.test(f)).map((f) => f.replace(/\.(jpe?g|png)$/i, "")))];
+    ids = [...new Set(files.filter((f) => /\.(jpe?g|png)$/i.test(f) && !/-(color|bw)\./i.test(f)).map((f) => f.replace(/\.(jpe?g|png)$/i, "")))];
   } else if (arg) {
-    ids = [arg];
+    ids = rest;
   } else {
-    console.error("사용법: colorize.ts <id> | --all"); process.exit(1);
+    console.error("사용법: colorize.ts [--bw] <id...> | [--bw] --all"); process.exit(1);
   }
-  console.log(`모델 ${MODEL} · 대상 ${ids.length}장\n`);
+  console.log(`모델 ${MODEL} · ${bw ? "흑백 정돈본(-bw)" : "컬러본(-color)"} · 대상 ${ids.length}장\n`);
   let ok = 0, skip = 0, fail = 0;
   for (const id of ids) {
-    const r = await colorizeOne(id);
+    const r = await colorizeOne(id, bw);
     r === "ok" ? ok++ : r === "skip" ? skip++ : fail++;
     if (arg === "--all") await new Promise((s) => setTimeout(s, 1200)); // 레이트리밋 여유
   }

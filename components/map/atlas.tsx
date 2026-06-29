@@ -15,7 +15,7 @@ import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PERSON_COORD } from "@/lib/data/person-coord";
 import { C, CAT_COLOR, orgTint, personLatLng, labelHtml, placeIcon, personIcon, arrowIcon, bearingDeg, distKm, clusterIcon } from "./atlas-icons";
 import { useColorMode } from "@/components/color-mode";
-import { colorSrc } from "@/lib/data/colorized";
+import { colorSrc, bwSrc } from "@/lib/data/colorized";
 import { useMapSettings } from "@/components/map-settings";
 
 // ── 시대별 정세(역사 국경) 오버레이 ──────────────────────────────
@@ -426,7 +426,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showNetwork, setShowNetwork] = useState(false); // 관계망(인물 간 관계선) 표시
   const { color: colorPhoto } = useColorMode(); // 초상 컬러 복원본 보기(전역)
   // 컬러 모드일 때 인물 초상(마커·리스트·관련 인물·바로가기 아이콘)을 복원 컬러본으로 스왑.
-  const cphoto = (s: string | null | undefined) => (colorPhoto ? colorSrc(s) : null) || s || undefined;
+  const cphoto = (s: string | null | undefined) => (colorPhoto ? colorSrc(s) : bwSrc(s)) || s || undefined;
   // 클러스터 스파이더리: 클릭한 클러스터의 인물들을 중심 주위로 부채꼴(많으면 나선) 펼침.
   const [spiderId, setSpiderId] = useState<string | null>(null);
   const spiderPositions = (center: [number, number], n: number): [number, number][] => {
