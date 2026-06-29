@@ -618,13 +618,26 @@ export default function AdminPage() {
               수집·컬러화된 원본 사진 검수 큐입니다. <b>지금은 개발 단계라 바로 적용</b>되며, 여기서 본인 확인(✓ 확인)하거나 잘못된 사진(친족·동명이인·기념물 등)을 <b>숨김</b> 처리합니다. 숨김은 공개 사이트에서 즉시 제외됩니다.
             </p>
             <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#9b3d2d" }}>전체 {allItems.length}장 · 확인 {approved}(목록 제외) · 대기 {pending} · 숨김 {rejected} · 재작업 {reworkCnt}</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 10 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 10 }}>
               {items.map(({ pid, i, g, key, status }) => {
                 const person = PEOPLE.find((p) => p.id === pid);
                 return (
                   <div key={key} style={{ border: `1.5px solid ${status === "rejected" ? "#c2453a" : status === "approved" ? "#3f7f4b" : C.line}`, borderRadius: 12, overflow: "hidden", background: "#fff8ec", opacity: status === "rejected" ? 0.6 : 1 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={g.srcColor || g.src} alt="" loading="lazy" style={{ width: "100%", height: "auto", maxHeight: 420, objectFit: "contain", background: "#efe1c3", display: "block" }} />
+                    {/* 원본(흑백) ↔ 컬러 대조 */}
+                    <div style={{ display: "flex", gap: 2, background: "#efe1c3" }}>
+                      <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={g.src} alt="원본" loading="lazy" style={{ width: "100%", height: "auto", maxHeight: 380, objectFit: "contain", display: "block" }} />
+                        <span style={{ position: "absolute", left: 4, top: 4, background: "rgba(40,26,14,.7)", color: "#fff8ec", fontSize: 9, fontWeight: 800, borderRadius: 6, padding: "1px 6px" }}>원본</span>
+                      </div>
+                      {g.srcColor && (
+                        <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={g.srcColor} alt="컬러" loading="lazy" style={{ width: "100%", height: "auto", maxHeight: 380, objectFit: "contain", display: "block" }} />
+                          <span style={{ position: "absolute", left: 4, top: 4, background: "#9b3d2d", color: "#fff8ec", fontSize: 9, fontWeight: 800, borderRadius: 6, padding: "1px 6px" }}>컬러</span>
+                        </div>
+                      )}
+                    </div>
                     <div style={{ padding: "7px 9px" }}>
                       <div style={{ fontSize: 11.5, fontWeight: 800, color: C.ink }}>{person?.name ?? pid} <span style={{ color: C.muted, fontWeight: 500 }}>#{i + 1}{g.srcColor ? " · 컬러" : ""}</span></div>
                       <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.4, marginTop: 1, maxHeight: 28, overflow: "hidden" }}>{g.caption}</div>
