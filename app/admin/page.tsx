@@ -343,6 +343,30 @@ export default function AdminPage() {
           </select>
           {draft ? (
             <div style={{ display: "grid", gap: 12 }}>
+              {/* 사진 — 가장 상단(현재 사진 + 컬러본 미리보기 + 업로드) */}
+              <div>
+                <label style={label}>사진</label>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
+                  {[["원본", draft.photo], ["컬러", colorSrc(draft.photo)]].map(([lbl, src]) => src ? (
+                    <figure key={lbl as string} style={{ margin: 0 }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src as string} alt={lbl as string} style={{ width: 92, height: 118, objectFit: "cover", borderRadius: 10, border: `1px solid ${C.line}`, background: "#efe1c3", display: "block" }} />
+                      <figcaption style={{ fontSize: 10.5, color: C.muted, textAlign: "center", marginTop: 3 }}>{lbl as string}</figcaption>
+                    </figure>
+                  ) : (lbl === "컬러" ? <figcaption key="nc" style={{ fontSize: 10.5, color: C.muted, alignSelf: "flex-end" }}>컬러본 없음</figcaption> : null))}
+                  <input style={{ ...input, flex: 1 }} value={draft.photo ?? ""} onChange={(e) => upd("photo", e.target.value)} placeholder="/portraits/<id>.jpg 또는 URL" />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
+                  <label style={{ ...btn, display: "inline-flex", alignItems: "center", gap: 6, cursor: uploading ? "default" : "pointer", opacity: uploading ? 0.6 : 1, background: "#1f6f8b" }}>
+                    {uploading ? "업로드 중…" : "사진 업로드"}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); e.currentTarget.value = ""; }} />
+                  </label>
+                  <label style={{ fontSize: 12.5, fontWeight: 700, color: C.muted, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                    <input type="checkbox" checked={uploadColorize} onChange={(e) => setUploadColorize(e.target.checked)} /> AI 컬러 변환 함께
+                  </label>
+                </div>
+                <p style={{ margin: "5px 0 0", fontSize: 11, color: C.muted }}>※ 업로드 시 Supabase Storage에 저장되고, 체크 시 AI 컬러본도 함께 생성됩니다. 미리보기 확인 후 ‘기본 정보 저장’으로 반영.</p>
+              </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div><label style={label}>이름</label><input style={input} value={draft.name ?? ""} onChange={(e) => upd("name", e.target.value)} /></div>
                 <div><label style={label}>영문명</label><input style={input} value={draft.name_en ?? ""} onChange={(e) => upd("name_en", e.target.value)} /></div>
@@ -380,30 +404,6 @@ export default function AdminPage() {
                 </div>
               </div>
               <div><label style={label}>요약</label><textarea style={{ ...input, minHeight: 90, resize: "vertical" }} value={draft.summary ?? ""} onChange={(e) => upd("summary", e.target.value)} /></div>
-              {/* 사진 — 현재 사진 + 컬러본 미리보기 */}
-              <div>
-                <label style={label}>사진</label>
-                <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
-                  {[["원본", draft.photo], ["컬러", colorSrc(draft.photo)]].map(([lbl, src]) => src ? (
-                    <figure key={lbl as string} style={{ margin: 0 }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src as string} alt={lbl as string} style={{ width: 92, height: 118, objectFit: "cover", borderRadius: 10, border: `1px solid ${C.line}`, background: "#efe1c3", display: "block" }} />
-                      <figcaption style={{ fontSize: 10.5, color: C.muted, textAlign: "center", marginTop: 3 }}>{lbl as string}</figcaption>
-                    </figure>
-                  ) : (lbl === "컬러" ? <figcaption key="nc" style={{ fontSize: 10.5, color: C.muted }}>컬러본 없음</figcaption> : null))}
-                  <input style={{ ...input, flex: 1 }} value={draft.photo ?? ""} onChange={(e) => upd("photo", e.target.value)} placeholder="/portraits/<id>.jpg 또는 URL" />
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
-                  <label style={{ ...btn, display: "inline-flex", alignItems: "center", gap: 6, cursor: uploading ? "default" : "pointer", opacity: uploading ? 0.6 : 1, background: "#1f6f8b" }}>
-                    {uploading ? "업로드 중…" : "사진 업로드"}
-                    <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); e.currentTarget.value = ""; }} />
-                  </label>
-                  <label style={{ fontSize: 12.5, fontWeight: 700, color: C.muted, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <input type="checkbox" checked={uploadColorize} onChange={(e) => setUploadColorize(e.target.checked)} /> AI 컬러 변환 함께
-                  </label>
-                </div>
-                <p style={{ margin: "5px 0 0", fontSize: 11, color: C.muted }}>※ 업로드 시 Supabase Storage에 저장되고, 체크 시 AI 컬러본도 함께 생성됩니다. 위 미리보기로 확인 후 ‘기본 정보 저장’을 눌러 반영하세요.</p>
-              </div>
               <div><label style={label}>조선 사역 구간 (예: 1885-1902; 1949-1949)</label><input style={input} value={activeText} onChange={(e) => setActiveText(e.target.value)} /></div>
               <button onClick={savePerson} disabled={saving} style={{ ...btn, justifySelf: "start", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "기본 정보 저장 (지도)"}</button>
 
