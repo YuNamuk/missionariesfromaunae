@@ -739,42 +739,62 @@ export default function AdminPage() {
               Commons 자동 스캔으로 모은 <b>후보</b>입니다(동명이인·비초상 섞일 수 있음). 본인 사진이 맞으면 <b>✓ 채택</b>, 아니면 <b>제외</b>하세요. <b>채택한 사진만 공개</b>되고, 채택 후 자동으로 컬러 복원됩니다. (이미 채택된 항목은 목록에서 빠짐)
             </p>
             <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#9b3d2d" }}>전체 {allItems.length}장 · 채택 {approved}(공개) · 미검토 {pending} · 제외 {rejected} · 재작업 {reworkCnt}</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 10 }}>
-              {items.map(({ pid, i, g, key, status }) => {
+            {(() => {
+              // 인물별로 묶고, 섹션 맨 앞에 기준 초상을 둔다.
+              const groups: { pid: string; rows: typeof items }[] = [];
+              for (const it of items) { let gr = groups.find((x) => x.pid === it.pid); if (!gr) { gr = { pid: it.pid, rows: [] }; groups.push(gr); } gr.rows.push(it); }
+              if (groups.length === 0) return <p style={{ fontSize: 13, color: C.muted }}>{allItems.length === 0 ? "아직 수집된 후보가 없습니다." : "검수할 후보가 없습니다 — 모두 처리됨. ✓"}</p>;
+              return groups.map(({ pid, rows }) => {
                 const person = PEOPLE.find((p) => p.id === pid);
+                const ref = PHOTOS[pid]?.photo;
                 return (
-                  <div key={key} style={{ border: `1.5px solid ${status === "rejected" ? "#c2453a" : status === "approved" ? "#3f7f4b" : C.line}`, borderRadius: 12, overflow: "hidden", background: "#fff8ec", opacity: status === "rejected" ? 0.6 : 1 }}>
-                    {/* 원본(흑백) ↔ 컬러 대조 */}
-                    <div style={{ display: "flex", gap: 2, background: "#efe1c3" }}>
-                      <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={g.src} alt="원본" loading="lazy" style={{ width: "100%", height: "auto", maxHeight: 380, objectFit: "contain", display: "block" }} />
-                        <span style={{ position: "absolute", left: 4, top: 4, background: "rgba(40,26,14,.7)", color: "#fff8ec", fontSize: 9, fontWeight: 800, borderRadius: 6, padding: "1px 6px" }}>원본</span>
+                  <section key={pid} style={{ marginBottom: 26, paddingTop: 14, borderTop: `2px solid ${C.line}` }}>
+                    {/* 인물 헤더 — 기준 초상(현재 등록) */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                      {ref
+                        // eslint-disable-next-line @next/next/no-img-element
+                        ? <img src={ref} alt="" style={{ width: 62, height: 78, objectFit: "cover", borderRadius: 8, border: "2px solid #3f7f4b", background: "#efe1c3", flex: "0 0 auto" }} />
+                        : <span style={{ width: 62, height: 78, flex: "0 0 auto", borderRadius: 8, background: "#7a4a2e", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 24 }}>{person?.glyph ?? "·"}</span>}
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 15.5, fontWeight: 900, color: C.ink }}>{person?.name ?? pid} <span style={{ fontSize: 12, fontWeight: 500, color: C.muted }}>{person?.en}</span></div>
+                        <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>← 기준 초상(현재 등록) · 후보 {rows.length}장 — 같은 인물이 맞는지 비교해 <b>채택 / 제외</b></div>
                       </div>
-                      {g.srcColor && (
-                        <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={g.srcColor} alt="컬러" loading="lazy" style={{ width: "100%", height: "auto", maxHeight: 380, objectFit: "contain", display: "block" }} />
-                          <span style={{ position: "absolute", left: 4, top: 4, background: "#9b3d2d", color: "#fff8ec", fontSize: 9, fontWeight: 800, borderRadius: 6, padding: "1px 6px" }}>컬러</span>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 10 }}>
+                      {rows.map(({ i, g, key, status }) => (
+                        <div key={key} style={{ border: `1.5px solid ${status === "rejected" ? "#c2453a" : status === "approved" ? "#3f7f4b" : C.line}`, borderRadius: 12, overflow: "hidden", background: "#fff8ec", opacity: status === "rejected" ? 0.6 : 1 }}>
+                          {/* 원본(흑백) ↔ 컬러 대조 */}
+                          <div style={{ display: "flex", gap: 2, background: "#efe1c3" }}>
+                            <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={g.src} alt="원본" loading="lazy" style={{ width: "100%", height: "auto", maxHeight: 380, objectFit: "contain", display: "block" }} />
+                              <span style={{ position: "absolute", left: 4, top: 4, background: "rgba(40,26,14,.7)", color: "#fff8ec", fontSize: 9, fontWeight: 800, borderRadius: 6, padding: "1px 6px" }}>원본</span>
+                            </div>
+                            {g.srcColor && (
+                              <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={g.srcColor} alt="컬러" loading="lazy" style={{ width: "100%", height: "auto", maxHeight: 380, objectFit: "contain", display: "block" }} />
+                                <span style={{ position: "absolute", left: 4, top: 4, background: "#9b3d2d", color: "#fff8ec", fontSize: 9, fontWeight: 800, borderRadius: 6, padding: "1px 6px" }}>컬러</span>
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ padding: "7px 9px" }}>
+                            <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.4, maxHeight: 28, overflow: "hidden" }}>#{i + 1} · {g.caption}</div>
+                            <div style={{ display: "flex", gap: 5, marginTop: 7, flexWrap: "wrap" }}>
+                              {segBtn(status === "approved", "#3f7f4b", "✓ 채택", () => setKey(key, status === "approved" ? null : "approved"))}
+                              {segBtn(status === "rejected", "#c2453a", "제외", () => setKey(key, status === "rejected" ? null : "rejected"))}
+                              {segBtn(!!rework[key], "#bf6b22", "♻ 재작업", () => requestRework(key))}
+                              <a href={g.sourceUrl} target="_blank" rel="noreferrer" style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#1f6f8b", textDecoration: "none", alignSelf: "center" }}>출처↗</a>
+                            </div>
+                            {rework[key] && <p style={{ margin: "6px 0 0", fontSize: 10.5, lineHeight: 1.4, color: "#bf6b22", fontWeight: 700 }}>♻ 재작업 요청: {rework[key]}</p>}
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
-                    <div style={{ padding: "7px 9px" }}>
-                      <div style={{ fontSize: 11.5, fontWeight: 800, color: C.ink }}>{person?.name ?? pid} <span style={{ color: C.muted, fontWeight: 500 }}>#{i + 1}{g.srcColor ? " · 컬러" : ""}</span></div>
-                      <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.4, marginTop: 1, maxHeight: 28, overflow: "hidden" }}>{g.caption}</div>
-                      <div style={{ display: "flex", gap: 5, marginTop: 7, flexWrap: "wrap" }}>
-                        {segBtn(status === "approved", "#3f7f4b", "✓ 채택", () => setKey(key, status === "approved" ? null : "approved"))}
-                        {segBtn(status === "rejected", "#c2453a", "제외", () => setKey(key, status === "rejected" ? null : "rejected"))}
-                        {segBtn(!!rework[key], "#bf6b22", "♻ 재작업", () => requestRework(key))}
-                        <a href={g.sourceUrl} target="_blank" rel="noreferrer" style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#1f6f8b", textDecoration: "none", alignSelf: "center" }}>출처↗</a>
-                      </div>
-                      {rework[key] && <p style={{ margin: "6px 0 0", fontSize: 10.5, lineHeight: 1.4, color: "#bf6b22", fontWeight: 700 }}>♻ 재작업 요청: {rework[key]}</p>}
-                    </div>
-                  </div>
+                  </section>
                 );
-              })}
-              {items.length === 0 && <p style={{ fontSize: 13, color: C.muted }}>{allItems.length === 0 ? "아직 수집된 갤러리 사진이 없습니다." : "검수할 항목이 없습니다 — 모두 확인 완료. ✓"}</p>}
-            </div>
+              });
+            })()}
           </div>
         );
       })()}
