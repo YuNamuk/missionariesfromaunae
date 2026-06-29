@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { TOPICS } from "@/lib/data/topics";
+import { fetchAllTopics } from "@/lib/db/topics";
 import { getPerson } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 
 export const metadata: Metadata = { title: "주제연구" };
+export const revalidate = 300;
 
-export default function ResearchIndex() {
+export default async function ResearchIndex() {
+  const topics = await fetchAllTopics(TOPICS);
   return (
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-12 sm:px-7">
       <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-sky-600">Topic Research</p>
@@ -17,7 +20,7 @@ export default function ResearchIndex() {
       </p>
 
       <div className="mt-8 grid grid-cols-1 gap-5">
-        {TOPICS.map((t) => {
+        {topics.map((t) => {
           const ppl = t.people.map((id) => getPerson(id)).filter(Boolean);
           return (
             <Link key={t.id} href={`/research/${t.id}`} className="block rounded-3xl border border-ink-200 bg-white p-6 transition-colors hover:border-sky-300">

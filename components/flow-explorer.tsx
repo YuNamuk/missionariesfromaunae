@@ -19,51 +19,31 @@ export type FlowPerson = {
 
 export type RelItem = { id: string; name: string; type: string; label: string; color: string; note: string; dir: string; flow: "forward" | "lateral" | "reverse" };
 
-// 아코디언 카드: 평소엔 얇은 세로 띠(번호·사진·세로 이름), 마우스를 올리면 그 카드만
-// 넓게 펼쳐져 전체 내용을 보여준다. 가로 스크롤 없이 화면 폭 안에서 누적된다.
+// 흐름 카드: 이미지·내용을 그대로 유지한 채 화면 폭에 맞춰 작아지고(폭 공유),
+// 마우스를 올리면 그 카드만 넓어지며 요약 전문이 펼쳐진다. 가로 스크롤 없음.
 function FlowCard({ p, n }: { p: FlowPerson; n: number }) {
   return (
-    <div className="group relative min-w-0 shrink basis-0 grow overflow-hidden rounded-2xl border border-ink-200 bg-white transition-[flex-grow] duration-300 ease-out hover:grow-[6]" style={{ height: 380 }}>
-      {/* 접힘: 세로 띠 (hover 시 사라짐) */}
-      <Link href={`/people/${p.id}`} className="absolute inset-0 flex flex-col items-center gap-2 px-1 py-3 transition-opacity duration-200 group-hover:pointer-events-none group-hover:opacity-0">
-        <span className="font-display flex h-6 w-6 flex-none items-center justify-center rounded-full text-[12px] font-extrabold text-white" style={{ background: "#9b3d2d" }}>{n}</span>
-        {p.photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.photo} alt="" className="h-12 w-12 flex-none rounded-full object-cover" style={{ background: "#efe1c3" }} />
-        ) : (
-          <span className="font-display flex h-12 w-12 flex-none items-center justify-center rounded-full text-xl text-white" style={{ background: "var(--grad-dream)" }}>{p.glyph}</span>
-        )}
-        <span className="font-serif mt-1 text-[13px] font-bold text-ink-700" style={{ writingMode: "vertical-rl", letterSpacing: "0.05em" }}>{p.name}</span>
-      </Link>
-
-      {/* 펼침: 전체 카드 (hover 시 나타남) */}
-      <div className="absolute inset-0 flex flex-col overflow-y-auto p-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100" style={{ minWidth: 260 }}>
-        <div className="flex gap-3">
-          <div className="flex-none" style={{ width: 84 }}>
-            {p.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.photo} alt={`${p.name} 초상`} className="rounded-xl object-cover" style={{ background: "#efe1c3", width: 84, height: 106 }} />
-            ) : (
-              <span className="font-display flex items-center justify-center rounded-xl text-3xl text-white" style={{ background: "var(--grad-dream)", width: 84, height: 106 }}>{p.glyph}</span>
-            )}
-            <Link href={`/people/${p.id}`} className="mt-2 block rounded-full bg-sky-500 px-2 py-1 text-center text-[11.5px] font-bold text-white hover:bg-sky-600" style={{ width: 84 }}>상세 →</Link>
-          </div>
-          <div className="min-w-0">
-            <h2 className="font-serif text-lg font-bold leading-tight text-ink-900">{p.name}</h2>
-            <p className="font-serif mt-0.5 text-[12px] text-ink-500">{p.en}</p>
-            <p className="font-serif text-[12px] text-ink-500">{p.life}</p>
-            <div className="mt-1.5 flex flex-col gap-1">
-              <span className="self-start rounded-full bg-sky-500 px-2 py-0.5 text-[10.5px] font-bold text-white">{p.org}</span>
-              <span className="self-start rounded-full bg-ink-100 px-2 py-0.5 text-[10.5px] font-bold text-ink-700">{p.role}</span>
-            </div>
-          </div>
+    <div className="group relative flex min-w-0 shrink basis-0 grow flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white hover:grow-[3]" style={{ height: 384, transition: "flex-grow 520ms cubic-bezier(0.22,0.61,0.36,1)" }}>
+      <span className="font-display absolute left-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-extrabold text-white" style={{ background: "#9b3d2d", boxShadow: "0 1px 5px rgba(155,61,45,.4)" }}>{n}</span>
+      {/* 사진(카드 폭에 맞춰 함께 작아짐) */}
+      {p.photo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={p.photo} alt={`${p.name} 초상`} className="w-full flex-none object-cover" style={{ height: 132, background: "#efe1c3" }} />
+      ) : (
+        <span className="font-display flex w-full flex-none items-center justify-center text-4xl text-white" style={{ height: 132, background: "var(--grad-dream)" }}>{p.glyph}</span>
+      )}
+      <div className="flex min-h-0 flex-1 flex-col p-3">
+        <h2 className="font-serif text-[16px] font-bold leading-tight text-ink-900">{p.name}</h2>
+        <p className="font-serif text-[11.5px] text-ink-500">{p.life}</p>
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          <span className="rounded-full bg-sky-500 px-2 py-0.5 text-[10px] font-bold text-white">{p.org}</span>
+          <span className="rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-bold text-ink-700">{p.role}</span>
         </div>
         {p.quote && (
-          <figure className="mt-3 border-l-4 pl-3" style={{ borderColor: "#bf6b22" }}>
-            <blockquote className="font-serif text-[13.5px] leading-[1.75] text-ink-800">&ldquo;{p.quote.text}&rdquo;</blockquote>
-          </figure>
+          <p className="font-serif mt-2 line-clamp-2 border-l-4 pl-2 text-[12.5px] leading-snug text-ink-800 group-hover:line-clamp-none" style={{ borderColor: "#bf6b22" }}>&ldquo;{p.quote.text}&rdquo;</p>
         )}
-        <p className="font-serif mt-2.5 text-[13.5px] leading-[1.85] text-ink-700">{p.summary}</p>
+        <p className="font-serif mt-2 line-clamp-4 flex-1 overflow-y-auto text-[12.5px] leading-[1.7] text-ink-700 group-hover:line-clamp-none">{p.summary}</p>
+        <Link href={`/people/${p.id}`} className="mt-2 flex-none text-[12px] font-bold text-sky-600 hover:text-sky-700">상세 →</Link>
       </div>
     </div>
   );

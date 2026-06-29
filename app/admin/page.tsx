@@ -30,10 +30,13 @@ export default function AdminPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [tab, setTab] = useState<"people" | "featured" | "pages" | "settings" | "admins">("people");
+  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "admins">("people");
   // 대표(featured) 토글 — 코드 FEATURED 위에 덮어쓸 오버라이드(app_settings 'meta.featured').
   const [feat, setFeat] = useState<Record<string, boolean>>({});
   const [featQ, setFeatQ] = useState("");
+  // 주제연구 등록 — app_settings 'topic.<id>'.
+  const [tdraft, setTdraft] = useState<{ id: string; title: string; intro: string; people: string[] }>({ id: "", title: "", intro: "", people: [] });
+  const [tq, setTq] = useState("");
   const [pc, setPc] = useState<{ story: Record<string, string>; journey: Record<string, string> }>({ story: {}, journey: {} });
   const [adminEmails, setAdminEmails] = useState<string[]>([]);
   const [newAdmin, setNewAdmin] = useState("");
@@ -198,6 +201,29 @@ export default function AdminPage() {
     if (!err) loadData();
   }
 
+  // 주제연구 등록(app_settings 'topic.<id>')
+  const dbTopics = Object.entries(settings)
+    .filter(([k, v]) => k.startsWith("topic.") && v && typeof v === "object" && Array.isArray((v as { people?: unknown }).people) && (v as { people: unknown[] }).people.length > 0)
+    .map(([k, v]) => ({ id: k.replace("topic.", ""), ...(v as { title: string; intro: string; people: string[] }) }));
+  const loadTopic = (t: { id: string; title: string; intro: string; people: string[] }) => setTdraft({ id: t.id, title: t.title || "", intro: t.intro || "", people: t.people || [] });
+  const toggleTopicPerson = (pid: string) => setTdraft((d) => ({ ...d, people: d.people.includes(pid) ? d.people.filter((x) => x !== pid) : [...d.people, pid] }));
+  async function saveTopic() {
+    const id = tdraft.id.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    if (!id || !tdraft.title.trim() || tdraft.people.length === 0) { setMsg("저장 실패: id·제목·선교사(1명+)는 필수입니다"); return; }
+    setSaving(true); setMsg("");
+    const err = await post({ kind: "settings", settings: { [`topic.${id}`]: { title: tdraft.title.trim(), intro: tdraft.intro.trim(), people: tdraft.people } } });
+    setSaving(false);
+    setMsg(err ? "저장 실패: " + err : `✓ 주제 '${tdraft.title}' 저장됨 (/research에 곧 반영)`);
+    if (!err) loadData();
+  }
+  async function deleteTopic(id: string) {
+    setSaving(true); setMsg("");
+    const err = await post({ kind: "settings", settings: { [`topic.${id}`]: { title: "", intro: "", people: [] } } });
+    setSaving(false);
+    setMsg(err ? "저장 실패: " + err : "✓ 주제 삭제됨");
+    if (!err) { setTdraft({ id: "", title: "", intro: "", people: [] }); loadData(); }
+  }
+
   if (!ready) return <div style={{ padding: 40, fontFamily: "var(--font-body)" }}>로딩…</div>;
 
   if (!session) {
@@ -235,9 +261,9 @@ export default function AdminPage() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {(["people", "featured", "pages", "settings", "admins"] as const).map((t) => (
+        {(["people", "featured", "research", "pages", "settings", "admins"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} style={{ border: `1px solid ${tab === t ? "#2f2419" : C.line}`, borderRadius: 11, padding: "8px 16px", background: tab === t ? "#2f2419" : "transparent", color: tab === t ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
-            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : "관리자 계정"}
+            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "research" ? "주제연구" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : "관리자 계정"}
           </button>
         ))}
       </div>
@@ -322,6 +348,48 @@ export default function AdminPage() {
           </div>
         );
       })()}
+
+      {tab === "research" && (
+        <div>
+          <p style={{ margin: "0 0 12px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
+            주제에 선교사를 묶어 등록하면 <b>/research</b>에 통합 리포트(인물·관계·장소·유적·링크·활동기간)가 생깁니다. 코드 기본 예시 주제 위에 누적되며, 같은 id면 등록 주제가 우선합니다.
+          </p>
+          {dbTopics.length > 0 && (
+            <div style={{ marginBottom: 16, border: `1px solid ${C.line}`, borderRadius: 12, overflow: "hidden" }}>
+              {dbTopics.map((t) => (
+                <div key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderBottom: `1px solid ${C.line}` }}>
+                  <button onClick={() => loadTopic(t)} style={{ background: "none", border: 0, cursor: "pointer", color: C.ink, fontSize: 13, fontWeight: 700, textAlign: "left" }}>{t.title} <span style={{ color: C.muted, fontWeight: 500 }}>· {t.people.length}명 · {t.id}</span></button>
+                  <button onClick={() => deleteTopic(t.id)} style={{ background: "none", border: `1px solid ${C.line}`, borderRadius: 99, padding: "2px 10px", cursor: "pointer", color: C.accent, fontSize: 11.5, fontWeight: 700 }}>삭제</button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+            <div><label style={label}>주제 id (영문·하이픈)</label><input style={input} value={tdraft.id} onChange={(e) => setTdraft((d) => ({ ...d, id: e.target.value }))} placeholder="예: women-education" /></div>
+            <div><label style={label}>제목</label><input style={input} value={tdraft.title} onChange={(e) => setTdraft((d) => ({ ...d, title: e.target.value }))} placeholder="주제 제목" /></div>
+          </div>
+          <label style={label}>소개</label>
+          <textarea style={{ ...input, minHeight: 80, marginBottom: 10 }} value={tdraft.intro} onChange={(e) => setTdraft((d) => ({ ...d, intro: e.target.value }))} placeholder="이 주제의 의미를 한두 문단으로…" />
+          <label style={label}>선교사 선택 · {tdraft.people.length}명</label>
+          {tdraft.people.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "6px 0" }}>
+              {tdraft.people.map((pid) => { const pp = PEOPLE.find((x) => x.id === pid); return (
+                <button key={pid} onClick={() => toggleTopicPerson(pid)} style={{ background: "#2f2419", color: "#fff8ed", border: 0, borderRadius: 99, padding: "3px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>{pp?.name ?? pid} ✕</button>
+              ); })}
+            </div>
+          )}
+          <input style={{ ...input, marginBottom: 6 }} value={tq} onChange={(e) => setTq(e.target.value)} placeholder="이름·영문 검색해 추가" />
+          <div style={{ maxHeight: 220, overflowY: "auto", border: `1px solid ${C.line}`, borderRadius: 10, background: "#fff8ec" }}>
+            {PEOPLE.filter((p) => !tq || `${p.name} ${p.en}`.toLowerCase().includes(tq.toLowerCase())).map((p) => (
+              <button key={p.id} onClick={() => toggleTopicPerson(p.id)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "6px 12px", borderBottom: `1px solid ${C.line}`, background: tdraft.people.includes(p.id) ? "rgba(155,61,45,.08)" : "transparent", border: 0, cursor: "pointer", color: C.ink, fontSize: 13 }}>
+                <span style={{ width: 16 }}>{tdraft.people.includes(p.id) ? "✓" : ""}</span>
+                <span style={{ fontWeight: 700 }}>{p.name}</span><span style={{ color: C.muted, fontSize: 11 }}>· {p.en} · {p.year}</span>
+              </button>
+            ))}
+          </div>
+          <button onClick={saveTopic} disabled={saving} style={{ ...btn, marginTop: 14 }}>{saving ? "저장 중…" : "주제 저장"}</button>
+        </div>
+      )}
 
       {tab === "pages" && (
         <div style={{ display: "grid", gap: 28, maxWidth: 680 }}>

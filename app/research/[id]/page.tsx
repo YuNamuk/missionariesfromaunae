@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { TOPICS, topicById } from "@/lib/data/topics";
+import { TOPICS, topicById, type Topic } from "@/lib/data/topics";
+import { fetchDbTopics } from "@/lib/db/topics";
 import { getPerson, getPlace, getRelationships, activePeriods, type Person } from "@/lib/data";
 import { profileFor } from "@/lib/data/profiles";
 import { PHOTOS } from "@/lib/data/photos";
@@ -13,9 +14,14 @@ export function generateStaticParams() {
   return TOPICS.map((t) => ({ id: t.id }));
 }
 
+async function resolveTopic(id: string): Promise<Topic | undefined> {
+  const db = await fetchDbTopics();
+  return db.find((t) => t.id === id) ?? topicById(id);
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const t = topicById(id);
+  const t = await resolveTopic(id);
   return { title: t ? t.title : "주제연구" };
 }
 
@@ -30,7 +36,7 @@ function orgTint(org: string) {
 
 export default async function ResearchReport({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const topic = topicById(id);
+  const topic = await resolveTopic(id);
   if (!topic) notFound();
 
   const people = topic.people.map((pid) => getPerson(pid)).filter(Boolean) as Person[];
