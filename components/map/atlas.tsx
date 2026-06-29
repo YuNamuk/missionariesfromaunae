@@ -14,6 +14,7 @@ import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
 import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PERSON_COORD } from "@/lib/data/person-coord";
 import { C, CAT_COLOR, orgTint, personLatLng, labelHtml, placeIcon, personIcon, arrowIcon, bearingDeg, distKm, clusterIcon } from "./atlas-icons";
+import { useColorMode, ColorToggle } from "@/components/color-mode";
 
 // ── 시대별 정세(역사 국경) 오버레이 ──────────────────────────────
 // 출처: historical-basemaps (github.com/aourednik/historical-basemaps, ODbL).
@@ -427,6 +428,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showNetwork, setShowNetwork] = useState(false); // 관계망(인물 간 관계선) 표시
   const [showLabels, setShowLabels] = useState(true); // 마커 이름표(라벨) 표시
   const [markerScale, setMarkerScale] = useState(1); // 마커 크기 배율(0.85 / 1 / 1.2)
+  const { color: colorPhoto } = useColorMode(); // 초상 컬러 복원본 보기(전역)
   // 뷰 초기화: 지도 시점·선택·필터·관계 집중을 기본값으로 되돌린다.
   const resetView = () => {
     mapRef.current?.flyTo([38.4, 127.5], 6, { duration: 0.5 });
@@ -965,6 +967,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               <button onClick={() => setShowLabels((v) => !v)} style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 10, padding: "9px 11px", background: showLabels ? "#2f2419" : "rgba(255,255,255,.6)", color: showLabels ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>
                 <span>마커 이름표</span><span>{showLabels ? "● 표시" : "○ 숨김"}</span>
               </button>
+              <div style={{ marginTop: 8 }}><ColorToggle /></div>
               <div style={{ borderTop: `1px solid ${C.line}`, margin: "12px 0 0", paddingTop: 12, display: "grid", gap: 8 }}>
                 <button onClick={resetView} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 10, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#5f4d39", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
                   <span>뷰 초기화</span><span aria-hidden style={{ opacity: 0.55 }}>⤾</span>
@@ -1106,7 +1109,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   if (cl.count === 1) {
                     const p = mapPeople.find((x) => x.id === cl.ids[0]);
                     const ll = p && personPos.get(p.id);
-                    return p && ll ? [<Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, false, 1, false, markerScale, showLabels)} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />] : [];
+                    return p && ll ? [<Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, false, 1, false, markerScale, showLabels, colorPhoto)} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />] : [];
                   }
                   return [
                     <Marker
@@ -1140,7 +1143,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   // 그 외(미선택·랜딩)에는 토글로 보이는 모든 인물을 또렷하게(활성) 표시.
                   const opacity = !dimActive ? 1 : sel || first ? 1 : 0.22;
                   return (
-                    <Marker key={p.id} position={ll} pane={sel ? "selectedPane" : "peoplePane"} icon={personIcon(p, sel, opacity, first, markerScale, showLabels)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
+                    <Marker key={p.id} position={ll} pane={sel ? "selectedPane" : "peoplePane"} icon={personIcon(p, sel, opacity, first, markerScale, showLabels, colorPhoto)} zIndexOffset={sel ? 1000 : first ? 300 : second ? 150 : 0} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />
                   );
                 })}
           </MapContainer>

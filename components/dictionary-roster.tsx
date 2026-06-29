@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { Portrait } from "@/components/color-mode";
 
 export type RosterPerson = {
   id: string;
@@ -101,7 +101,7 @@ export function DictionaryRoster({ people }: { people: RosterPerson[] }) {
             <li key={p.id} className="border-b border-ink-100">
               <Link href={`/people/${p.id}`} className="flex items-center gap-3 py-3 transition-colors hover:bg-ink-50">
                 {p.photo ? (
-                  <Image src={p.photo} alt={`${p.name} 초상`} width={40} height={40} className="h-10 w-10 flex-none rounded-full object-cover" style={{ background: "var(--ink-100)" }} />
+                  <Portrait id={p.id} src={p.photo} alt={`${p.name} 초상`} className="h-10 w-10 flex-none rounded-full object-cover" style={{ width: 40, height: 40, background: "var(--ink-100)" }} />
                 ) : (
                   <span className="font-display flex h-10 w-10 flex-none items-center justify-center rounded-full text-lg" style={{ background: "var(--ink-100)", color: "var(--ink-700)" }}>{p.glyph}</span>
                 )}

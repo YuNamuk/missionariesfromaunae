@@ -2,6 +2,7 @@
 // 상태/훅 없이 L·타입·서로에게만 의존하므로 동작이 동일하다(behavior-preserving 추출).
 import L from "leaflet";
 import type { MapPerson, MapPlace } from "./types";
+import { colorSrc } from "@/lib/data/colorized";
 
 /* ── warm archival palette (scoped to the immersive map view) ── */
 export const C = {
@@ -60,12 +61,13 @@ export function placeIcon(p: MapPlace, sel: boolean, dim: boolean, scale = 1, la
   });
 }
 
-export function personIcon(p: MapPerson, sel: boolean, opacity: number, related: boolean, scale = 1, labels = true) {
+export function personIcon(p: MapPerson, sel: boolean, opacity: number, related: boolean, scale = 1, labels = true, colorPhoto = false) {
   const color = orgTint(p.org);
   const size = Math.round((sel ? 44 : related ? 36 : 30) * scale);
   const ring = sel ? "3px solid #9b3d2d" : related ? "2px solid #bf6b22" : `2px solid #fff8ec`;
-  const inner = p.photo
-    ? `background:#efe1c3 center/cover url('${p.photo}');`
+  const photoUrl = (colorPhoto && colorSrc(p.photo)) || p.photo;
+  const inner = photoUrl
+    ? `background:#efe1c3 center/cover url('${photoUrl}');`
     : `background:${color};display:flex;align-items:center;justify-content:center;color:#fff8ec;font-size:${size * 0.42}px;font-weight:800;`;
   return L.divIcon({
     className: "",

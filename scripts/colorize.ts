@@ -1,0 +1,92 @@
+// 흑백 초상 → Gemini 이미지 모델로 자연스러운 컬러·복원본 생성.
+// 결과는 public/portraits/<id>-color.jpg 로 저장(원본은 그대로 보존).
+//   단일 검증:  tsx --env-file=.env.local scripts/colorize.ts avison
+//   전체 일괄:  tsx --env-file=.env.local scripts/colorize.ts --all
+import { readFile, writeFile, readdir } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+import path from "node:path";
+
+const KEY = process.env.GEMINI_API_KEY;
+const MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
+const DIR = path.join(process.cwd(), "public", "portraits");
+
+// 역사 인물 초상 — '얼굴을 새로 그리지 말고' 색·질감만 자연스럽게 복원하도록 보수적으로 지시.
+const PROMPT =
+  "This is a historical black-and-white (or sepia) portrait photograph of a real person from the late 19th / early 20th century. " +
+  "Restore and naturally colorize it as a faithful archival restoration. " +
+  "STRICTLY preserve the person's identity, exact facial features, expression, pose, hairstyle, clothing and the original composition — do NOT redraw, beautify, or alter the face. " +
+  "Only add realistic, period-appropriate natural color, repair scratches/dust, and gently improve clarity and tonal range. " +
+  "Keep it photorealistic and historically plausible, not stylized. Output the restored image only.";
+
+const ext = (id: string) => [".jpg", ".jpeg", ".png"].map((e) => path.join(DIR, id + e));
+
+async function srcFor(id: string): Promise<{ file: string; mime: string } | null> {
+  for (const f of ext(id)) {
+    try {
+      await readFile(f);
+      return { file: f, mime: f.endsWith(".png") ? "image/png" : "image/jpeg" };
+    } catch {}
+  }
+  return null;
+}
+
+async function colorizeOne(id: string): Promise<"ok" | "skip" | "fail"> {
+  const out = path.join(DIR, `${id}-color.jpg`);
+  try { await readFile(out); return "skip"; } catch {}            // 이미 생성됨 → 건너뜀
+  const src = await srcFor(id);
+  if (!src) { console.log(`· ${id}: 원본 없음`); return "fail"; }
+  const b64 = (await readFile(src.file)).toString("base64");
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${KEY}`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: PROMPT }, { inline_data: { mime_type: src.mime, data: b64 } }] }],
+        generationConfig: { responseModalities: ["IMAGE"] },
+      }),
+    },
+  );
+  if (!res.ok) {
+    console.log(`✗ ${id}: HTTP ${res.status} — ${(await res.text()).slice(0, 240)}`);
+    return "fail";
+  }
+  const data = await res.json();
+  const parts = data?.candidates?.[0]?.content?.parts ?? [];
+  const img = parts.find((p: { inlineData?: { data?: string } }) => p?.inlineData?.data);
+  if (!img) {
+    console.log(`✗ ${id}: 이미지 파트 없음 — ${JSON.stringify(data).slice(0, 240)}`);
+    return "fail";
+  }
+  await writeFile(out, Buffer.from(img.inlineData.data, "base64"));
+  // Gemini 출력이 1000px대로 크다 → 표시용으로 한 번에 압축(긴 변 640px·품질 72).
+  try { execFileSync("sips", ["-Z", "560", "-s", "formatOptions", "66", out], { stdio: "ignore" }); } catch {}
+  const kb = Math.round((await readFile(out)).length / 1024);
+  console.log(`✓ ${id} → ${path.basename(out)} (${kb}KB)`);
+  return "ok";
+}
+
+async function main() {
+  if (!KEY) { console.error("GEMINI_API_KEY 미설정 (.env.local)"); process.exit(1); }
+  const arg = process.argv[2];
+  let ids: string[];
+  if (arg === "--all") {
+    const files = await readdir(DIR);
+    ids = [...new Set(files.filter((f) => /\.(jpe?g|png)$/i.test(f) && !/-color\./i.test(f)).map((f) => f.replace(/\.(jpe?g|png)$/i, "")))];
+  } else if (arg) {
+    ids = [arg];
+  } else {
+    console.error("사용법: colorize.ts <id> | --all"); process.exit(1);
+  }
+  console.log(`모델 ${MODEL} · 대상 ${ids.length}장\n`);
+  let ok = 0, skip = 0, fail = 0;
+  for (const id of ids) {
+    const r = await colorizeOne(id);
+    r === "ok" ? ok++ : r === "skip" ? skip++ : fail++;
+    if (arg === "--all") await new Promise((s) => setTimeout(s, 1200)); // 레이트리밋 여유
+  }
+  console.log(`\n완료 — 생성 ${ok} · 건너뜀 ${skip} · 실패 ${fail}`);
+}
+
+main();

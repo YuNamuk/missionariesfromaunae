@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
+import { Portrait } from "@/components/color-mode";
 import { CiteBox } from "@/components/cite-box";
 import {
   PEOPLE,
@@ -120,13 +120,12 @@ export default async function PersonPage({
       <div className="mt-5 flex flex-wrap items-start gap-5">
         {photo ? (
           <span className="flex-none">
-            <Image
+            <Portrait
+              id={person.id}
               src={photo}
               alt={`${person.name} 초상`}
-              width={160}
-              height={208}
-              priority
-              sizes="(min-width: 640px) 144px, 112px"
+              toggle
+              badge
               className="h-36 w-28 rounded-2xl object-cover sm:h-44 sm:w-36"
               style={{ boxShadow: "var(--shadow-sky)", background: "#efe1c3" }}
             />

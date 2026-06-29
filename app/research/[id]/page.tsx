@@ -6,6 +6,7 @@ import { fetchDbTopics } from "@/lib/db/topics";
 import { getPerson, getPlace, getRelationships, activePeriods, type Person } from "@/lib/data";
 import { profileFor } from "@/lib/data/profiles";
 import { PHOTOS } from "@/lib/data/photos";
+import { Portrait } from "@/components/color-mode";
 import { HERITAGE } from "@/lib/data/heritage";
 
 export const revalidate = 300;
@@ -109,8 +110,7 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
               <Link key={p.id} href={`/people/${p.id}`} className="block rounded-2xl border border-ink-200 bg-white p-4 transition-colors hover:border-sky-300">
                 <div className="flex gap-3">
                   {photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo} alt="" className="h-16 w-13 flex-none rounded-xl object-cover" style={{ background: "#efe1c3", width: 52, height: 64 }} />
+                    <Portrait id={p.id} src={photo} alt={`${p.name} 초상`} toggle badge className="flex-none rounded-xl object-cover" style={{ background: "#efe1c3", width: 52, height: 64 }} />
                   ) : (
                     <span className="font-display flex flex-none items-center justify-center rounded-xl text-2xl text-white" style={{ background: "var(--grad-dream)", width: 52, height: 64 }}>{p.glyph}</span>
                   )}

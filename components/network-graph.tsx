@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useColorMode } from "@/components/color-mode";
+import { colorSrc } from "@/lib/data/colorized";
 
 export interface GraphNode {
   id: string;
@@ -44,6 +46,7 @@ export function NetworkGraph({
   legend: RelLegend[];
 }) {
   const [active, setActive] = useState<string | null>(null);
+  const { color } = useColorMode();
 
   // deterministic circular layout, ordered by arrival year so the timeline
   // reads roughly clockwise.
@@ -140,7 +143,7 @@ export function NetworkGraph({
                   <circle r={r + 2} fill="#3a2a1c" />
                   {n.photo ? (
                     <image
-                      href={n.photo}
+                      href={(color && colorSrc(n.photo)) || n.photo}
                       x={-r}
                       y={-r}
                       width={r * 2}
