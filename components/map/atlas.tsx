@@ -427,6 +427,27 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const { color: colorPhoto } = useColorMode(); // 초상 컬러 복원본 보기(전역)
   // 컬러 모드일 때 인물 초상(마커·리스트·관련 인물·바로가기 아이콘)을 복원 컬러본으로 스왑.
   const cphoto = (s: string | null | undefined) => (colorPhoto ? colorSrc(s) : null) || s || undefined;
+  // 클러스터 스파이더리: 클릭한 클러스터의 인물들을 중심 주위로 부채꼴(많으면 나선) 펼침.
+  const [spiderId, setSpiderId] = useState<string | null>(null);
+  const spiderPositions = (center: [number, number], n: number): [number, number][] => {
+    const map = mapRef.current;
+    if (!map) return Array(n).fill(center);
+    const c = map.latLngToLayerPoint(L.latLng(center[0], center[1]));
+    return Array.from({ length: n }, (_, i) => {
+      let x: number, y: number;
+      if (n <= 9) { // 원형 한 겹
+        const r = 26 + n * 4, a = (i / n) * 2 * Math.PI - Math.PI / 2;
+        x = c.x + r * Math.cos(a); y = c.y + r * Math.sin(a);
+      } else { // 나선(겹침 방지)
+        const a = i * 0.6, r = 16 + a * 9;
+        x = c.x + r * Math.cos(a); y = c.y + r * Math.sin(a);
+      }
+      const ll = map.layerPointToLatLng(L.point(x, y));
+      return [ll.lat, ll.lng] as [number, number];
+    });
+  };
+  // 줌이 바뀌면 펼친 클러스터는 접는다(부채꼴 위치는 특정 줌의 픽셀 기준이므로).
+  useEffect(() => { setSpiderId(null); }, [mapZoom]);
   // 헤더 ⚙의 '뷰 초기화' — 지도 시점·선택·필터·관계 집중을 기본값으로 되돌린다.
   useEffect(() => {
     const onReset = () => {
@@ -1080,6 +1101,21 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                     const ll = p && personPos.get(p.id);
                     return p && ll ? [<Marker key={p.id} position={ll} pane="peoplePane" icon={personIcon(p, false, 1, false, markerScale, showLabels, colorPhoto)} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />] : [];
                   }
+                  // 펼친 클러스터: 인물들을 중심 주위로 부채꼴 배치(다리선 + 개별 마커) + 중심에 접기 배지.
+                  if (spiderId === cl.id) {
+                    const center: [number, number] = [cl.lat, cl.lng];
+                    const fan = spiderPositions(center, cl.count);
+                    const out: React.ReactElement[] = [];
+                    cl.ids.forEach((id, i) => {
+                      const p = mapPeople.find((x) => x.id === id);
+                      const pos = fan[i];
+                      if (!p || !pos) return;
+                      out.push(<Polyline key={`leg-${cl.id}-${id}`} positions={[center, pos]} pane="peoplePane" pathOptions={{ color: "#7a4a2e", weight: 1.5, opacity: 0.5 }} interactive={false} />);
+                      out.push(<Marker key={`sp-${id}`} position={pos} pane="peoplePane" icon={personIcon(p, false, 1, false, markerScale, showLabels, colorPhoto)} zIndexOffset={120} eventHandlers={{ click: () => setSelected({ kind: "person", id: p.id }) }} />);
+                    });
+                    out.push(<Marker key={`${cl.id}-hub`} position={center} pane="peoplePane" icon={clusterIcon("✕", "#9b3d2d")} zIndexOffset={140} eventHandlers={{ click: () => setSpiderId(null) }} />);
+                    return out;
+                  }
                   return [
                     <Marker
                       key={cl.id}
@@ -1087,17 +1123,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                       pane="peoplePane"
                       icon={clusterIcon(cl.label, "#7a4a2e")}
                       zIndexOffset={60}
-                      eventHandlers={{
-                        click: () => {
-                          const pts = cl.ids.map((id) => personPos.get(id)).filter(Boolean) as [number, number][];
-                          const map = mapRef.current;
-                          if (!pts.length || !map) return;
-                          const b = L.latLngBounds(pts);
-                          // 임계줌(CLUSTER_Z)을 반드시 넘겨 개별 마커로 펼쳐지도록 보장.
-                          const fitZ = map.getBoundsZoom(b, false, L.point(70, 70));
-                          map.flyTo(b.getCenter(), Math.min(Math.max(fitZ, CLUSTER_Z + 0.5), 16), { duration: 0.5, easeLinearity: 0.25 });
-                        },
-                      }}
+                      eventHandlers={{ click: () => setSpiderId(cl.id) }}
                     />,
                   ];
                 })
