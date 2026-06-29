@@ -23,7 +23,7 @@ export type RelItem = { id: string; name: string; type: string; label: string; c
 // 마우스를 올리면 그 카드만 넓어지며 요약 전문이 펼쳐진다. 가로 스크롤 없음.
 function FlowCard({ p, n }: { p: FlowPerson; n: number }) {
   return (
-    <div className="group relative flex min-w-0 shrink basis-0 grow flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white hover:grow-[3]" style={{ height: 384, transition: "flex-grow 520ms cubic-bezier(0.22,0.61,0.36,1)" }}>
+    <div className="group relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white hover:grow-[5]" style={{ height: 384, maxWidth: 300, transition: "flex-grow 520ms cubic-bezier(0.22,0.61,0.36,1)" }}>
       <span className="font-display absolute left-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[12px] font-extrabold text-white" style={{ background: "#9b3d2d", boxShadow: "0 1px 5px rgba(155,61,45,.4)" }}>{n}</span>
       {/* 사진(카드 폭에 맞춰 함께 작아짐) */}
       {p.photo ? (
