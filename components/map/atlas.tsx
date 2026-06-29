@@ -7,15 +7,16 @@ import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMap } from "reac
 import L from "leaflet";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, X, ArrowRight, Settings, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Share2, Check } from "lucide-react";
+import { Search, X, ArrowRight, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Share2, Check } from "lucide-react";
 import type { AtlasData, MapPerson, MapPlace } from "./types";
 import { regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleTagsOf, ROLE_LIST, peakYear } from "@/lib/data/meta";
 import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
 import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PERSON_COORD } from "@/lib/data/person-coord";
 import { C, CAT_COLOR, orgTint, personLatLng, labelHtml, placeIcon, personIcon, arrowIcon, bearingDeg, distKm, clusterIcon } from "./atlas-icons";
-import { useColorMode, ColorToggle } from "@/components/color-mode";
+import { useColorMode } from "@/components/color-mode";
 import { colorSrc } from "@/lib/data/colorized";
+import { useMapSettings } from "@/components/map-settings";
 
 // ── 시대별 정세(역사 국경) 오버레이 ──────────────────────────────
 // 출처: historical-basemaps (github.com/aourednik/historical-basemaps, ODbL).
@@ -403,19 +404,11 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     if (target && mapRef.current) mapRef.current.flyTo(target.center, target.zoom, { duration: 0.5, easeLinearity: 0.25 });
     else skipFitRef.current = false; // 저장된 뷰가 없으면 복원된 선택에 맞춰 자동 줌
   };
-  const [showSettings, setShowSettings] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const [shared, setShared] = useState(false);
-  const [fit, setFit] = useState<string>("tight");
-  useEffect(() => {
-    const saved = typeof window !== "undefined" ? window.localStorage.getItem("atlas-fit") : null;
-    if (saved) setFit(saved);
-  }, []);
-  const changeFit = (v: string) => {
-    setFit(v);
-    try { window.localStorage.setItem("atlas-fit", v); } catch {}
-  };
+  // 지도 표시 설정(줌 강도·마커 크기·이름표)은 상단 헤더의 ⚙에서 조작 — 전역 컨텍스트 구독.
+  const { fit, markerScale, showLabels } = useMapSettings();
 
   // 대표만 보기(기본 노출 축소) · 필터(교단·지역·시대·역할) · 관계망 집중
   const [featuredOnly, setFeaturedOnly] = useState(lens === "people" || lens === "era");
@@ -431,19 +424,21 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showStations, setShowStations] = useState(true); // 주요 거점(항구·선교부 등) 마커 레이어
   const [showPeople, setShowPeople] = useState(true); // 선교사(인물) 마커 레이어
   const [showNetwork, setShowNetwork] = useState(false); // 관계망(인물 간 관계선) 표시
-  const [showLabels, setShowLabels] = useState(true); // 마커 이름표(라벨) 표시
-  const [markerScale, setMarkerScale] = useState(1); // 마커 크기 배율(0.85 / 1 / 1.2)
   const { color: colorPhoto } = useColorMode(); // 초상 컬러 복원본 보기(전역)
   // 컬러 모드일 때 인물 초상(마커·리스트·관련 인물·바로가기 아이콘)을 복원 컬러본으로 스왑.
   const cphoto = (s: string | null | undefined) => (colorPhoto ? colorSrc(s) : null) || s || undefined;
-  // 뷰 초기화: 지도 시점·선택·필터·관계 집중을 기본값으로 되돌린다.
-  const resetView = () => {
-    mapRef.current?.flyTo([38.4, 127.5], 6, { duration: 0.5 });
-    setSelected(null);
-    clearFilters();
-    setNetFocus(false);
-    setShowSettings(false);
-  };
+  // 헤더 ⚙의 '뷰 초기화' — 지도 시점·선택·필터·관계 집중을 기본값으로 되돌린다.
+  useEffect(() => {
+    const onReset = () => {
+      mapRef.current?.flyTo([38.4, 127.5], 6, { duration: 0.5 });
+      setSelected(null);
+      clearFilters();
+      setNetFocus(false);
+    };
+    window.addEventListener("atlas:reset", onReset);
+    return () => window.removeEventListener("atlas:reset", onReset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const toggleFacet = (axis: keyof typeof filters, key: string) =>
     setFilters((f) => ({ ...f, [axis]: f[axis].includes(key) ? f[axis].filter((k) => k !== key) : [...f[axis], key] }));
   const setFacet = (axis: keyof typeof filters, keys: string[]) => setFilters((f) => ({ ...f, [axis]: keys }));
@@ -949,39 +944,6 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   {pickList.length === 0 && !q && <span style={{ padding: "10px 8px", color: C.muted, fontSize: 12.5 }}>목록이 없습니다</span>}
                   {q && pickList.length === 0 && HERITAGE.filter((h) => `${h.name} ${h.city}`.toLowerCase().includes(q)).length === 0 && cemeteries.filter((c) => c.name.toLowerCase().includes(q)).length === 0 && <span style={{ padding: "10px 8px", color: C.muted, fontSize: 12.5 }}>검색 결과가 없습니다</span>}
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
-        <div style={{ position: "relative", flex: "0 0 auto" }}>
-          <button onClick={() => setShowSettings((s) => !s)} title="설정" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 10, border: `1px solid ${C.line}`, background: showSettings ? "#2f2419" : "rgba(255,255,255,.6)", color: showSettings ? "#fff8ed" : "#6b5e4b", cursor: "pointer" }}><Settings size={17} /></button>
-          {showSettings && (
-            <div style={{ position: "absolute", top: 42, right: 0, width: 210, background: "rgba(255,250,237,.99)", border: `1px solid ${C.line}`, borderRadius: 14, boxShadow: "0 10px 28px rgba(46,28,14,.22)", padding: 12, zIndex: 600 }}>
-              <div style={{ ...hdr, marginBottom: 8 }}>줌 강도</div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {([["loose", "느슨"], ["normal", "보통"], ["tight", "타이트"]] as const).map(([k, label]) => {
-                  const on = fit === k;
-                  return <button key={k} onClick={() => changeFit(k)} style={{ flex: 1, border: `1px solid ${on ? "#9b3d2d" : C.line}`, borderRadius: 10, padding: "7px 4px", background: on ? "#9b3d2d" : "rgba(255,255,255,.6)", color: on ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>{label}</button>;
-                })}
-              </div>
-              <div style={{ ...hdr, margin: "12px 0 8px" }}>마커 크기</div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {([["작게", 0.85], ["보통", 1], ["크게", 1.2]] as const).map(([label, s]) => {
-                  const on = markerScale === s;
-                  return <button key={label} onClick={() => setMarkerScale(s)} style={{ flex: 1, border: `1px solid ${on ? "#9b3d2d" : C.line}`, borderRadius: 10, padding: "7px 4px", background: on ? "#9b3d2d" : "rgba(255,255,255,.6)", color: on ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>{label}</button>;
-                })}
-              </div>
-              <button onClick={() => setShowLabels((v) => !v)} style={{ marginTop: 12, width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 10, padding: "9px 11px", background: showLabels ? "#2f2419" : "rgba(255,255,255,.6)", color: showLabels ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>
-                <span>마커 이름표</span><span>{showLabels ? "● 표시" : "○ 숨김"}</span>
-              </button>
-              <div style={{ marginTop: 8 }}><ColorToggle /></div>
-              <div style={{ borderTop: `1px solid ${C.line}`, margin: "12px 0 0", paddingTop: 12, display: "grid", gap: 8 }}>
-                <button onClick={resetView} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 10, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#5f4d39", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}>
-                  <span>뷰 초기화</span><span aria-hidden style={{ opacity: 0.55 }}>⤾</span>
-                </button>
-                <a href="/admin" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", textDecoration: "none", border: `1px solid ${C.line}`, borderRadius: 10, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#5f4d39", fontSize: 12.5, fontWeight: 800 }}>
-                  <span>관리자 페이지</span><span aria-hidden style={{ opacity: 0.55 }}>↗</span>
-                </a>
               </div>
             </div>
           )}

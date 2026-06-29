@@ -7,6 +7,7 @@ import { clsx } from "clsx";
 import { PEOPLE, PLACES, BURIAL } from "@/lib/data";
 import { ERAS, DENOM_LIST, ROLE_LIST, REGIONS, denomOf, regionOf, roleTagsOf } from "@/lib/data/meta";
 import { HERITAGE } from "@/lib/data/heritage";
+import { MapSettingsButton } from "@/components/map-settings";
 
 // ── 정적 디렉터리 데이터(카테고리별 인물). 헤더는 '필터'가 아니라 '표기·탐색'. ──
 const SORTED = [...PEOPLE].sort((a, b) => a.year - b.year);
@@ -210,6 +211,9 @@ export function SiteHeader() {
         <span className="mx-1.5 h-5 w-px bg-white/15" />
 
         <BrowseDrop open={open} setOpen={setOpen} onPickPerson={goPerson} onPickFocus={goFocus} onPickYear={goYear} onPickHeritage={goHeritage} />
+
+        {/* 지도 표시 설정 — 지도 페이지에서만 노출(헤더 우측 끝) */}
+        {pathname === "/" && <MapSettingsButton />}
       </nav>
     </header>
   );
