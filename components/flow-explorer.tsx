@@ -114,12 +114,13 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
             .filter((r) => r.flow !== "reverse" && !upstream.includes(r.id))
             .slice()
             .sort((a, b) => a.name.localeCompare(b.name, "ko"));
+          // 이어질 연관이 없으면 컬럼을 만들지 않는다(끊긴 느낌 방지 — 흐름은 그냥 마무리).
+          if (list.length === 0) return null;
           const chosen = path[k + 1];
           return (
             <div key={`${id}-${k}`} className="flex flex-none items-center gap-3">
               <span className="text-ink-300">→</span>
               <Column title={`${["②", "③", "④", "⑤", "⑥"][k] ?? "·"} ${byId[id]?.name}의 연관`} sub={`${list.length}명`}>
-                {list.length === 0 && <div className="px-2.5 py-3 text-[12px] text-ink-400">이어진 선교사 정보가 없습니다.</div>}
                 {list.map((r) => (
                   <button key={r.id + r.type} onClick={() => pick(k + 1, r.id)} className="w-full rounded-lg px-2.5 py-1.5 text-left hover:bg-ink-50" style={chosen === r.id ? { background: "#2f2419" } : undefined}>
                     <span className="flex items-center gap-1.5">
