@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { orgTint } from "@/components/map/atlas-icons";
+
+// 소속 교단 계열 색(atlas-icons와 동일 규칙 — leaflet 의존 없이 로컬 정의).
+function orgTint(org: string) {
+  if (org.includes("북장로회")) return "#1f6f8b";
+  if (org.includes("북감리회")) return "#875da7";
+  if (org.includes("권서") || org.includes("조선") || org.includes("개종")) return "#bf6b22";
+  return "#3f7f4b";
+}
 
 export type SpanPerson = {
   id: string;
