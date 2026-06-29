@@ -235,7 +235,7 @@ export default function AdminPage() {
     const err = await post({ kind: "settings", settings: { [`topic.${id}`]: { title: "", intro: "", people: [] } } });
     setSaving(false);
     setMsg(err ? "저장 실패: " + err : "✓ 주제 삭제됨");
-    if (!err) { setTdraft({ id: "", title: "", intro: "", people: [] }); loadData(); }
+    if (!err) { setTdraft({ id: "", title: "", intro: "", people: [], era: "", analysis: "" }); loadData(); }
   }
 
   if (!ready) return <div style={{ padding: 40, fontFamily: "var(--font-body)" }}>로딩…</div>;
