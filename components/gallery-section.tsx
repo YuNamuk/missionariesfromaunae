@@ -8,7 +8,7 @@ export function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
   const { color } = useColorMode();
   if (!photos.length) return null;
   return (
-    <section className="mt-10">
+    <section id="gallery" className="mt-10 scroll-mt-28">
       <h2 className="font-display text-lg font-extrabold text-ink-900">
         원본 사진 모음 <span className="text-[12px] font-semibold text-ink-400">· {photos.length}점</span>
       </h2>

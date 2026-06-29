@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Portrait } from "@/components/color-mode";
 import { galleryFor } from "@/lib/data/gallery";
 import { GallerySection } from "@/components/gallery-section";
+import { SectionTabs } from "@/components/section-tabs";
 import { CiteBox } from "@/components/cite-box";
 import {
   PEOPLE,
@@ -174,6 +175,8 @@ export default async function PersonPage({
         </div>
       </div>
 
+      <SectionTabs />
+
       {/* 그 사람의 말로 페이지를 연다 — 1차 자료 인용(있을 때만) */}
       {c.quote && (
         <figure className="mt-8 border-l-4 pl-5 sm:pl-6" style={{ borderColor: "#bf6b22" }}>
@@ -184,7 +187,7 @@ export default async function PersonPage({
         </figure>
       )}
 
-      <p className="font-serif mt-7 text-[18px] leading-[2.05] text-ink-700 sm:text-[19px]">{c.summary}</p>
+      <p id="story" className="font-serif mt-7 scroll-mt-28 text-[18px] leading-[2.05] text-ink-700 sm:text-[19px]">{c.summary}</p>
 
       {/* 서정적 서술: 이야기(중심) · 치른 값 · 걸어온 사역 · 남긴 열매 */}
       {hasNarrative && (
@@ -274,7 +277,7 @@ export default async function PersonPage({
 
       {/* 연표 · 관계 — 좌우 두 열 */}
       <div className="mt-9 grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <section>
+        <section id="timeline" className="scroll-mt-28">
           <h2 className="font-display text-lg font-extrabold text-ink-900">연표</h2>
           <ol className="mt-4 space-y-0">
             {person.timeline.map(([yr, text], i) => (
@@ -295,7 +298,7 @@ export default async function PersonPage({
         </section>
 
         {relGroups.length > 0 && (
-          <section>
+          <section id="relations" className="scroll-mt-28">
             <h2 className="font-display text-lg font-extrabold text-ink-900">관계</h2>
             <div className="mt-4 space-y-5">
               {relGroups.map(([label, group]) => (
@@ -331,7 +334,7 @@ export default async function PersonPage({
 
       {/* 관련 영상 — 페이지 안에서 재생(유튜브 로고 누르면 유튜브로 이동) */}
       {videos.length > 0 && (
-        <section className="mt-10">
+        <section id="videos" className="mt-10 scroll-mt-28">
           <h2 className="font-display text-lg font-extrabold text-ink-900">관련 영상</h2>
           <div className="mt-4 space-y-6">
             {videos.map((v) => {
@@ -365,7 +368,7 @@ export default async function PersonPage({
 
       {/* 참고 출처 · 외부 링크 (2열) */}
       {(extLinks.length > 0 || photoSource || sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (
-        <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2">
+        <div id="sources" className="mt-10 grid scroll-mt-28 grid-cols-1 gap-8 sm:grid-cols-2">
           {(sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (
             <div>
               <h2 className="font-display text-lg font-extrabold text-ink-900">참고 출처</h2>
