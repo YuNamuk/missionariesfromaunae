@@ -5,9 +5,14 @@ export const COLORIZED: ReadonlySet<string> = new Set([
   "allen", "annie", "appenzeller", "avison", "baird", "davis", "gale", "gilseonju", "hardie", "heron", "hulbert", "junkin", "kimchangsik", "leegipung", "leesujeong", "lillias", "maclay", "mckenzie", "moffett", "mscranton", "reynolds", "rosetta", "ross", "schofield", "seo", "seogyeongjo", "shepping", "switzer", "underwood", "william", "wjhall", 
 ]);
 
-/** 원본 초상 경로(/portraits/<id>.jpg|png)를 받아, 컬러본이 있으면 그 경로를 돌려준다. */
+/** 원본 초상 경로를 받아 컬러본 경로를 돌려준다(없으면 null).
+ *  - 로컬 /portraits/<id>.jpg: COLORIZED 매니페스트에 있을 때만.
+ *  - Supabase Storage(portraits 버킷) 업로드: 컬러본(-color)이 항상 함께 생성되므로 변환해 반환. */
 export function colorSrc(src: string | null | undefined): string | null {
   if (!src) return null;
+  if (src.includes("/storage/v1/object/public/portraits/") && !/-color\.[a-z]+(\?.*)?$/i.test(src)) {
+    return src.replace(/\.(jpe?g|png)(\?.*)?$/i, "-color.jpg");
+  }
   const m = src.match(/\/portraits\/([^/.]+)\.(?:jpe?g|png)$/i);
   if (!m || !COLORIZED.has(m[1])) return null;
   return `/portraits/${m[1]}-color.jpg`;

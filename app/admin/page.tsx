@@ -64,6 +64,8 @@ export default function AdminPage() {
   const [cdVideos, setCdVideos] = useState<{ url: string; title: string; source?: string }[]>([]); // 관련 영상(유튜브) 링크들
   const [cdLinks, setCdLinks] = useState<{ label: string; href: string }[]>([]); // 외부 링크
   const [roleAdd, setRoleAdd] = useState(""); // 사역 수동 추가 입력
+  const [uploading, setUploading] = useState(false);
+  const [uploadColorize, setUploadColorize] = useState(true);
   // 소속·사역 자동완성 후보(기존 데이터 + 통상값)
   const ORG_LIST = [...new Set(PEOPLE.map((p) => p.org).filter(Boolean))].sort();
   const ROLE_SUGGEST = ["의료", "간호", "교육", "여성 교육", "번역", "성경 반포", "전도", "목회", "부흥", "외교", "문서·출판", "고아·구제", "신학 교육"];
@@ -217,6 +219,21 @@ export default function AdminPage() {
 
   const set = (k: string, v: unknown) => setSettings((s) => ({ ...s, [k]: v }));
   const upd = (k: keyof PersonRow, v: string) => setDraft((d) => (d ? { ...d, [k]: v } : d));
+  // 사진 업로드(+선택적 AI 컬러) → Supabase Storage. 성공 시 photo를 버킷 URL로 설정(저장은 '기본 정보 저장'으로).
+  const uploadPhoto = async (file: File) => {
+    if (!sel) return;
+    setUploading(true); setMsg("");
+    try {
+      const token = (await sb.auth.getSession()).data.session?.access_token;
+      const fd = new FormData();
+      fd.append("file", file); fd.append("id", sel); fd.append("colorize", uploadColorize ? "1" : "0");
+      const r = await fetch("/api/admin/upload-photo", { method: "POST", headers: { authorization: `Bearer ${token}` }, body: fd });
+      const j = await r.json();
+      if (!r.ok) setMsg("✗ " + (j.error || "업로드 실패"));
+      else { upd("photo", j.url); setMsg("✓ 업로드 완료" + (j.colorUrl ? " · 컬러 변환됨" : uploadColorize ? " · (컬러 변환 실패, 원본만)" : "") + " — '기본 정보 저장'을 눌러 반영"); }
+    } catch (e) { setMsg("✗ " + String(e).slice(0, 80)); }
+    setUploading(false);
+  };
   const cdu = (k: string, v: string) => setCd((s) => ({ ...s, [k]: v }));
   // 사역(role)을 ' · ' 구분 칩으로 다룬다.
   const roleChips = (draft?.role ?? "").split("·").map((s) => s.trim()).filter(Boolean);
@@ -376,7 +393,16 @@ export default function AdminPage() {
                   ) : (lbl === "컬러" ? <figcaption key="nc" style={{ fontSize: 10.5, color: C.muted }}>컬러본 없음</figcaption> : null))}
                   <input style={{ ...input, flex: 1 }} value={draft.photo ?? ""} onChange={(e) => upd("photo", e.target.value)} placeholder="/portraits/<id>.jpg 또는 URL" />
                 </div>
-                <p style={{ margin: "5px 0 0", fontSize: 11, color: C.muted }}>※ 파일 업로드+서버 컬러 변환은 스토리지 연동(추후) 후 지원. 지금은 경로/URL 입력으로 표시·확인합니다.</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8, flexWrap: "wrap" }}>
+                  <label style={{ ...btn, display: "inline-flex", alignItems: "center", gap: 6, cursor: uploading ? "default" : "pointer", opacity: uploading ? 0.6 : 1, background: "#1f6f8b" }}>
+                    {uploading ? "업로드 중…" : "사진 업로드"}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); e.currentTarget.value = ""; }} />
+                  </label>
+                  <label style={{ fontSize: 12.5, fontWeight: 700, color: C.muted, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                    <input type="checkbox" checked={uploadColorize} onChange={(e) => setUploadColorize(e.target.checked)} /> AI 컬러 변환 함께
+                  </label>
+                </div>
+                <p style={{ margin: "5px 0 0", fontSize: 11, color: C.muted }}>※ 업로드 시 Supabase Storage에 저장되고, 체크 시 AI 컬러본도 함께 생성됩니다. 위 미리보기로 확인 후 ‘기본 정보 저장’을 눌러 반영하세요.</p>
               </div>
               <div><label style={label}>조선 사역 구간 (예: 1885-1902; 1949-1949)</label><input style={input} value={activeText} onChange={(e) => setActiveText(e.target.value)} /></div>
               <button onClick={savePerson} disabled={saving} style={{ ...btn, justifySelf: "start", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "기본 정보 저장 (지도)"}</button>
