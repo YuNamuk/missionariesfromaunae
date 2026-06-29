@@ -7,13 +7,10 @@ import { GALLERY as EXISTING } from "../lib/data/gallery";
 
 // id → Commons 카테고리명(정확한 표기). 없는 카테고리는 0장으로 건너뜀.
 // 기존 수집/컬러본(srcColor)을 보존하려고 '신규 인물만' 두고 결과를 병합한다.
-const CONFIG: Record<string, string> = {
-  appenzeller: "Henry Appenzeller",
-  hulbert: "Homer B. Hulbert",
-  moffett: "Samuel Austin Moffett",
-  ross: "John Ross (missionary)",
-  heron: "John W. Heron",
-};
+// ⚠ 동명이의 주의: "Sherwood Hall" 카테고리는 선교사가 아니라 노팅엄대 기숙사 건물 — 추가 금지.
+//   대부분 인물은 Commons에 별도 카테고리가 없어(0장) 추가 수집할 공개 사진이 거의 없음.
+//   새 인물 추가 시 카테고리가 '그 인물'이 맞는지 캡션·이미지로 반드시 검수할 것.
+const CONFIG: Record<string, string> = {};
 
 const strip = (s: string) => s.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 const titleCaption = (t: string) => t.replace(/^File:/, "").replace(/\.(jpe?g|png|gif)$/i, "").replace(/[_-]+/g, " ").trim();
@@ -37,7 +34,7 @@ async function fetchCategory(cat: string): Promise<Entry[]> {
     const descRaw = strip(em.ImageDescription?.value ?? "");
     const caption = descRaw && descRaw.length <= 110 ? descRaw : titleCaption(p.title);
     // 비초상(묘비·동상·기념물·간행물·친족·거리/건물) 자동 제외 — 카테고리에 섞여 들어오는 것들.
-    const SKIP = /grab|grave|묘비|묘소|tomb|동상|bronze|statue|기념|memorial|손녀|손자|granddaughter|grandson|advocate|herald\b|congress|정동|학당|building|지도|\bmap\b/i;
+    const SKIP = /grab|grave|묘비|묘소|tomb|동상|bronze|statue|기념|memorial|손녀|손자|granddaughter|grandson|advocate|herald\b|congress|정동|학당|building|지도|\bmap\b|seal|christmas|tuberculosis|결핵|sanatorium|요양|cover|\bpage\b|letter|document|stamp|우표|book|병원|hospital|학교|school|교회|church/i;
     if (SKIP.test(caption) || SKIP.test(p.title)) { continue; }
     out.push({
       src: ii.thumburl || ii.url,
