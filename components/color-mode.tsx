@@ -36,10 +36,10 @@ export function hasColorFor(idOrSrc?: string | null): boolean {
  *  사진별 개별 선택(override)이 가능 — 전역 토글은 '아직 손대지 않은' 사진의 기본값.
  *  controls=true면 사진 바로 아래에 [원본 | 컬러] 분절 선택을, badge=true면 컬러일 때 'AI 복원' 표기. */
 export function Portrait({
-  id, src, alt, className, style, controls = false, badge = false,
+  id, src, alt, className, style, controls = false, badge = false, block = false,
 }: {
   id?: string; src: string; alt: string; className?: string; style?: React.CSSProperties;
-  controls?: boolean; badge?: boolean;
+  controls?: boolean; badge?: boolean; block?: boolean;
 }) {
   const { color } = useColorMode();
   const [override, setOverride] = useState<boolean | null>(null);
@@ -48,7 +48,8 @@ export function Portrait({
   const showColor = effective && !!cSrc;
   return (
     // inline-block + 블록 스택: 분절 컨트롤이 이미지보다 넓어도 이미지가 늘어나지(비율 깨지지) 않게.
-    <span style={{ display: "inline-block", flex: "none", lineHeight: 0, verticalAlign: "top" }}>
+    // block=true면 부모 폭을 채워(격자 셀 등) 이미지가 셀 가로를 꽉 채운다.
+    <span style={block ? { display: "block", lineHeight: 0 } : { display: "inline-block", flex: "none", lineHeight: 0, verticalAlign: "top" }}>
       <span style={{ position: "relative", display: "block", lineHeight: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={showColor ? (cSrc as string) : src} alt={alt} className={className} style={style} />

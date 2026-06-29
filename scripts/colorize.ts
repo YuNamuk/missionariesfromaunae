@@ -27,6 +27,11 @@ const PROMPT =
   "Do NOT change who they are, do NOT beautify, slim, youthen or alter their features — only restore and enhance the image quality. " +
   "Output only the restored photograph, framed as a clean head-and-shoulders studio portrait of the single subject.";
 
+// 저품질 원본에서 AI가 정체성(특히 성별)을 오인하지 않도록 인물별 보강 힌트.
+const HINTS: Record<string, string> = {
+  shepping: " IMPORTANT IDENTITY: the subject is a WOMAN — Elisabeth Shepping (서서평), a female missionary nurse with round eyeglasses and center-parted hair, wearing a dark high-collar dress. She is female; render her as a woman and never as a man.",
+};
+
 const ext = (id: string) => [".jpg", ".jpeg", ".png"].map((e) => path.join(DIR, id + e));
 
 async function srcFor(id: string): Promise<{ file: string; mime: string } | null> {
@@ -52,7 +57,7 @@ async function colorizeOne(id: string): Promise<"ok" | "skip" | "fail"> {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: PROMPT }, { inline_data: { mime_type: src.mime, data: b64 } }] }],
+        contents: [{ parts: [{ text: PROMPT + (HINTS[id] ?? "") }, { inline_data: { mime_type: src.mime, data: b64 } }] }],
         generationConfig: { responseModalities: ["IMAGE"] },
       }),
     },
