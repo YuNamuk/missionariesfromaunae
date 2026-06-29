@@ -10,10 +10,14 @@ import { getServiceSupabase } from "../lib/db/supabase";
 
 // 검수 재작업 사유(app_settings rework)를 읽어, 해당 사진 컬러화 시 프롬프트에 그대로 반영.
 let REWORK: Record<string, string> = {};
+let REVIEW: Record<string, string> = {};
 async function loadRework() {
   try {
-    const { data } = await getServiceSupabase().from("app_settings").select("value").eq("key", "rework").maybeSingle();
-    if (data?.value && typeof data.value === "object") REWORK = data.value as Record<string, string>;
+    const db = getServiceSupabase();
+    const a = await db.from("app_settings").select("value").eq("key", "rework").maybeSingle();
+    if (a.data?.value && typeof a.data.value === "object") REWORK = a.data.value as Record<string, string>;
+    const b = await db.from("app_settings").select("value").eq("key", "review").maybeSingle();
+    if (b.data?.value && typeof b.data.value === "object") REVIEW = b.data.value as Record<string, string>;
   } catch {}
 }
 
@@ -81,17 +85,23 @@ async function main() {
   if (!KEY) { console.error("GEMINI_API_KEY 미설정"); process.exit(1); }
   await mkdir(DIR, { recursive: true });
   await loadRework();
-  const only = process.argv[2];
+  // --approved: 검수에서 '채택'됐고 아직 컬러본이 없는 후보만 컬러화(자동 루프용).
+  const approvedMode = process.argv.includes("--approved");
+  const only = process.argv.slice(2).find((a) => !a.startsWith("--"));
   const ids = only ? [only] : Object.keys(GALLERY);
+  let done = 0;
   for (const id of ids) {
     const list = (GALLERY[id] ?? []) as Entry[];
     if (!list.length) continue;
-    console.log(`${id} (${list.length}장)`);
+    if (!approvedMode) console.log(`${id} (${list.length}장)`);
     for (let i = 0; i < list.length; i++) {
-      await colorizeEntry(id, list[i], i);
+      if (approvedMode && (REVIEW[`g:${id}:${i}`] !== "approved" || list[i].srcColor)) continue;
+      const r = await colorizeEntry(id, list[i], i);
+      if (r) done++;
       await new Promise((s) => setTimeout(s, 1200));
     }
   }
+  if (approvedMode) console.log(`채택 후보 컬러화 — 신규 ${done}장`);
   // gallery.ts 재작성(srcColor 포함)
   const body =
     `// 인물별 '원본 사진 모음' — Wikimedia Commons 카테고리에서 수집(PD/CC). 카테고리 소속 = 본인 확인.\n` +

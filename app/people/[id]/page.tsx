@@ -72,8 +72,8 @@ export default async function PersonPage({
   const photo = ph?.photo ?? null;
   const photoSource = ph?.source ?? "";
   const review = await fetchReview();
-  // 검수에서 '숨김(rejected)'된 갤러리 사진은 공개에서 제외. 대기·승인은 노출(바로 적용).
-  const gallery = galleryFor(person.id).filter((_, i) => review[`g:${person.id}:${i}`] !== "rejected");
+  // 공개는 검수에서 '채택(approved)'된 사진만. 스캔으로 모은 후보(pending)·숨김은 비공개.
+  const gallery = galleryFor(person.id).filter((_, i) => review[`g:${person.id}:${i}`] === "approved");
   const defaultExtLinks = [
     ph?.wiki ? { label: "위키백과", href: ph.wiki } : null,
     ph?.wikiEn ? { label: "Wikipedia (EN)", href: ph.wikiEn } : null,

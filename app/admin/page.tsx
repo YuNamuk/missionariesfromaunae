@@ -736,9 +736,9 @@ export default function AdminPage() {
         return (
           <div>
             <p style={{ margin: "0 0 6px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
-              수집·컬러화된 원본 사진 검수 큐입니다. <b>지금은 개발 단계라 바로 적용</b>되며, 여기서 본인 확인(✓ 확인)하거나 잘못된 사진(친족·동명이인·기념물 등)을 <b>숨김</b> 처리합니다. 숨김은 공개 사이트에서 즉시 제외됩니다.
+              Commons 자동 스캔으로 모은 <b>후보</b>입니다(동명이인·비초상 섞일 수 있음). 본인 사진이 맞으면 <b>✓ 채택</b>, 아니면 <b>제외</b>하세요. <b>채택한 사진만 공개</b>되고, 채택 후 자동으로 컬러 복원됩니다. (이미 채택된 항목은 목록에서 빠짐)
             </p>
-            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#9b3d2d" }}>전체 {allItems.length}장 · 확인 {approved}(목록 제외) · 대기 {pending} · 숨김 {rejected} · 재작업 {reworkCnt}</p>
+            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#9b3d2d" }}>전체 {allItems.length}장 · 채택 {approved}(공개) · 미검토 {pending} · 제외 {rejected} · 재작업 {reworkCnt}</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 10 }}>
               {items.map(({ pid, i, g, key, status }) => {
                 const person = PEOPLE.find((p) => p.id === pid);
@@ -763,8 +763,8 @@ export default function AdminPage() {
                       <div style={{ fontSize: 11.5, fontWeight: 800, color: C.ink }}>{person?.name ?? pid} <span style={{ color: C.muted, fontWeight: 500 }}>#{i + 1}{g.srcColor ? " · 컬러" : ""}</span></div>
                       <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.4, marginTop: 1, maxHeight: 28, overflow: "hidden" }}>{g.caption}</div>
                       <div style={{ display: "flex", gap: 5, marginTop: 7, flexWrap: "wrap" }}>
-                        {segBtn(status === "approved", "#3f7f4b", "✓ 확인", () => setKey(key, status === "approved" ? null : "approved"))}
-                        {segBtn(status === "rejected", "#c2453a", "숨김", () => setKey(key, status === "rejected" ? null : "rejected"))}
+                        {segBtn(status === "approved", "#3f7f4b", "✓ 채택", () => setKey(key, status === "approved" ? null : "approved"))}
+                        {segBtn(status === "rejected", "#c2453a", "제외", () => setKey(key, status === "rejected" ? null : "rejected"))}
                         {segBtn(!!rework[key], "#bf6b22", "♻ 재작업", () => requestRework(key))}
                         <a href={g.sourceUrl} target="_blank" rel="noreferrer" style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#1f6f8b", textDecoration: "none", alignSelf: "center" }}>출처↗</a>
                       </div>
