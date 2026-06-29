@@ -403,7 +403,7 @@ export default function AdminPage() {
           </div>
           {/* AI 분석 */}
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${C.line}` }}>
-            <div style={{ ...hdr, marginBottom: 8 }}>AI 분석 (선택 선교사·시대 기반)</div>
+            <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".08em", color: "#80603b", marginBottom: 8 }}>AI 분석 (선택 선교사·시대 기반)</div>
             <label style={label}>시대/배경 메모 (분석 입력, 선택)</label>
             <input style={{ ...input, marginBottom: 8 }} value={tdraft.era} onChange={(e) => setTdraft((d) => ({ ...d, era: e.target.value }))} placeholder="예: 1885–1910 개항기, 갑신정변 이후 선교 개방" />
             <label style={label}>분석 프롬프트</label>
