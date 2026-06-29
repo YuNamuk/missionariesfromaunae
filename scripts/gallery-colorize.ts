@@ -22,14 +22,13 @@ const MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
 const DIR = path.join(process.cwd(), "public", "portraits", "gallery");
 
 const SCENE_PROMPT =
-  "Restore and naturally colorize this historical black-and-white or sepia photograph from the late 19th / early 20th century. " +
-  "CRITICAL: preserve the ENTIRE original composition and framing, and EVERY person/subject in it, exactly as they are — " +
-  "do NOT crop, do NOT remove or add any person or object, do NOT change anyone's identity, face, pose, clothing, expression, or the background/setting. " +
-  "Only repair scratches, dust, grain and blur, gently improve clarity, and add realistic, period-appropriate natural color (skin tones, fabrics, surroundings). " +
-  "The OUTPUT MUST BE IN FULL NATURAL COLOR — never leave it black-and-white, grayscale or sepia. Apply color UNIFORMLY and COMPLETELY across the ENTIRE image — every face, all skin, hair, clothing, objects and the whole background — NOT only the face or part of the image; no region may stay grey/sepia/uncolored. If the photo sits inside a printed page with a caption, crop out the surrounding paper and caption text so only the photograph itself remains. " +
-  "CONTEXT: these people lived in late-Joseon Korea (1880s–1930s). If anyone wears traditional Korean dress, render it AUTHENTICALLY: a round wide-brimmed black hat is a Korean 'gat' (갓, a translucent horsehair hat) — NOT a modern Western hat, bowler, fedora or derby; robes are white/ivory hanbok or durumagi — NOT a modern suit or dress shirt. Preserve the exact traditional garments and headwear; never modernize them. " +
-  "CRUCIAL: many subjects are WESTERN/foreign missionaries who are merely wearing Korean dress — keep their ACTUAL ethnicity and exact facial features unchanged (a Western/Caucasian face stays Western; do NOT make them look Korean). Only the clothing is Korean, not the person. " +
-  "Keep it photorealistic and historically faithful, not stylized. Output the full restored image at the same framing and aspect ratio.";
+  "Colorize this historical black-and-white or sepia photograph (late 19th / early 20th century Korea). " +
+  "THIS IS COLORIZATION ONLY — it is NOT reconstruction. You MUST keep the original composition and content byte-for-byte faithful: " +
+  "do NOT add, remove, move, duplicate or invent ANY person, face, object, building, wall, furniture or background element; do NOT crop, reframe, zoom or change the aspect ratio; KEEP the photo's borders/margins/vignette exactly as they are. " +
+  "Do NOT reconstruct, repaint or hallucinate missing/blurry areas — if a region is damaged or indistinct, leave its shapes as-is and simply add plausible color. You may gently reduce obvious scratches, dust spots and stray blotches, but never alter the actual content. " +
+  "Add realistic, natural, period-appropriate color to EVERYTHING — every face, all skin, hair, clothing, objects and the whole background. The OUTPUT MUST BE IN FULL NATURAL COLOR applied UNIFORMLY across the entire image; no region may stay grey/sepia/uncolored. " +
+  "Preserve every person's exact identity, ethnicity, face, pose, expression and clothing (a Western/Caucasian face stays Western; Korean stays Korean). If someone wears traditional Korean dress (gat hat / hanbok), keep those exact garments — do not modernize them and do not add a hat or dress to anyone who is not already wearing one. " +
+  "Output the SAME image — same framing, same content, same borders — only with color added.";
 
 type Entry = GalleryPhoto & { srcColor?: string };
 
