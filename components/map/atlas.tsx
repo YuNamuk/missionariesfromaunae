@@ -14,7 +14,7 @@ import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
 import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PERSON_COORD } from "@/lib/data/person-coord";
 import { C, CAT_COLOR, orgTint, personLatLng, labelHtml, placeIcon, personIcon, arrowIcon, bearingDeg, distKm, clusterIcon } from "./atlas-icons";
-import { useColorMode } from "@/components/color-mode";
+import { useColorMode, Portrait } from "@/components/color-mode";
 import { colorSrc, bwSrc } from "@/lib/data/colorized";
 import { useMapSettings } from "@/components/map-settings";
 
@@ -1335,7 +1335,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <div style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb", padding: "22px 22px 20px", position: "relative" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
                 {selPerson.photo ? (
-                  <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(selPerson.photo)} alt={selPerson.name} style={{ width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
+                  <span style={{ flex: "0 0 auto" }}>
+                    <Portrait id={selPerson.id} src={selPerson.photo} alt={selPerson.name} controls badge style={{ width: 96, height: 124, borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)", display: "block" }} />
+                  </span>
                 ) : (
                   <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, background: orgTint(selPerson.org), fontSize: 48 }}>{selPerson.glyph}</span>
                 )}
@@ -1360,6 +1362,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   <span style={pill("rgba(74,58,40,.12)", "#4a3a28")}>🪦 안장 · {selPerson.burial}</span>
                 )}
               </div>
+
+              <a href={`/people/${selPerson.id}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, padding: "10px 14px", borderRadius: 14, border: `1px solid ${C.line}`, background: "#2f2419", color: "#fff8ed", fontSize: 13, fontWeight: 800, textDecoration: "none" }}>
+                <span>상세 페이지에서 이야기 전체 보기</span><span aria-hidden>→</span>
+              </a>
 
               <section style={{ padding: 15, background: "#fff9ee", border: `1px solid ${C.line}`, borderRadius: 18, marginBottom: 14 }}>
                 <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: "#594935" }}>{selPerson.summary}</p>
