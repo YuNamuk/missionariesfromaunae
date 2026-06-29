@@ -19,40 +19,52 @@ export type FlowPerson = {
 
 export type RelItem = { id: string; name: string; type: string; label: string; color: string; note: string; dir: string; flow: "forward" | "lateral" | "reverse" };
 
-function PersonCard({ p, n }: { p: FlowPerson; n: number }) {
+// 아코디언 카드: 평소엔 얇은 세로 띠(번호·사진·세로 이름), 마우스를 올리면 그 카드만
+// 넓게 펼쳐져 전체 내용을 보여준다. 가로 스크롤 없이 화면 폭 안에서 누적된다.
+function FlowCard({ p, n }: { p: FlowPerson; n: number }) {
   return (
-    <div className="relative flex w-[300px] flex-none flex-col rounded-3xl border border-ink-200 bg-white p-5">
-      <span className="font-display absolute -left-2 -top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full text-[13px] font-extrabold text-white" style={{ background: "#9b3d2d", boxShadow: "0 2px 8px rgba(155,61,45,.35)" }}>{n}</span>
-      <div className="flex gap-4">
-        {/* 사진 칸 + 그 아래 상세 페이지 링크 */}
-        <div className="flex-none" style={{ width: 96 }}>
-          {p.photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.photo} alt={`${p.name} 초상`} className="rounded-2xl object-cover" style={{ background: "#efe1c3", width: 96, height: 122 }} />
-          ) : (
-            <span className="font-display flex items-center justify-center rounded-2xl text-4xl text-white" style={{ background: "var(--grad-dream)", width: 96, height: 122 }}>{p.glyph}</span>
-          )}
-          <Link href={`/people/${p.id}`} className="mt-2 block rounded-full bg-sky-500 px-2 py-1.5 text-center text-[12px] font-bold text-white hover:bg-sky-600" style={{ width: 96 }}>
-            상세 →
-          </Link>
-        </div>
-        <div className="min-w-0">
-          <h2 className="font-serif text-xl font-bold leading-tight text-ink-900">{p.name}</h2>
-          <p className="font-serif mt-1 text-[12.5px] text-ink-500">{p.en}</p>
-          <p className="font-serif text-[12.5px] text-ink-500">{p.life}</p>
-          <div className="mt-2 flex flex-col gap-1">
-            <span className="self-start rounded-full bg-sky-500 px-2.5 py-0.5 text-[11px] font-bold text-white">{p.org}</span>
-            <span className="self-start rounded-full bg-ink-100 px-2.5 py-0.5 text-[11px] font-bold text-ink-700">{p.role}</span>
+    <div className="group relative min-w-0 shrink basis-0 grow overflow-hidden rounded-2xl border border-ink-200 bg-white transition-[flex-grow] duration-300 ease-out hover:grow-[6]" style={{ height: 380 }}>
+      {/* 접힘: 세로 띠 (hover 시 사라짐) */}
+      <Link href={`/people/${p.id}`} className="absolute inset-0 flex flex-col items-center gap-2 px-1 py-3 transition-opacity duration-200 group-hover:pointer-events-none group-hover:opacity-0">
+        <span className="font-display flex h-6 w-6 flex-none items-center justify-center rounded-full text-[12px] font-extrabold text-white" style={{ background: "#9b3d2d" }}>{n}</span>
+        {p.photo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={p.photo} alt="" className="h-12 w-12 flex-none rounded-full object-cover" style={{ background: "#efe1c3" }} />
+        ) : (
+          <span className="font-display flex h-12 w-12 flex-none items-center justify-center rounded-full text-xl text-white" style={{ background: "var(--grad-dream)" }}>{p.glyph}</span>
+        )}
+        <span className="font-serif mt-1 text-[13px] font-bold text-ink-700" style={{ writingMode: "vertical-rl", letterSpacing: "0.05em" }}>{p.name}</span>
+      </Link>
+
+      {/* 펼침: 전체 카드 (hover 시 나타남) */}
+      <div className="absolute inset-0 flex flex-col overflow-y-auto p-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100" style={{ minWidth: 260 }}>
+        <div className="flex gap-3">
+          <div className="flex-none" style={{ width: 84 }}>
+            {p.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={p.photo} alt={`${p.name} 초상`} className="rounded-xl object-cover" style={{ background: "#efe1c3", width: 84, height: 106 }} />
+            ) : (
+              <span className="font-display flex items-center justify-center rounded-xl text-3xl text-white" style={{ background: "var(--grad-dream)", width: 84, height: 106 }}>{p.glyph}</span>
+            )}
+            <Link href={`/people/${p.id}`} className="mt-2 block rounded-full bg-sky-500 px-2 py-1 text-center text-[11.5px] font-bold text-white hover:bg-sky-600" style={{ width: 84 }}>상세 →</Link>
+          </div>
+          <div className="min-w-0">
+            <h2 className="font-serif text-lg font-bold leading-tight text-ink-900">{p.name}</h2>
+            <p className="font-serif mt-0.5 text-[12px] text-ink-500">{p.en}</p>
+            <p className="font-serif text-[12px] text-ink-500">{p.life}</p>
+            <div className="mt-1.5 flex flex-col gap-1">
+              <span className="self-start rounded-full bg-sky-500 px-2 py-0.5 text-[10.5px] font-bold text-white">{p.org}</span>
+              <span className="self-start rounded-full bg-ink-100 px-2 py-0.5 text-[10.5px] font-bold text-ink-700">{p.role}</span>
+            </div>
           </div>
         </div>
+        {p.quote && (
+          <figure className="mt-3 border-l-4 pl-3" style={{ borderColor: "#bf6b22" }}>
+            <blockquote className="font-serif text-[13.5px] leading-[1.75] text-ink-800">&ldquo;{p.quote.text}&rdquo;</blockquote>
+          </figure>
+        )}
+        <p className="font-serif mt-2.5 text-[13.5px] leading-[1.85] text-ink-700">{p.summary}</p>
       </div>
-      {p.quote && (
-        <figure className="mt-4 border-l-4 pl-3.5" style={{ borderColor: "#bf6b22" }}>
-          <blockquote className="font-serif text-[14.5px] leading-[1.8] text-ink-800">&ldquo;{p.quote.text}&rdquo;</blockquote>
-          <figcaption className="mt-1 text-[11px] text-ink-400">— {p.quote.source}</figcaption>
-        </figure>
-      )}
-      <p className="font-serif mt-3 text-[14px] leading-[1.9] text-ink-700">{p.summary}</p>
     </div>
   );
 }
@@ -148,14 +160,10 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
               <div className="font-display text-[13px] font-extrabold text-ink-500">선택한 흐름 · {path.length}명</div>
               <button onClick={() => setPath([])} className="rounded-full border border-ink-200 px-3 py-1 text-[12px] font-bold text-ink-500 hover:border-sky-300 hover:text-sky-700">처음부터</button>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-3">
-              {path.map((id, i) => byId[id] && (
-                <div key={id + i} className="flex flex-none items-stretch gap-4">
-                  {i > 0 && <span className="flex items-center text-ink-300">→</span>}
-                  <PersonCard p={byId[id]} n={i + 1} />
-                </div>
-              ))}
+            <div className="flex w-full gap-2">
+              {path.map((id, i) => byId[id] && <FlowCard key={id + i} p={byId[id]} n={i + 1} />)}
             </div>
+            <p className="mt-2 text-[12px] text-ink-400">카드는 화면 폭에 맞춰 접히고, 마우스를 올리면 그 카드가 펼쳐집니다.</p>
           </>
         )}
       </div>
