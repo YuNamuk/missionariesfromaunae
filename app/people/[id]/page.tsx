@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Portrait } from "@/components/color-mode";
 import { galleryFor } from "@/lib/data/gallery";
+import { GallerySection } from "@/components/gallery-section";
 import { CiteBox } from "@/components/cite-box";
 import {
   PEOPLE,
@@ -357,29 +358,8 @@ export default async function PersonPage({
         </section>
       )}
 
-      {/* 원본 사진 모음 — 공개 자료(주로 Wikimedia Commons)에서 본인 확인된 사진 */}
-      {gallery.length > 0 && (
-        <section className="mt-10">
-          <h2 className="font-display text-lg font-extrabold text-ink-900">원본 사진 모음 <span className="text-[12px] font-semibold text-ink-400">· {gallery.length}점</span></h2>
-          <p className="mt-1 text-[12px] text-ink-400">공개 자료에서 본인으로 확인된 사진을 출처와 함께 모았습니다.</p>
-          <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            {gallery.map((g, i) => (
-              <figure key={i} className="m-0 overflow-hidden rounded-2xl border border-ink-200 bg-white">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={g.src} alt={g.caption} loading="lazy" className="aspect-[3/4] w-full object-cover" style={{ background: "#efe1c3" }} />
-                <figcaption className="p-2.5">
-                  <p className="text-[12px] leading-snug text-ink-700">{g.caption}</p>
-                  {g.sourceUrl ? (
-                    <a href={g.sourceUrl} target="_blank" rel="noreferrer" className="mt-1 block text-[11px] font-bold text-sky-600 hover:text-sky-700">{g.source} ↗</a>
-                  ) : (
-                    <span className="mt-1 block text-[11px] text-ink-400">{g.source}</span>
-                  )}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* 원본 사진 모음 — 공개 자료(주로 Wikimedia Commons)에서 본인 확인. 컬러 모드 연동 */}
+      <GallerySection photos={gallery} />
 
       {/* 참고 출처 · 외부 링크 (2열) */}
       {(extLinks.length > 0 || photoSource || sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (

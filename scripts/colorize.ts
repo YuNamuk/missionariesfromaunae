@@ -45,6 +45,7 @@ const BW_PROMPT =
 const HINTS: Record<string, string> = {
   shepping: " IMPORTANT IDENTITY: the subject is a WOMAN — Elisabeth Shepping (서서평), a female missionary nurse with round eyeglasses and center-parted hair, wearing a dark high-collar dress. She is female; render her as a woman and never as a man.",
   seogyeongjo: " IMPORTANT: this is an elderly Korean man (서경조) in traditional late-Joseon dress — white hanbok and a black horsehair gat. He has NOTHING in his mouth — do not add a pipe or cigarette. Keep the clothing authentically traditional (not modern).",
+  gilseonju: " IMPORTANT: Korean pastor 길선주 wears a WHITE traditional Korean hanbok/durumagi (off-white/ivory), NOT blue. Color the garment white.",
 };
 
 const ext = (id: string) => [".jpg", ".jpeg", ".png"].map((e) => path.join(DIR, id + e));

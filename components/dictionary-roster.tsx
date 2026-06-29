@@ -15,6 +15,7 @@ export type RosterPerson = {
   glyph: string;
   photo: string | null;
   featured: boolean;
+  country: string;
 };
 
 // 교단 계열(장로회/감리회/기타)로 거칠게 분류 — org 문자열 기준.
@@ -51,7 +52,6 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
 export function DictionaryRoster({ people }: { people: RosterPerson[] }) {
   const [den, setDen] = useState<string | null>(null);
   const [field, setField] = useState<string | null>(null);
-  const [view, setView] = useState<"list" | "album">("list");
 
   const featuredCount = people.filter((p) => p.featured).length;
   const list = useMemo(() => {
@@ -71,20 +71,9 @@ export function DictionaryRoster({ people }: { people: RosterPerson[] }) {
         <h2 className="font-display text-2xl font-black tracking-tight text-ink-900">
           전체 인명 <span className="text-[13px] font-semibold text-ink-400">· 입국·활동 연도순</span>
         </h2>
-        <div className="flex items-center gap-3">
-          <span className="text-[13px] font-bold text-ink-500">
-            {list.length === people.length ? `${people.length}명 · 대표 ${featuredCount}명` : `${list.length}명`}
-          </span>
-          {/* 보기 전환: 목록 / 앨범(사진 격자) */}
-          <div className="flex overflow-hidden rounded-full border border-ink-200">
-            {(["list", "album"] as const).map((v) => (
-              <button key={v} onClick={() => setView(v)} className="px-3 py-1 text-[12px] font-bold transition-colors"
-                style={view === v ? { background: "#2f2419", color: "#fff8ed" } : { background: "transparent", color: "var(--ink-500)" }}>
-                {v === "list" ? "목록" : "앨범"}
-              </button>
-            ))}
-          </div>
-        </div>
+        <span className="text-[13px] font-bold text-ink-500">
+          {list.length === people.length ? `${people.length}명 · 대표 ${featuredCount}명` : `${list.length}명`}
+        </span>
       </div>
 
       {/* facet 필터: 교단 · 사역 분야 */}
@@ -107,52 +96,33 @@ export function DictionaryRoster({ people }: { people: RosterPerson[] }) {
 
       {list.length === 0 ? (
         <p className="mt-6 text-[14px] text-ink-500">해당 조건의 인물이 없습니다.</p>
-      ) : view === "album" ? (
-        <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {list.map((p) => (
-            <li key={p.id}>
-              <Link href={`/people/${p.id}`} className="group block overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:shadow-[var(--shadow-sky)]">
-                <div className="relative">
-                  {p.photo ? (
-                    <Portrait id={p.id} src={p.photo} alt={`${p.name} 초상`} block badge className="aspect-[3/4] w-full object-cover" style={{ background: "var(--ink-100)" }} />
-                  ) : (
-                    <span className="font-display flex aspect-[3/4] w-full items-center justify-center text-5xl" style={{ background: "var(--grad-dream)", color: "#fff8ec" }}>{p.glyph}</span>
-                  )}
-                  {p.featured && <span className="absolute right-2 top-2 rounded-full bg-[#bf6b22] px-1.5 py-0.5 text-[10px] font-bold text-white shadow">★</span>}
-                </div>
-                <div className="px-3 py-2.5">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-serif text-[15px] font-extrabold text-ink-900">{p.name}</span>
-                    <span className="text-[11.5px] font-bold text-ink-400">{p.year}</span>
-                  </div>
-                  <div className="truncate text-[11.5px] text-ink-500">{p.org} · {p.role}</div>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
       ) : (
-        <ul className="mt-4 grid gap-x-6 sm:grid-cols-2">
-          {list.map((p) => (
-            <li key={p.id} className="border-b border-ink-100">
-              <Link href={`/people/${p.id}`} className="flex items-center gap-3 py-3 transition-colors hover:bg-ink-50">
-                {p.photo ? (
-                  <Portrait id={p.id} src={p.photo} alt={`${p.name} 초상`} className="h-10 w-10 flex-none rounded-full object-cover" style={{ width: 40, height: 40, background: "var(--ink-100)" }} />
-                ) : (
-                  <span className="font-display flex h-10 w-10 flex-none items-center justify-center rounded-full text-lg" style={{ background: "var(--ink-100)", color: "var(--ink-700)" }}>{p.glyph}</span>
-                )}
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5">
-                    {p.featured && <span className="text-[11px] text-[#bf6b22]">★</span>}
-                    <span className="text-[15px] font-extrabold text-ink-900">{p.name}</span>
-                    <span className="text-[12px] font-bold text-ink-400">{p.year}</span>
-                  </span>
-                  <span className="block truncate text-[12.5px] text-ink-500">{p.en} · {p.life} · {p.org}</span>
-                </span>
-                <span className="flex-none text-[13px] font-bold text-sky-600">→</span>
-              </Link>
-            </li>
-          ))}
+        <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {list.map((p) => {
+            const isKorean = p.country.includes("조선") || p.country.includes("한국");
+            return (
+              <li key={p.id}>
+                <Link href={`/people/${p.id}`} className="group block overflow-hidden rounded-2xl border border-ink-200 bg-white transition-shadow hover:shadow-[var(--shadow-sky)]">
+                  <div className="relative">
+                    {p.photo ? (
+                      <Portrait id={p.id} src={p.photo} alt={`${p.name} 초상`} block badge className="aspect-[3/4] w-full object-cover" style={{ background: "var(--ink-100)" }} />
+                    ) : (
+                      <span className="font-display flex aspect-[3/4] w-full items-center justify-center text-5xl" style={{ background: "var(--grad-dream)", color: "#fff8ec" }}>{p.glyph}</span>
+                    )}
+                    {p.featured && <span className="absolute right-2 top-2 rounded-full bg-[#bf6b22] px-1.5 py-0.5 text-[10px] font-bold text-white shadow">★</span>}
+                  </div>
+                  <div className="px-3 py-2.5">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-serif text-[15px] font-extrabold text-ink-900">{p.name}</span>
+                      <span className="text-[11.5px] font-bold text-ink-400">{p.year}</span>
+                    </div>
+                    {!isKorean && <div className="truncate text-[11px] text-ink-400">{p.en}</div>}
+                    <div className="truncate text-[11.5px] text-ink-500">{p.org} · {p.role}</div>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

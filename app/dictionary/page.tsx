@@ -38,6 +38,7 @@ export default async function DictionaryPage() {
     glyph: p.glyph,
     photo: PHOTOS[p.id]?.photo ?? null,
     featured: isFeaturedWith(overlay?.featured, p.id),
+    country: p.country,
   }));
 
   return (
