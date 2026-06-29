@@ -77,8 +77,6 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
     [people, q],
   );
 
-  const focus = path.length ? byId[path[path.length - 1]] : null;
-
   // 시작 선택 + 각 단계의 연관 선교사 컬럼
   const pick = (k: number, id: string) => setPath((pp) => [...pp.slice(0, k), id]);
 
@@ -128,12 +126,27 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
         })}
       </div>
 
-      {/* 선택한 선교사 카드 */}
+      {/* 클릭한 흐름의 인물 카드들 — 아래에 차례로 쌓아 한눈에 */}
       <div className="mt-6">
-        {focus ? <PersonCard p={focus} /> : (
+        {path.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-ink-200 bg-ink-50 p-10 text-center font-serif text-[15px] text-ink-400">
-            위에서 처음 선교사를 선택하면, 여기에 그 사람의 카드가 나타납니다.
+            위에서 처음 선교사를 선택하면, 따라간 인물들의 카드가 여기에 차례로 쌓입니다.
           </div>
+        ) : (
+          <>
+            <div className="mb-3 flex items-center justify-between">
+              <div className="font-display text-[13px] font-extrabold text-ink-500">선택한 흐름 · {path.length}명</div>
+              <button onClick={() => setPath([])} className="rounded-full border border-ink-200 px-3 py-1 text-[12px] font-bold text-ink-500 hover:border-sky-300 hover:text-sky-700">처음부터</button>
+            </div>
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              {path.map((id, i) => byId[id] && (
+                <div key={id + i} className="relative">
+                  <span className="font-display absolute -left-2 -top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full text-[13px] font-extrabold text-white" style={{ background: "#9b3d2d", boxShadow: "0 2px 8px rgba(155,61,45,.35)" }}>{i + 1}</span>
+                  <PersonCard p={byId[id]} />
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
