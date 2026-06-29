@@ -110,7 +110,7 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
               <Link key={p.id} href={`/people/${p.id}`} className="block rounded-2xl border border-ink-200 bg-white p-4 transition-colors hover:border-sky-300">
                 <div className="flex gap-3">
                   {photo ? (
-                    <Portrait id={p.id} src={photo} alt={`${p.name} 초상`} controls badge className="flex-none rounded-xl object-cover" style={{ background: "#efe1c3", width: 52, height: 64 }} />
+                    <Portrait id={p.id} src={photo} alt={`${p.name} 초상`} controls badge className="flex-none rounded-md object-cover" style={{ background: "#efe1c3", width: 70, height: 92 }} />
                   ) : (
                     <span className="font-display flex flex-none items-center justify-center rounded-xl text-2xl text-white" style={{ background: "var(--grad-dream)", width: 52, height: 64 }}>{p.glyph}</span>
                   )}
