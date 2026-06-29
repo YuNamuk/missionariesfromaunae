@@ -42,6 +42,7 @@ export default function AdminPage() {
   const [tq, setTq] = useState("");
   const [tcat, setTcat] = useState<string | null>(null); // 주제연구 인물 선택 분류 필터
   const [review, setReview] = useState<Record<string, "approved" | "rejected">>({}); // 검수 상태(g:<id>:<n>)
+  const [rework, setRework] = useState<Record<string, string>>({}); // 재작업 요청(key→사유)
   const [devreqs, setDevreqs] = useState<DevReq[]>([]); // 개발 요청 큐
   const [drTitle, setDrTitle] = useState("");
   const [drPrompt, setDrPrompt] = useState("");
@@ -81,6 +82,7 @@ export default function AdminPage() {
     setAdminEmails(Array.isArray(s.admins) ? (s.admins as string[]) : []);
     setReview((s.review && typeof s.review === "object" ? s.review : {}) as Record<string, "approved" | "rejected">);
     setDevreqs(Array.isArray(s.devreq) ? (s.devreq as DevReq[]) : []);
+    setRework((s.rework && typeof s.rework === "object" ? s.rework : {}) as Record<string, string>);
   }, [sb]);
 
   useEffect(() => { if (session) loadData(); }, [session, loadData]);
@@ -595,6 +597,15 @@ export default function AdminPage() {
         );
         const pending = items.filter((x) => !x.status).length;
         const rejected = items.filter((x) => x.status === "rejected").length;
+        const reworkCnt = items.filter((x) => rework[x.key]).length;
+        const requestRework = async (key: string) => {
+          const note = window.prompt("재작업 사유 (예: 색이 일부만 입혀짐 / 얼굴만 컬러 / 화질 저하 / 인물 오인)", rework[key] ?? "");
+          if (note === null) return;
+          const next = { ...rework };
+          if (note.trim()) next[key] = note.trim(); else delete next[key];
+          setRework(next);
+          await post({ kind: "settings", settings: { rework: next } });
+        };
         const segBtn = (on: boolean, color: string, label: string, onClick: () => void) => (
           <button onClick={onClick} style={{ border: `1px solid ${on ? color : C.line}`, borderRadius: 8, padding: "3px 9px", background: on ? color : "transparent", color: on ? "#fff8ed" : C.muted, cursor: "pointer", fontSize: 11, fontWeight: 800 }}>{label}</button>
         );
@@ -603,7 +614,7 @@ export default function AdminPage() {
             <p style={{ margin: "0 0 6px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
               수집·컬러화된 원본 사진 검수 큐입니다. <b>지금은 개발 단계라 바로 적용</b>되며, 여기서 본인 확인(✓ 확인)하거나 잘못된 사진(친족·동명이인·기념물 등)을 <b>숨김</b> 처리합니다. 숨김은 공개 사이트에서 즉시 제외됩니다.
             </p>
-            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#9b3d2d" }}>총 {items.length}장 · 대기 {pending} · 숨김 {rejected}</p>
+            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#9b3d2d" }}>총 {items.length}장 · 대기 {pending} · 숨김 {rejected} · 재작업 {reworkCnt}</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 10 }}>
               {items.map(({ pid, i, g, key, status }) => {
                 const person = PEOPLE.find((p) => p.id === pid);
@@ -614,11 +625,13 @@ export default function AdminPage() {
                     <div style={{ padding: "7px 9px" }}>
                       <div style={{ fontSize: 11.5, fontWeight: 800, color: C.ink }}>{person?.name ?? pid} <span style={{ color: C.muted, fontWeight: 500 }}>#{i + 1}{g.srcColor ? " · 컬러" : ""}</span></div>
                       <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.4, marginTop: 1, maxHeight: 28, overflow: "hidden" }}>{g.caption}</div>
-                      <div style={{ display: "flex", gap: 5, marginTop: 7 }}>
+                      <div style={{ display: "flex", gap: 5, marginTop: 7, flexWrap: "wrap" }}>
                         {segBtn(status === "approved", "#3f7f4b", "✓ 확인", () => setKey(key, status === "approved" ? null : "approved"))}
                         {segBtn(status === "rejected", "#c2453a", "숨김", () => setKey(key, status === "rejected" ? null : "rejected"))}
+                        {segBtn(!!rework[key], "#bf6b22", "♻ 재작업", () => requestRework(key))}
                         <a href={g.sourceUrl} target="_blank" rel="noreferrer" style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#1f6f8b", textDecoration: "none", alignSelf: "center" }}>출처↗</a>
                       </div>
+                      {rework[key] && <p style={{ margin: "6px 0 0", fontSize: 10.5, lineHeight: 1.4, color: "#bf6b22", fontWeight: 700 }}>♻ 재작업 요청: {rework[key]}</p>}
                     </div>
                   </div>
                 );

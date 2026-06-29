@@ -27,11 +27,26 @@ async function colorizeEntry(id: string, e: Entry, n: number): Promise<boolean> 
   const out = path.join(DIR, `${id}-${n}-color.jpg`);
   const rel = `/portraits/gallery/${id}-${n}-color.jpg`;
   try { await readFile(out); e.srcColor = rel; return false; } catch {} // 이미 있음
-  // 원본(Commons 등) 다운로드 → base64
-  const imgRes = await fetch(e.src, { headers: { "user-agent": "missionaries-archive/1.0 (educational)" } });
-  if (!imgRes.ok) { console.log(`  ✗ ${id}#${n}: 원본 ${imgRes.status}`); return false; }
-  const buf = Buffer.from(await imgRes.arrayBuffer());
-  const mime = e.src.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
+  // 원본 풀해상도 우선(썸네일은 정보 유실). Commons 썸네일 URL → 원본 URL로 환원,
+  // 너무 크면(>9MB) 1600px → 마지막에 저장된 썸네일 순으로 폴백.
+  const orig = e.src.includes("/commons/thumb/")
+    ? e.src.replace("/commons/thumb/", "/commons/").replace(/\/\d+px-[^/]+$/, "")
+    : e.src;
+  const big = e.src.replace(/\/(\d+)px-/, "/2000px-");
+  const candidates = [...new Set([orig, big, e.src])];
+  let buf: Buffer | null = null, mime = "image/jpeg";
+  for (let c = 0; c < candidates.length; c++) {
+    const u = candidates[c];
+    try {
+      const r = await fetch(u, { headers: { "user-agent": "missionaries-archive/1.0 (educational)" } });
+      if (!r.ok) continue;
+      const b = Buffer.from(await r.arrayBuffer());
+      if (b.length > 9_000_000 && c < candidates.length - 1) continue; // 너무 크면 다음(작은) 후보
+      buf = b; mime = r.headers.get("content-type")?.split(";")[0] || (u.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg");
+      break;
+    } catch {}
+  }
+  if (!buf) { console.log(`  ✗ ${id}#${n}: 원본 다운로드 실패`); return false; }
 
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${KEY}`, {
     method: "POST",
