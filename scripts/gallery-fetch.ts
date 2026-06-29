@@ -3,27 +3,22 @@
 //   tsx scripts/gallery-fetch.ts
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
+import { GALLERY as EXISTING } from "../lib/data/gallery";
 
 // id → Commons 카테고리명(정확한 표기). 없는 카테고리는 0장으로 건너뜀.
+// 기존 수집/컬러본(srcColor)을 보존하려고 '신규 인물만' 두고 결과를 병합한다.
 const CONFIG: Record<string, string> = {
-  underwood: "Horace Grant Underwood",
-  appenzeller: "Henry Gerhard Appenzeller",
-  allen: "Horace Newton Allen",
-  avison: "Oliver R. Avison",
-  hulbert: "Homer Hulbert",
+  appenzeller: "Henry Appenzeller",
+  hulbert: "Homer B. Hulbert",
   moffett: "Samuel Austin Moffett",
-  gale: "James Scarth Gale",
-  rosetta: "Rosetta Sherwood Hall",
-  heron: "John W. Heron",
-  wjhall: "William James Hall",
   ross: "John Ross (missionary)",
-  hardie: "Robert A. Hardie",
+  heron: "John W. Heron",
 };
 
 const strip = (s: string) => s.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 const titleCaption = (t: string) => t.replace(/^File:/, "").replace(/\.(jpe?g|png|gif)$/i, "").replace(/[_-]+/g, " ").trim();
 
-type Entry = { src: string; caption: string; source: string; sourceUrl?: string };
+type Entry = { src: string; caption: string; source: string; sourceUrl?: string; srcColor?: string };
 
 async function fetchCategory(cat: string): Promise<Entry[]> {
   const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=categorymembers&gcmtitle=${encodeURIComponent("Category:" + cat)}&gcmtype=file&gcmlimit=40&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&iiurlwidth=640&format=json`;
@@ -52,7 +47,7 @@ async function fetchCategory(cat: string): Promise<Entry[]> {
 }
 
 async function main() {
-  const GALLERY: Record<string, Entry[]> = {};
+  const GALLERY: Record<string, Entry[]> = { ...(EXISTING as Record<string, Entry[]>) }; // 기존(컬러본 포함) 보존
   for (const [id, cat] of Object.entries(CONFIG)) {
     process.stdout.write(`${id} (${cat}) ... `);
     try {
@@ -65,7 +60,7 @@ async function main() {
   const body =
     `// 인물별 '원본 사진 모음' — scripts/gallery-fetch.ts 로 Wikimedia Commons 카테고리에서 수집(PD/CC).\n` +
     `// 카테고리 소속 = 본인 확인. 표시 후 사람이 검수하여 오귀속·중복을 정리한다.\n` +
-    `export type GalleryPhoto = { src: string; caption: string; source: string; sourceUrl?: string };\n\n` +
+    `export type GalleryPhoto = { src: string; caption: string; source: string; sourceUrl?: string; srcColor?: string };\n\n` +
     `export const GALLERY: Record<string, GalleryPhoto[]> = ${JSON.stringify(GALLERY, null, 2)};\n\n` +
     `export const galleryFor = (id: string): GalleryPhoto[] => GALLERY[id] ?? [];\n`;
   await writeFile(path.join(process.cwd(), "lib", "data", "gallery.ts"), body);

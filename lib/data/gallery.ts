@@ -159,6 +159,98 @@ export const GALLERY: Record<string, GalleryPhoto[]> = {
       "sourceUrl": "https://commons.wikimedia.org/wiki/File:Scenes_from_the_early_life_of_William_James_Hall.jpg",
       "srcColor": "/portraits/gallery/wjhall-2-color.jpg"
     }
+  ],
+  "appenzeller": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/KSH_Jeongdong_%2855%29.JPG/960px-KSH_Jeongdong_%2855%29.JPG",
+      "caption": "위키백과,정동을 찍다.",
+      "source": "Wikimedia Commons · CC BY-SA 3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:KSH_Jeongdong_(55).JPG",
+      "srcColor": "/portraits/gallery/appenzeller-0-color.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Rev.%ED%97%A8%EB%A6%AC%EA%B2%8C%EC%96%B4%ED%95%98%ED%8A%B8%EC%95%84%ED%8E%9C%EC%A0%A4%EB%9F%ACHenryGerhartAppenzeller%EC%84%A0%EA%B5%90%EC%82%AC%EB%8B%98%281858-1902%29%2C%EC%88%9C%EC%A7%81%EC%A7%81%EC%A0%84%2C1902.jpg/960px-Rev.%ED%97%A8%EB%A6%AC%EA%B2%8C%EC%96%B4%ED%95%98%ED%8A%B8%EC%95%84%ED%8E%9C%EC%A0%A4%EB%9F%ACHenryGerhartAppenzeller%EC%84%A0%EA%B5%90%EC%82%AC%EB%8B%98%281858-1902%29%2C%EC%88%9C%EC%A7%81%EC%A7%81%EC%A0%84%2C1902.jpg",
+      "caption": "Rev.헨리게어하트아펜젤러HenryGerhartAppenzeller선교사님(1858-1902),1902",
+      "source": "Wikimedia Commons · CC BY-SA 2.5",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rev.%ED%97%A8%EB%A6%AC%EA%B2%8C%EC%96%B4%ED%95%98%ED%8A%B8%EC%95%84%ED%8E%9C%EC%A0%A4%EB%9F%ACHenryGerhartAppenzeller%EC%84%A0%EA%B5%90%EC%82%AC%EB%8B%98(1858-1902),%EC%88%9C%EC%A7%81%EC%A7%81%EC%A0%84,1902.jpg",
+      "srcColor": "/portraits/gallery/appenzeller-1-color.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/YangwhajinAppenzeller.JPG/960px-YangwhajinAppenzeller.JPG",
+      "caption": "Grab von Henry Gerhart Appenzeller in Yanghwajin Friedhof, Seoul, Südkorea",
+      "source": "Wikimedia Commons · CC BY-SA 3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:YangwhajinAppenzeller.JPG",
+      "srcColor": "/portraits/gallery/appenzeller-2-color.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Appenzellerbronze.jpg/960px-Appenzellerbronze.jpg",
+      "caption": "Appenzellerbronze",
+      "source": "Wikimedia Commons · CC BY-SA 4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Appenzellerbronze.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/A_Modern_Pioneer_in_Korea_-_Henry_Gerhart_Appenzeller%2C_1901.jpg/960px-A_Modern_Pioneer_in_Korea_-_Henry_Gerhart_Appenzeller%2C_1901.jpg",
+      "caption": "Henry Gerhart Appenzeller, 1901.",
+      "source": "Wikimedia Commons · Public domain",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_Modern_Pioneer_in_Korea_-_Henry_Gerhart_Appenzeller,_1901.jpg",
+      "srcColor": "/portraits/gallery/appenzeller-4-color.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/3/33/%EC%95%84%ED%8E%9C%EC%A0%A4%EB%9F%AC.jpg",
+      "caption": "배재학당의 설립자인 H.G.아펜젤러를 기념하기 위해 배재고등학교 캠퍼스 내에 제막된 동상",
+      "source": "Wikimedia Commons · CC BY-SA 2.0 kr",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EC%95%84%ED%8E%9C%EC%A0%A4%EB%9F%AC.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/2/28/Henry_Appenzeller%27s_daugter_and_the_Japanese_doll_gifted_by_Saito_Makoto%2C_Governor-General_of_Korea_under_Japanese_rule%2C_1929.png",
+      "caption": "ヘンリー・アペンゼラーの孫娘。1929年。朝鮮総督斎藤実から贈られた日本人形とともに",
+      "source": "Wikimedia Commons · Public domain",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Henry_Appenzeller%27s_daugter_and_the_Japanese_doll_gifted_by_Saito_Makoto,_Governor-General_of_Korea_under_Japanese_rule,_1929.png",
+      "srcColor": "/portraits/gallery/appenzeller-6-color.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/5/57/Henry_Appenzeller.jpg",
+      "caption": "헨리 아펜젤러 목사, Rev. Henry Appenzeller",
+      "source": "Wikimedia Commons · Public domain",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Henry_Appenzeller.jpg",
+      "srcColor": "/portraits/gallery/appenzeller-7-color.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/0/0d/The_Korean_Christian_Advocate_%28February_8%2C_1899%29.jpg",
+      "caption": "The Korean Christian Advocate (February 8, 1899)",
+      "source": "Wikimedia Commons · Public domain",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Korean_Christian_Advocate_(February_8,_1899).jpg",
+      "srcColor": "/portraits/gallery/appenzeller-8-color.jpg"
+    }
+  ],
+  "hulbert": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Homer_Bezaleel_Hulbert.jpg",
+      "caption": "Korea's Independence activist Homer Bezaleel Hulbert.",
+      "source": "Wikimedia Commons · Public domain",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Homer_Bezaleel_Hulbert.jpg",
+      "srcColor": "/portraits/gallery/hulbert-0-color.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/f/f4/The_International_folk-lore_congress%2C_Homer_B._Hulbert.png",
+      "caption": "Frontispiece to section by Homer B. Hulbert in folklore transactions.",
+      "source": "Wikimedia Commons · Public domain",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_International_folk-lore_congress,_Homer_B._Hulbert.png",
+      "srcColor": "/portraits/gallery/hulbert-1-color.jpg"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/The_Grave_of_Homer_Bezaleel_Hulbert.JPG/960px-The_Grave_of_Homer_Bezaleel_Hulbert.JPG",
+      "caption": "The Grave of Homer Bezaleel Hulbert, Yanghwajin Foreigners' Cemetery",
+      "source": "Wikimedia Commons · CC BY-SA 3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Grave_of_Homer_Bezaleel_Hulbert.JPG"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/YanghwajinHulbert.JPG/960px-YanghwajinHulbert.JPG",
+      "caption": "Grab von Homer B Hulbert in Yanghwajin Friedhof, Seoul, Südkorea",
+      "source": "Wikimedia Commons · CC BY-SA 3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:YanghwajinHulbert.JPG",
+      "srcColor": "/portraits/gallery/hulbert-3-color.jpg"
+    }
   ]
 };
 
