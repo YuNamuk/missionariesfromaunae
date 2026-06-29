@@ -489,17 +489,25 @@ export default function AdminPage() {
               <input placeholder="이름·영문 검색" value={featQ} onChange={(e) => setFeatQ(e.target.value)} style={{ ...input, flex: 1 }} />
               <span style={{ fontSize: 12.5, fontWeight: 800, color: C.muted, whiteSpace: "nowrap" }}>대표 {count} / 전체 {PEOPLE.length}</span>
             </div>
-            <div style={{ maxHeight: 440, overflowY: "auto", border: `1px solid ${C.line}`, borderRadius: 12, background: "#fff8ec" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(118px,1fr))", gap: 10, maxHeight: 540, overflowY: "auto", padding: 2 }}>
               {list.map((p) => {
                 const on = featOn(p.id);
+                const photo = PHOTOS[p.id]?.photo;
                 return (
-                  <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderBottom: `1px solid ${C.line}` }}>
-                    <span style={{ fontSize: 13, color: C.ink }}>{p.name} <span style={{ color: C.muted, fontSize: 11 }}>· {p.en} · {p.year}</span></span>
-                    <button onClick={() => toggleFeat(p.id)} style={{ border: `1px solid ${C.line}`, borderRadius: 99, padding: "4px 13px", background: on ? "#bf6b22" : "transparent", color: on ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>{on ? "★ 대표" : "검색전용"}</button>
-                  </div>
+                  <button key={p.id} onClick={() => toggleFeat(p.id)} title={`${p.name} · ${p.en}`} style={{ position: "relative", border: `2px solid ${on ? "#bf6b22" : C.line}`, borderRadius: 12, overflow: "hidden", background: "#fff8ec", cursor: "pointer", padding: 0, textAlign: "left", opacity: on ? 1 : 0.66 }}>
+                    {photo
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={photo} alt="" loading="lazy" style={{ width: "100%", aspectRatio: "3 / 4", objectFit: "cover", display: "block", background: "#efe1c3" }} />
+                      : <span style={{ display: "flex", aspectRatio: "3 / 4", alignItems: "center", justifyContent: "center", background: "#7a4a2e", color: "#fff8ec", fontSize: 30 }}>{p.glyph}</span>}
+                    {on && <span style={{ position: "absolute", right: 5, top: 5, background: "#bf6b22", color: "#fff8ed", borderRadius: 99, padding: "0 7px", fontSize: 12, fontWeight: 900, boxShadow: "0 1px 4px rgba(0,0,0,.3)" }}>★</span>}
+                    <span style={{ display: "block", padding: "5px 7px" }}>
+                      <span style={{ display: "block", fontSize: 12, fontWeight: 800, color: C.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
+                      <span style={{ display: "block", fontSize: 10, color: on ? "#bf6b22" : C.muted, fontWeight: 700 }}>{p.year} · {on ? "★ 대표" : "검색전용"}</span>
+                    </span>
+                  </button>
                 );
               })}
-              {list.length === 0 && <div style={{ padding: 14, fontSize: 13, color: C.muted }}>검색 결과 없음</div>}
+              {list.length === 0 && <div style={{ padding: 14, fontSize: 13, color: C.muted, gridColumn: "1 / -1" }}>검색 결과 없음</div>}
             </div>
             <button onClick={saveFeatured} disabled={saving} style={{ ...btn, marginTop: 14 }}>{saving ? "저장 중…" : "대표 설정 저장"}</button>
           </div>
