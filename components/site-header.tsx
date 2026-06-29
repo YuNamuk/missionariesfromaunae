@@ -170,6 +170,7 @@ const PAGES = [
   { href: "/", label: "지도" },
   { href: "/dictionary", label: "인명사전" },
   { href: "/flow", label: "선교의 흐름" },
+  { href: "/span", label: "활동 연표" },
 ];
 
 export function SiteHeader() {
