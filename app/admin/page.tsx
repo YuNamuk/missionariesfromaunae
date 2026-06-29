@@ -6,6 +6,7 @@ import { browserSupabase } from "@/lib/db/browser";
 import { PEOPLE } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 import { GALLERY } from "@/lib/data/gallery";
+import { STATUS_LABEL, type DevReq } from "@/lib/data/devreq";
 import { isFeatured } from "@/lib/data/meta";
 import { profileFor } from "@/lib/data/profiles";
 import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
@@ -32,7 +33,7 @@ export default function AdminPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "admins" | "stats" | "review">("people");
+  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "admins" | "stats" | "review" | "devreq">("people");
   // 대표(featured) 토글 — 코드 FEATURED 위에 덮어쓸 오버라이드(app_settings 'meta.featured').
   const [feat, setFeat] = useState<Record<string, boolean>>({});
   const [featQ, setFeatQ] = useState("");
@@ -41,6 +42,9 @@ export default function AdminPage() {
   const [tq, setTq] = useState("");
   const [tcat, setTcat] = useState<string | null>(null); // 주제연구 인물 선택 분류 필터
   const [review, setReview] = useState<Record<string, "approved" | "rejected">>({}); // 검수 상태(g:<id>:<n>)
+  const [devreqs, setDevreqs] = useState<DevReq[]>([]); // 개발 요청 큐
+  const [drTitle, setDrTitle] = useState("");
+  const [drPrompt, setDrPrompt] = useState("");
   const [tPrompt, setTPrompt] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [pc, setPc] = useState<{ story: Record<string, string>; journey: Record<string, string> }>({ story: {}, journey: {} });
@@ -76,6 +80,7 @@ export default function AdminPage() {
     setSettings(s);
     setAdminEmails(Array.isArray(s.admins) ? (s.admins as string[]) : []);
     setReview((s.review && typeof s.review === "object" ? s.review : {}) as Record<string, "approved" | "rejected">);
+    setDevreqs(Array.isArray(s.devreq) ? (s.devreq as DevReq[]) : []);
   }, [sb]);
 
   useEffect(() => { if (session) loadData(); }, [session, loadData]);
@@ -284,9 +289,9 @@ export default function AdminPage() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {(["people", "featured", "research", "pages", "settings", "admins", "stats", "review"] as const).map((t) => (
+        {(["people", "featured", "research", "pages", "settings", "admins", "stats", "review", "devreq"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} style={{ border: `1px solid ${tab === t ? "#2f2419" : C.line}`, borderRadius: 11, padding: "8px 16px", background: tab === t ? "#2f2419" : "transparent", color: tab === t ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
-            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "research" ? "주제연구" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : t === "admins" ? "관리자 계정" : t === "stats" ? "방문 통계" : "검수"}
+            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "research" ? "주제연구" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : t === "admins" ? "관리자 계정" : t === "stats" ? "방문 통계" : t === "review" ? "검수" : "개발 요청"}
           </button>
         ))}
       </div>
@@ -619,6 +624,57 @@ export default function AdminPage() {
                 );
               })}
               {items.length === 0 && <p style={{ fontSize: 13, color: C.muted }}>아직 수집된 갤러리 사진이 없습니다.</p>}
+            </div>
+          </div>
+        );
+      })()}
+
+      {tab === "devreq" && (() => {
+        const STATUS_COLOR: Record<string, string> = { pending: "#bf6b22", in_progress: "#1f6f8b", done: "#3f7f4b", question: "#9b3d2d" };
+        const submit = async () => {
+          if (!drTitle.trim() && !drPrompt.trim()) return;
+          const next: DevReq[] = [
+            { id: Date.now().toString(36), title: drTitle.trim() || "(제목 없음)", prompt: drPrompt.trim(), status: "pending", createdAt: new Date().toISOString() },
+            ...devreqs,
+          ];
+          setDevreqs(next); setDrTitle(""); setDrPrompt("");
+          await post({ kind: "settings", settings: { devreq: next } });
+        };
+        const removeReq = async (id: string) => {
+          const next = devreqs.filter((r) => r.id !== id);
+          setDevreqs(next);
+          await post({ kind: "settings", settings: { devreq: next } });
+        };
+        return (
+          <div style={{ maxWidth: 720 }}>
+            <p style={{ margin: "0 0 12px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
+              기능 개선·수정을 프롬프트로 요청하면 큐에 쌓이고, <b>VSCode의 Claude Code(약 30분 주기 자동 점검)</b>가 폴링해 구현·응답합니다. 지금은 개발 단계라 완료 시 바로 반영됩니다(프리뷰/승인 게이팅은 추후).
+            </p>
+            <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, padding: 14, background: "#fff8ec", marginBottom: 18 }}>
+              <label style={label}>요청 제목</label>
+              <input style={{ ...input, marginBottom: 8 }} value={drTitle} onChange={(e) => setDrTitle(e.target.value)} placeholder="예: 흐름 페이지에 인물 검색 필터 추가" />
+              <label style={label}>요청 내용 (프롬프트)</label>
+              <textarea style={{ ...input, minHeight: 90, marginBottom: 10 }} value={drPrompt} onChange={(e) => setDrPrompt(e.target.value)} placeholder="원하는 기능·수정을 구체적으로 적어주세요." />
+              <button onClick={submit} disabled={saving} style={{ ...btn, opacity: saving ? 0.6 : 1 }}>요청 등록</button>
+            </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              {devreqs.map((r) => (
+                <div key={r.id} style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: "11px 13px", background: "#fff8ec" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ background: STATUS_COLOR[r.status] ?? C.muted, color: "#fff8ed", borderRadius: 99, padding: "2px 9px", fontSize: 10.5, fontWeight: 800 }}>{STATUS_LABEL[r.status] ?? r.status}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 800, color: C.ink }}>{r.title}</span>
+                    <button onClick={() => removeReq(r.id)} style={{ marginLeft: "auto", border: 0, background: "transparent", color: C.accent, cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>삭제</button>
+                  </div>
+                  {r.prompt && <p style={{ margin: "6px 0 0", fontSize: 12.5, lineHeight: 1.55, color: "#594935", whiteSpace: "pre-wrap" }}>{r.prompt}</p>}
+                  {r.response && (
+                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.line}` }}>
+                      <span style={{ fontSize: 10.5, fontWeight: 800, color: "#1f6f8b" }}>개발자 응답</span>
+                      <p style={{ margin: "3px 0 0", fontSize: 12.5, lineHeight: 1.55, color: "#3e2c1d", whiteSpace: "pre-wrap" }}>{r.response}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {devreqs.length === 0 && <p style={{ fontSize: 13, color: C.muted }}>등록된 개발 요청이 없습니다.</p>}
             </div>
           </div>
         );
