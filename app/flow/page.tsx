@@ -27,12 +27,14 @@ export default function FlowPage() {
     };
   }).sort((a, b) => a.year - b.year);
 
-  // 양방향 인접: 각 인물의 '연관 선교사' 목록(방향 표시 포함)
+  // 인접 목록 + 흐름 방향. 방향성 관계(influence/prepare/mentor/succeed)는
+  // from→to가 '영향을 준' 방향(forward), 반대편엔 reverse로 표시해 흐름에서 제외.
+  // partner/family는 상호적이라 lateral.
   const rels: Record<string, RelItem[]> = {};
   for (const r of getRelationships()) {
     const dir = DIRECTIONAL.has(r.type);
-    (rels[r.from.id] ??= []).push({ id: r.to.id, name: r.to.name, type: r.type, label: r.meta.label, color: r.meta.color, note: r.note, dir: dir ? "→" : "↔" });
-    (rels[r.to.id] ??= []).push({ id: r.from.id, name: r.from.name, type: r.type, label: r.meta.label, color: r.meta.color, note: r.note, dir: dir ? "←" : "↔" });
+    (rels[r.from.id] ??= []).push({ id: r.to.id, name: r.to.name, type: r.type, label: r.meta.label, color: r.meta.color, note: r.note, dir: dir ? "→" : "·", flow: dir ? "forward" : "lateral" });
+    (rels[r.to.id] ??= []).push({ id: r.from.id, name: r.from.name, type: r.type, label: r.meta.label, color: r.meta.color, note: r.note, dir: dir ? "←" : "·", flow: dir ? "reverse" : "lateral" });
   }
 
   return <FlowExplorer people={people} rels={rels} />;

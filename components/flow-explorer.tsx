@@ -17,40 +17,42 @@ export type FlowPerson = {
   quote: { text: string; source: string } | null;
 };
 
-export type RelItem = { id: string; name: string; type: string; label: string; color: string; note: string; dir: string };
+export type RelItem = { id: string; name: string; type: string; label: string; color: string; note: string; dir: string; flow: "forward" | "lateral" | "reverse" };
 
-function PersonCard({ p }: { p: FlowPerson }) {
+function PersonCard({ p, n }: { p: FlowPerson; n: number }) {
   return (
-    <div className="rounded-3xl border border-ink-200 bg-white p-6 sm:p-7">
-      <div className="flex gap-5">
+    <div className="relative flex w-[300px] flex-none flex-col rounded-3xl border border-ink-200 bg-white p-5">
+      <span className="font-display absolute -left-2 -top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full text-[13px] font-extrabold text-white" style={{ background: "#9b3d2d", boxShadow: "0 2px 8px rgba(155,61,45,.35)" }}>{n}</span>
+      <div className="flex gap-4">
         {/* 사진 칸 + 그 아래 상세 페이지 링크 */}
-        <div className="flex-none">
+        <div className="flex-none" style={{ width: 96 }}>
           {p.photo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={p.photo} alt={`${p.name} 초상`} className="h-32 w-26 rounded-2xl object-cover sm:h-36 sm:w-28" style={{ background: "#efe1c3", width: 104 }} />
+            <img src={p.photo} alt={`${p.name} 초상`} className="rounded-2xl object-cover" style={{ background: "#efe1c3", width: 96, height: 122 }} />
           ) : (
-            <span className="font-display flex h-32 w-26 items-center justify-center rounded-2xl text-5xl text-white sm:h-36 sm:w-28" style={{ background: "var(--grad-dream)", width: 104 }}>{p.glyph}</span>
+            <span className="font-display flex items-center justify-center rounded-2xl text-4xl text-white" style={{ background: "var(--grad-dream)", width: 96, height: 122 }}>{p.glyph}</span>
           )}
-          <Link href={`/people/${p.id}`} className="mt-2.5 block rounded-full bg-sky-500 px-3 py-1.5 text-center text-[12.5px] font-bold text-white hover:bg-sky-600" style={{ width: 104 }}>
-            상세 페이지 →
+          <Link href={`/people/${p.id}`} className="mt-2 block rounded-full bg-sky-500 px-2 py-1.5 text-center text-[12px] font-bold text-white hover:bg-sky-600" style={{ width: 96 }}>
+            상세 →
           </Link>
         </div>
         <div className="min-w-0">
-          <h2 className="font-serif text-2xl font-bold leading-tight text-ink-900">{p.name}</h2>
-          <p className="font-serif mt-1 text-[13.5px] text-ink-500">{p.en} · {p.life}</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <span className="rounded-full bg-sky-500 px-2.5 py-0.5 text-[11px] font-bold text-white">{p.org}</span>
-            <span className="rounded-full bg-ink-100 px-2.5 py-0.5 text-[11px] font-bold text-ink-700">{p.role}</span>
+          <h2 className="font-serif text-xl font-bold leading-tight text-ink-900">{p.name}</h2>
+          <p className="font-serif mt-1 text-[12.5px] text-ink-500">{p.en}</p>
+          <p className="font-serif text-[12.5px] text-ink-500">{p.life}</p>
+          <div className="mt-2 flex flex-col gap-1">
+            <span className="self-start rounded-full bg-sky-500 px-2.5 py-0.5 text-[11px] font-bold text-white">{p.org}</span>
+            <span className="self-start rounded-full bg-ink-100 px-2.5 py-0.5 text-[11px] font-bold text-ink-700">{p.role}</span>
           </div>
-          {p.quote && (
-            <figure className="mt-3 border-l-4 pl-3.5" style={{ borderColor: "#bf6b22" }}>
-              <blockquote className="font-serif text-[15px] leading-[1.8] text-ink-800">&ldquo;{p.quote.text}&rdquo;</blockquote>
-              <figcaption className="mt-1 text-[11px] text-ink-400">— {p.quote.source}</figcaption>
-            </figure>
-          )}
-          <p className="font-serif mt-3 text-[14.5px] leading-[1.9] text-ink-700">{p.summary}</p>
         </div>
       </div>
+      {p.quote && (
+        <figure className="mt-4 border-l-4 pl-3.5" style={{ borderColor: "#bf6b22" }}>
+          <blockquote className="font-serif text-[14.5px] leading-[1.8] text-ink-800">&ldquo;{p.quote.text}&rdquo;</blockquote>
+          <figcaption className="mt-1 text-[11px] text-ink-400">— {p.quote.source}</figcaption>
+        </figure>
+      )}
+      <p className="font-serif mt-3 text-[14px] leading-[1.9] text-ink-700">{p.summary}</p>
     </div>
   );
 }
@@ -104,7 +106,14 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
 
         {/* 각 선택 단계의 연관 선교사 컬럼 */}
         {path.map((id, k) => {
-          const list = (rels[id] ?? []).slice().sort((a, b) => a.name.localeCompare(b.name, "ko"));
+          // 흐름은 '영향을 준' 방향으로만 진행 — 역방향(나에게 영향 준 사람)과
+          // 이미 지나온 인물(현재 노드 포함 이전 단계)을 빼서 계속 돌고 도는 것을 막는다.
+          // 단, 이미 고른 다음 인물(path[k+1])은 보여야 하므로 0..k까지만 제외.
+          const upstream = path.slice(0, k + 1);
+          const list = (rels[id] ?? [])
+            .filter((r) => r.flow !== "reverse" && !upstream.includes(r.id))
+            .slice()
+            .sort((a, b) => a.name.localeCompare(b.name, "ko"));
           const chosen = path[k + 1];
           return (
             <div key={`${id}-${k}`} className="flex flex-none items-center gap-3">
@@ -138,11 +147,11 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
               <div className="font-display text-[13px] font-extrabold text-ink-500">선택한 흐름 · {path.length}명</div>
               <button onClick={() => setPath([])} className="rounded-full border border-ink-200 px-3 py-1 text-[12px] font-bold text-ink-500 hover:border-sky-300 hover:text-sky-700">처음부터</button>
             </div>
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <div className="flex gap-4 overflow-x-auto pb-3">
               {path.map((id, i) => byId[id] && (
-                <div key={id + i} className="relative">
-                  <span className="font-display absolute -left-2 -top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full text-[13px] font-extrabold text-white" style={{ background: "#9b3d2d", boxShadow: "0 2px 8px rgba(155,61,45,.35)" }}>{i + 1}</span>
-                  <PersonCard p={byId[id]} />
+                <div key={id + i} className="flex flex-none items-stretch gap-4">
+                  {i > 0 && <span className="flex items-center text-ink-300">→</span>}
+                  <PersonCard p={byId[id]} n={i + 1} />
                 </div>
               ))}
             </div>
