@@ -66,6 +66,7 @@ export default function AdminPage() {
   const [roleAdd, setRoleAdd] = useState(""); // 사역 수동 추가 입력
   const [uploading, setUploading] = useState(false);
   const [uploadColorize, setUploadColorize] = useState(true);
+  const [peopleQ, setPeopleQ] = useState(""); // 선교사 선택 검색
   // 소속·사역 자동완성 후보(기존 데이터 + 통상값)
   const ORG_LIST = [...new Set(PEOPLE.map((p) => p.org).filter(Boolean))].sort();
   const ROLE_SUGGEST = ["의료", "간호", "교육", "여성 교육", "번역", "성경 반포", "전도", "목회", "부흥", "외교", "문서·출판", "고아·구제", "신학 교육"];
@@ -337,10 +338,28 @@ export default function AdminPage() {
       {msg && <p style={{ marginBottom: 14, fontSize: 13, fontWeight: 700, color: msg.startsWith("✓") ? "#2f6b3b" : C.accent }}>{msg}</p>}
 
       {tab === "people" && (
-        <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 20 }}>
-          <select size={18} value={sel} onChange={(e) => setSel(e.target.value)} style={{ width: "100%", border: `1px solid ${C.line}`, borderRadius: 12, padding: 6, fontSize: 13, background: "#fff8ec", color: C.ink, height: 460 }}>
-            {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+        <div style={{ display: "grid", gridTemplateColumns: "270px 1fr", gap: 20 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
+            <input style={input} value={peopleQ} onChange={(e) => setPeopleQ(e.target.value)} placeholder="이름·영문·사역 검색" />
+            <div style={{ overflowY: "auto", maxHeight: 520, display: "flex", flexDirection: "column", gap: 3, border: `1px solid ${C.line}`, borderRadius: 12, padding: 6, background: "#fff8ec" }}>
+              {people.filter((p) => { const q = peopleQ.trim().toLowerCase(); return !q || `${p.name} ${p.name_en ?? ""} ${p.role ?? ""} ${p.org ?? ""}`.toLowerCase().includes(q); }).map((p) => {
+                const photo = PHOTOS[p.id]?.photo ?? p.photo;
+                const on = sel === p.id;
+                return (
+                  <button key={p.id} onClick={() => setSel(p.id)} style={{ display: "flex", gap: 8, alignItems: "center", textAlign: "left", padding: 6, borderRadius: 9, border: 0, background: on ? "#2f2419" : "transparent", color: on ? "#fff8ed" : C.ink, cursor: "pointer", width: "100%" }}>
+                    {photo
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={photo} alt="" loading="lazy" style={{ width: 36, height: 44, objectFit: "cover", borderRadius: 6, flex: "0 0 auto", background: "#efe1c3" }} />
+                      : <span style={{ width: 36, height: 44, flex: "0 0 auto", borderRadius: 6, background: "#7a4a2e", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 16 }}>{p.name?.[0] ?? "·"}</span>}
+                    <span style={{ minWidth: 0, flex: 1 }}>
+                      <span style={{ display: "block", fontSize: 13, fontWeight: 800 }}>{p.name} <span style={{ fontWeight: 500, opacity: 0.6, fontSize: 11 }}>{p.life}</span></span>
+                      <span style={{ display: "block", fontSize: 10.5, opacity: on ? 0.8 : 0.6, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.org, p.role].filter(Boolean).join(" · ")}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           {draft ? (
             <div style={{ display: "grid", gap: 12 }}>
               {/* 사진 — 가장 상단(현재 사진 + 컬러본 미리보기 + 업로드) */}
