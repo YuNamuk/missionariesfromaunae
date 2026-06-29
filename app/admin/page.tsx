@@ -610,7 +610,7 @@ export default function AdminPage() {
                 return (
                   <div key={key} style={{ border: `1.5px solid ${status === "rejected" ? "#c2453a" : status === "approved" ? "#3f7f4b" : C.line}`, borderRadius: 12, overflow: "hidden", background: "#fff8ec", opacity: status === "rejected" ? 0.6 : 1 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={g.srcColor || g.src} alt="" loading="lazy" style={{ width: "100%", height: 150, objectFit: "cover", background: "#efe1c3", display: "block" }} />
+                    <img src={g.srcColor || g.src} alt="" loading="lazy" style={{ width: "100%", height: "auto", maxHeight: 420, objectFit: "contain", background: "#efe1c3", display: "block" }} />
                     <div style={{ padding: "7px 9px" }}>
                       <div style={{ fontSize: 11.5, fontWeight: 800, color: C.ink }}>{person?.name ?? pid} <span style={{ color: C.muted, fontWeight: 500 }}>#{i + 1}{g.srcColor ? " · 컬러" : ""}</span></div>
                       <div style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.4, marginTop: 1, maxHeight: 28, overflow: "hidden" }}>{g.caption}</div>
