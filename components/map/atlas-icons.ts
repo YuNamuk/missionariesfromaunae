@@ -34,10 +34,14 @@ export function orgTint(org: string) {
 
 export function personLatLng(base: [number, number], i: number, n: number): [number, number] {
   if (n <= 1) return [base[0] + 0.02, base[1] + 0.025];
-  // 거점 주변에 너무 넓게 퍼지지 않도록 반경을 좁혀 정돈(인원 많으면 약간만 확장).
-  const a = (i / n) * Math.PI * 2 - Math.PI / 2;
-  const r = 0.04 + Math.min(n, 8) * 0.004;
-  return [base[0] + r * Math.sin(a), base[1] + r * Math.cos(a)];
+  // 해바라기(황금각) 분포 — 완전한 원형 균등이 아니라 자연스러운 원반형으로 흩어 정돈.
+  // 위도 보정(lonScale)으로 화면상 원형을 유지한다(경도 1°가 위도 1°보다 좁으므로).
+  const GA = Math.PI * (3 - Math.sqrt(5)); // 황금각 ≈ 137.5°
+  const maxR = 0.05 + Math.min(n, 12) * 0.0042;
+  const r = maxR * Math.sqrt((i + 0.5) / n);
+  const a = i * GA;
+  const lonScale = 1 / Math.cos((base[0] * Math.PI) / 180);
+  return [base[0] + r * Math.sin(a), base[1] + r * Math.cos(a) * lonScale];
 }
 
 export function labelHtml(text: string, top: number, dark: boolean) {
