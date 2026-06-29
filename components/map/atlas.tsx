@@ -15,6 +15,7 @@ import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PERSON_COORD } from "@/lib/data/person-coord";
 import { C, CAT_COLOR, orgTint, personLatLng, labelHtml, placeIcon, personIcon, arrowIcon, bearingDeg, distKm, clusterIcon } from "./atlas-icons";
 import { useColorMode, ColorToggle } from "@/components/color-mode";
+import { colorSrc } from "@/lib/data/colorized";
 
 // ── 시대별 정세(역사 국경) 오버레이 ──────────────────────────────
 // 출처: historical-basemaps (github.com/aourednik/historical-basemaps, ODbL).
@@ -429,6 +430,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showLabels, setShowLabels] = useState(true); // 마커 이름표(라벨) 표시
   const [markerScale, setMarkerScale] = useState(1); // 마커 크기 배율(0.85 / 1 / 1.2)
   const { color: colorPhoto } = useColorMode(); // 초상 컬러 복원본 보기(전역)
+  // 컬러 모드일 때 인물 초상(마커·리스트·관련 인물·바로가기 아이콘)을 복원 컬러본으로 스왑.
+  const cphoto = (s: string | null | undefined) => (colorPhoto ? colorSrc(s) : null) || s || undefined;
   // 뷰 초기화: 지도 시점·선택·필터·관계 집중을 기본값으로 되돌린다.
   const resetView = () => {
     mapRef.current?.flyTo([38.4, 127.5], 6, { duration: 0.5 });
@@ -769,7 +772,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     <button key={p.id} ref={on ? chipRef : undefined} onClick={() => setSelected({ kind: "person", id: p.id })} title={`${p.name} · ${p.org}`}
       style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", padding: "5px 9px 5px 5px", borderRadius: 11, border: `1px solid ${on ? "#9b3d2d" : "transparent"}`, background: on ? "#9b3d2d" : "transparent", color: on ? "#fff8ed" : "#4a3a28", cursor: "pointer" }}>
       {p.photo
-        ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={p.photo} alt="" style={{ flex: "0 0 auto", width: 30, height: 30, borderRadius: 99, objectFit: "cover" }} />
+        ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(p.photo)} alt="" style={{ flex: "0 0 auto", width: 30, height: 30, borderRadius: 99, objectFit: "cover" }} />
         : <span style={{ flex: "0 0 auto", width: 30, height: 30, borderRadius: 99, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 14 }}>{p.glyph}</span>}
       <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.25, minWidth: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</span>
@@ -902,7 +905,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           </div>
           <button onClick={() => setPickerOpen((v) => !v)} title="선교사 목록" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px 6px 6px", borderRadius: 10, border: `1px solid ${pickerOpen ? "#9b3d2d" : C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>
             {selPerson?.photo
-              ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={selPerson.photo} alt="" style={{ width: 22, height: 22, borderRadius: 99, objectFit: "cover" }} />
+              ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(selPerson.photo)} alt="" style={{ width: 22, height: 22, borderRadius: 99, objectFit: "cover" }} />
               : <span style={{ width: 22, height: 22, borderRadius: 99, background: selPerson ? orgTint(selPerson.org) : C.line, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 11 }}>{selPerson?.glyph ?? "≡"}</span>}
             {selPerson ? selPerson.name : "선교사 목록"}<span style={{ fontSize: 9, opacity: 0.7 }}>▾</span>
           </button>
@@ -1244,7 +1247,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                       const pp = data.people.find((p) => p.id === x.id);
                       return (
                         <button key={x.id} onClick={() => setSelected({ kind: "person", id: x.id })} style={{ ...pill("rgba(135,93,167,.12)", "#5a3f72"), border: `1px solid ${C.line}`, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                          {pp?.photo ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={pp.photo} alt="" style={{ width: 18, height: 18, borderRadius: 99, objectFit: "cover" }} /> : <span>{pp?.glyph ?? "·"}</span>} {x.name}
+                          {pp?.photo ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(pp.photo)} alt="" style={{ width: 18, height: 18, borderRadius: 99, objectFit: "cover" }} /> : <span>{pp?.glyph ?? "·"}</span>} {x.name}
                         </button>
                       );
                     })}
@@ -1303,7 +1306,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                         <button key={p.id} onClick={() => setSelected({ kind: "person", id: p.id })}
                           style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "6px 8px", borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.55)", cursor: "pointer" }}>
                           {p.photo
-                            ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={p.photo} alt="" style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, objectFit: "cover" }} />
+                            ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(p.photo)} alt="" style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, objectFit: "cover" }} />
                             : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 15 }}>{p.glyph}</span>}
                           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
                             <span style={{ fontSize: 13.5, fontWeight: 800, color: "#3e2c1d" }}>{p.name}</span>
@@ -1316,7 +1319,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                         <button key={`x${i}`} onClick={() => setSelected({ kind: "buried", id: `${selPlace.id}::${i}` })}
                           style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "6px 8px", borderRadius: 12, border: `1px dashed ${C.line}`, background: "rgba(255,255,255,.35)", cursor: "pointer" }}>
                           {b.photo
-                            ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={b.photo} alt="" style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, objectFit: "cover" }} />
+                            ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(b.photo)} alt="" style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, objectFit: "cover" }} />
                             : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: "rgba(120,100,80,.18)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b5e4b", fontSize: 13, fontWeight: 800 }}>✝</span>}
                           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
                             <span style={{ fontSize: 13, fontWeight: 800, color: "#3e2c1d" }}>{b.nameKo || b.nameEn}{b.uncertain && <span style={{ color: C.faint, fontWeight: 600 }}> ?</span>}</span>
@@ -1340,7 +1343,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <div style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb", padding: "22px 22px 20px", position: "relative" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
                 {selPerson.photo ? (
-                  <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={selPerson.photo} alt={selPerson.name} style={{ width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
+                  <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(selPerson.photo)} alt={selPerson.name} style={{ width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
                 ) : (
                   <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, background: orgTint(selPerson.org), fontSize: 48 }}>{selPerson.glyph}</span>
                 )}
@@ -1514,7 +1517,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                     {selHeritage.people.map((nm) => {
                       const pp = data.people.find((p) => nm.includes(p.name) || p.name.includes(nm.replace(/\(.*\)/, "").trim()));
                       return pp
-                        ? <button key={nm} onClick={() => setSelected({ kind: "person", id: pp.id })} style={{ ...pill("rgba(135,93,167,.12)", "#5a3f72"), border: `1px solid ${C.line}`, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>{pp.photo ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={pp.photo} alt="" style={{ width: 18, height: 18, borderRadius: 99, objectFit: "cover" }} /> : <span>{pp.glyph}</span>} {nm}</button>
+                        ? <button key={nm} onClick={() => setSelected({ kind: "person", id: pp.id })} style={{ ...pill("rgba(135,93,167,.12)", "#5a3f72"), border: `1px solid ${C.line}`, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>{pp.photo ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(pp.photo)} alt="" style={{ width: 18, height: 18, borderRadius: 99, objectFit: "cover" }} /> : <span>{pp.glyph}</span>} {nm}</button>
                         : <span key={nm} style={{ ...pill("rgba(120,100,80,.1)", "#6b5e4b"), border: `1px solid ${C.line}` }}>{nm}</span>;
                     })}
                   </div>
@@ -1568,7 +1571,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <div style={{ background: "linear-gradient(145deg,#2e2218,#4a3a28)", color: "#fff8eb", padding: "22px 22px 20px", position: "relative" }}>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 15 }}>
                 {selBuried.photo
-                  ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={selBuried.photo} alt={selBuried.nameKo || selBuried.nameEn} style={{ width: 88, height: 112, flex: "0 0 auto", borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
+                  ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(selBuried.photo)} alt={selBuried.nameKo || selBuried.nameEn} style={{ width: 88, height: 112, flex: "0 0 auto", borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
                   : <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 88, height: 112, flex: "0 0 auto", borderRadius: 16, background: "rgba(255,248,236,.14)", fontSize: 40 }}>✝</span>}
                 <div style={{ minWidth: 0 }}>
                   <span style={pill("rgba(255,255,255,.16)")}>✝ 안장 선교사{selBuried.uncertain ? " · 확인 필요" : ""}</span>
@@ -1610,7 +1613,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 return (
                   <button key={p.id} onClick={() => setSelected({ kind: "person", id: p.id })} style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${C.line}`, borderRadius: 13, padding: "9px 11px", background: "rgba(255,255,255,.6)", color: "#3f3022", cursor: "pointer", textAlign: "left" }}>
                     {p.photo
-                      ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={p.photo} alt="" style={{ width: 42, height: 42, flex: "0 0 auto", borderRadius: 10, objectFit: "cover", background: "#efe1c3" }} />
+                      ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(p.photo)} alt="" style={{ width: 42, height: 42, flex: "0 0 auto", borderRadius: 10, objectFit: "cover", background: "#efe1c3" }} />
                       : <span style={{ width: 42, height: 42, flex: "0 0 auto", borderRadius: 10, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 18 }}>{p.glyph}</span>}
                     <span style={{ minWidth: 0, flex: 1 }}>
                       <span style={{ display: "block", fontSize: 14, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}{p.en ? <span style={{ fontWeight: 600, fontSize: 11, color: C.muted }}> · {p.en}</span> : null}</span>

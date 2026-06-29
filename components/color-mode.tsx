@@ -32,32 +32,42 @@ export function hasColorFor(idOrSrc?: string | null): boolean {
   return !!colorSrc(idOrSrc);
 }
 
-/** 전역 컬러 모드에 반응하는 초상 이미지. 컬러본이 있으면 토글에 따라 원본↔컬러 전환.
- *  badge=true면 컬러일 때 'AI 복원' 표기, toggle=true면 우상단에 컬러/원본 버튼을 띄운다. */
+/** 전역 컬러 모드에 반응하는 초상 이미지. 컬러본이 있으면 원본↔컬러 전환.
+ *  사진별 개별 선택(override)이 가능 — 전역 토글은 '아직 손대지 않은' 사진의 기본값.
+ *  controls=true면 사진 바로 아래에 [원본 | 컬러] 분절 선택을, badge=true면 컬러일 때 'AI 복원' 표기. */
 export function Portrait({
-  id, src, alt, className, style, rounded = 12, toggle = false, badge = false,
+  id, src, alt, className, style, controls = false, badge = false,
 }: {
   id?: string; src: string; alt: string; className?: string; style?: React.CSSProperties;
-  rounded?: number; toggle?: boolean; badge?: boolean;
+  controls?: boolean; badge?: boolean;
 }) {
-  const { color, toggle: flip } = useColorMode();
+  const { color } = useColorMode();
+  const [override, setOverride] = useState<boolean | null>(null);
   const cSrc = colorSrc(src) ?? (id && COLORIZED.has(id) ? `/portraits/${id}-color.jpg` : null);
-  const showColor = color && !!cSrc;
+  const effective = override ?? color;
+  const showColor = effective && !!cSrc;
   return (
-    <span style={{ position: "relative", display: "inline-block", lineHeight: 0, flex: "none" }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={showColor ? (cSrc as string) : src} alt={alt} className={className} style={style} />
-      {badge && showColor && (
-        <span style={{ position: "absolute", left: 4, bottom: 4, padding: "1px 6px", borderRadius: 99, background: "rgba(40,26,14,.78)", color: "#ffe7c2", fontSize: 8.5, fontWeight: 800, letterSpacing: ".02em", pointerEvents: "none" }}>AI 복원</span>
-      )}
-      {toggle && cSrc && (
-        <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); flip(); }}
-          title={showColor ? "원본(흑백)으로" : "AI 복원·컬러로"}
-          style={{ position: "absolute", right: 4, top: 4, display: "flex", alignItems: "center", gap: 3, padding: "2px 7px", borderRadius: 99, border: "1px solid rgba(255,248,236,.55)", background: showColor ? "#9b3d2d" : "rgba(40,26,14,.72)", color: "#fff8ec", fontSize: 9.5, fontWeight: 800, cursor: "pointer", boxShadow: "0 2px 6px rgba(46,28,14,.4)" }}
-        >
-          {showColor ? "원본" : "🎨 컬러"}
-        </button>
+    <span style={{ display: "inline-flex", flexDirection: "column", gap: 4, lineHeight: 0 }}>
+      <span style={{ position: "relative", lineHeight: 0 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={showColor ? (cSrc as string) : src} alt={alt} className={className} style={style} />
+        {badge && showColor && (
+          <span style={{ position: "absolute", left: 4, top: 4, padding: "1px 6px", borderRadius: 99, background: "rgba(40,26,14,.78)", color: "#ffe7c2", fontSize: 8.5, fontWeight: 800, letterSpacing: ".02em", pointerEvents: "none" }}>AI 복원</span>
+        )}
+      </span>
+      {controls && cSrc && (
+        <span style={{ display: "flex", borderRadius: 8, overflow: "hidden", border: "1px solid rgba(77,56,34,.22)", lineHeight: 1 }}>
+          {([["원본", false], ["컬러", true]] as const).map(([lbl, val]) => {
+            const on = effective === val;
+            return (
+              <button key={lbl} type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOverride(val); }}
+                style={{ flex: 1, padding: "3px 0", border: "none", cursor: "pointer", fontSize: 10, fontWeight: 800, background: on ? "#9b3d2d" : "rgba(255,255,255,.72)", color: on ? "#fff8ec" : "#6b5e4b" }}>
+                {lbl}
+              </button>
+            );
+          })}
+        </span>
       )}
     </span>
   );

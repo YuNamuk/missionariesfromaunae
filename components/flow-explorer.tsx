@@ -29,7 +29,7 @@ function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelI
       {/* 다크 헤더: 초상 + 이름 (인물 카드 분위기) */}
       <div className="flex flex-none items-start gap-3 p-3.5" style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb" }}>
         {p.photo ? (
-          <Portrait id={p.id} src={p.photo} alt={`${p.name} 초상`} toggle badge rounded={16} className="rounded-2xl object-cover" style={{ width: 66, height: 84, border: "2px solid rgba(255,248,236,.3)", background: "#efe1c3" }} />
+          <Portrait id={p.id} src={p.photo} alt={`${p.name} 초상`} controls badge className="rounded-2xl object-cover" style={{ width: 66, height: 84, border: "2px solid rgba(255,248,236,.3)", background: "#efe1c3" }} />
         ) : (
           <span className="font-display flex flex-none items-center justify-center rounded-2xl text-3xl" style={{ width: 66, height: 84, background: "rgba(255,248,236,.14)", color: "#fff8eb" }}>{p.glyph}</span>
         )}

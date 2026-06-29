@@ -124,7 +124,7 @@ export default async function PersonPage({
               id={person.id}
               src={photo}
               alt={`${person.name} 초상`}
-              toggle
+              controls
               badge
               className="h-36 w-28 rounded-2xl object-cover sm:h-44 sm:w-36"
               style={{ boxShadow: "var(--shadow-sky)", background: "#efe1c3" }}

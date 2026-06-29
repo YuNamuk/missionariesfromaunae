@@ -10,13 +10,22 @@ const KEY = process.env.GEMINI_API_KEY;
 const MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
 const DIR = path.join(process.cwd(), "public", "portraits");
 
-// 역사 인물 초상 — '얼굴을 새로 그리지 말고' 색·질감만 자연스럽게 복원하도록 보수적으로 지시.
+// 역사 인물 초상 — 손상된 흑백/세피아 인쇄본을 '오늘 찍은 사진처럼' 사실적으로 재구성하되,
+// 인물의 정체성(얼굴 구조·나이·표정·머리·복장)은 정확히 보존하도록 강하게 지시.
 const PROMPT =
-  "This is a historical black-and-white (or sepia) portrait photograph of a real person from the late 19th / early 20th century. " +
-  "Restore and naturally colorize it as a faithful archival restoration. " +
-  "STRICTLY preserve the person's identity, exact facial features, expression, pose, hairstyle, clothing and the original composition — do NOT redraw, beautify, or alter the face. " +
-  "Only add realistic, period-appropriate natural color, repair scratches/dust, and gently improve clarity and tonal range. " +
-  "Keep it photorealistic and historically plausible, not stylized. Output the restored image only.";
+  "This is a damaged historical black-and-white or sepia portrait photograph of a real person from the late 19th / early 20th century, " +
+  "scanned from an old magazine or print — it has low resolution, halftone dots, scratches, grain, blur and faded tones. " +
+  "Reconstruct it into a HIGH-QUALITY, PHOTOREALISTIC COLOR PORTRAIT that looks as if it were taken TODAY with a professional camera: " +
+  "tack-sharp focus, fine realistic skin texture and pores, natural studio lighting with soft shadows, lifelike catchlights in the eyes, " +
+  "rich natural color (realistic skin tone, hair and fabric colors), and a clean smooth background. " +
+  "Fully remove halftone dots, scratches, dust, grain and blur. " +
+  "Keep the original camera ANGLE and pose and overall feel, but CROP TO THE SINGLE SUBJECT ONLY: " +
+  "remove any oval/vignette frame, decorative border, the blurry surroundings, any partial faces of neighboring people bleeding in from the edges, " +
+  "and any printed captions or text. Replace all of that with a clean, smooth, neutral studio background behind the one subject. " +
+  "CRITICAL — it must be unmistakably the SAME person: precisely preserve their identity, facial structure and proportions, apparent age, " +
+  "gaze and expression, hairstyle, facial hair, and clothing exactly as in the original. " +
+  "Do NOT change who they are, do NOT beautify, slim, youthen or alter their features — only restore and enhance the image quality. " +
+  "Output only the restored photograph, framed as a clean head-and-shoulders studio portrait of the single subject.";
 
 const ext = (id: string) => [".jpg", ".jpeg", ".png"].map((e) => path.join(DIR, id + e));
 
@@ -61,7 +70,7 @@ async function colorizeOne(id: string): Promise<"ok" | "skip" | "fail"> {
   }
   await writeFile(out, Buffer.from(img.inlineData.data, "base64"));
   // Gemini 출력이 1000px대로 크다 → 표시용으로 한 번에 압축(긴 변 640px·품질 72).
-  try { execFileSync("sips", ["-Z", "560", "-s", "formatOptions", "66", out], { stdio: "ignore" }); } catch {}
+  try { execFileSync("sips", ["-Z", "620", "-s", "formatOptions", "72", out], { stdio: "ignore" }); } catch {}
   const kb = Math.round((await readFile(out)).length / 1024);
   console.log(`✓ ${id} → ${path.basename(out)} (${kb}KB)`);
   return "ok";
