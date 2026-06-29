@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { ColorModeProvider } from "@/components/color-mode";
 import { MapSettingsProvider } from "@/components/map-settings";
+import { VisitTracker } from "@/components/visit-tracker";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://missionaries-khaki.vercel.app";
 const DESC =
@@ -64,6 +65,7 @@ export default function RootLayout({
               <SiteHeader />
             </Suspense>
             <main id="main-content">{children}</main>
+            <VisitTracker />
           </MapSettingsProvider>
         </ColorModeProvider>
       </body>

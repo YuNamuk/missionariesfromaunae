@@ -24,7 +24,7 @@ export type RelItem = { id: string; name: string; type: string; label: string; c
 // 마우스를 올리면 그 카드만 넓어지며 요약 전문이 펼쳐진다. 가로 스크롤 없음.
 function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelItem; fromName: string } }) {
   return (
-    <div className="group relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border hover:grow-[5]" style={{ height: 392, maxWidth: 300, borderColor: "rgba(77,56,34,.18)", background: "#fdf6ea", boxShadow: "0 10px 26px rgba(46,28,14,.12)", transition: "flex-grow 520ms cubic-bezier(0.22,0.61,0.36,1)" }}>
+    <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border" style={{ height: 392, maxWidth: 300, borderColor: "rgba(77,56,34,.18)", background: "#fdf6ea", boxShadow: "0 10px 26px rgba(46,28,14,.12)" }}>
       <span className="font-display absolute right-2.5 top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-extrabold" style={{ background: "rgba(255,248,236,.18)", color: "#fff8ed", border: "1px solid rgba(255,248,236,.25)" }}>{n}</span>
       {/* 다크 헤더: 초상 + 이름 (인물 카드 분위기) */}
       <div className="flex flex-none items-start gap-3 p-3.5" style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb" }}>
@@ -53,10 +53,10 @@ function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelI
         )}
         {p.quote && (
           <figure className="m-0 flex-none border-l-4 pl-2.5" style={{ borderColor: "#bf6b22" }}>
-            <blockquote className="font-serif line-clamp-2 text-[12.5px] leading-snug text-ink-800 group-hover:line-clamp-none">&ldquo;{p.quote.text}&rdquo;</blockquote>
+            <blockquote className="font-serif line-clamp-2 text-[12.5px] leading-snug text-ink-800">&ldquo;{p.quote.text}&rdquo;</blockquote>
           </figure>
         )}
-        <p className="font-serif line-clamp-4 flex-1 overflow-y-auto text-[12.5px] leading-[1.75] text-ink-700 group-hover:line-clamp-none">{p.summary}</p>
+        <p className="font-serif flex-1 overflow-y-auto text-[12.5px] leading-[1.75] text-ink-700">{p.summary}</p>
         <Link href={`/people/${p.id}`} className="flex-none text-[12px] font-bold text-sky-600 hover:text-sky-700">상세 페이지 →</Link>
       </div>
     </div>
@@ -65,7 +65,7 @@ function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelI
 
 function Column({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (
-    <div className="flex w-60 flex-none flex-col rounded-2xl border border-ink-200 bg-white">
+    <div className="flex w-44 flex-none flex-col rounded-2xl border border-ink-200 bg-white">
       <div className="border-b border-ink-100 px-3.5 py-2.5">
         <div className="text-[12.5px] font-extrabold text-ink-800">{title}</div>
         {sub && <div className="text-[11px] text-ink-400">{sub}</div>}

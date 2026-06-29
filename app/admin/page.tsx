@@ -30,7 +30,7 @@ export default function AdminPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "admins">("people");
+  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "admins" | "stats">("people");
   // 대표(featured) 토글 — 코드 FEATURED 위에 덮어쓸 오버라이드(app_settings 'meta.featured').
   const [feat, setFeat] = useState<Record<string, boolean>>({});
   const [featQ, setFeatQ] = useState("");
@@ -275,9 +275,9 @@ export default function AdminPage() {
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {(["people", "featured", "research", "pages", "settings", "admins"] as const).map((t) => (
+        {(["people", "featured", "research", "pages", "settings", "admins", "stats"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} style={{ border: `1px solid ${tab === t ? "#2f2419" : C.line}`, borderRadius: 11, padding: "8px 16px", background: tab === t ? "#2f2419" : "transparent", color: tab === t ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
-            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "research" ? "주제연구" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : "관리자 계정"}
+            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "research" ? "주제연구" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : t === "admins" ? "관리자 계정" : "방문 통계"}
           </button>
         ))}
       </div>
@@ -486,6 +486,45 @@ export default function AdminPage() {
           <p style={{ fontSize: 11.5, color: C.muted, margin: 0 }}>※ 추가된 사람은 본인 구글 계정으로 <code>/admin</code>에 로그인하면 됩니다. (해당 이메일이 구글 계정이어야 함)</p>
         </div>
       )}
+
+      {tab === "stats" && (() => {
+        const daily = (settings["stats.daily"] && typeof settings["stats.daily"] === "object" ? settings["stats.daily"] : {}) as Record<string, number>;
+        const today = new Date().toISOString().slice(0, 10);
+        const dates = Object.keys(daily).sort().reverse();
+        const total = dates.reduce((s, d) => s + (daily[d] || 0), 0);
+        const last7 = dates.slice(0, 7).reduce((s, d) => s + (daily[d] || 0), 0);
+        const max = Math.max(1, ...dates.map((d) => daily[d] || 0));
+        const card = (label: string, val: number | string) => (
+          <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, padding: "14px 16px", background: "#fff8ec", minWidth: 116 }}>
+            <div style={{ fontSize: 11.5, fontWeight: 800, color: C.muted }}>{label}</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: "#2f2419" }}>{val}</div>
+          </div>
+        );
+        return (
+          <div style={{ display: "grid", gap: 16, maxWidth: 560 }}>
+            <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>방문자 수는 브라우저당 하루 1회 집계되는 근사 순방문자입니다.</p>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {card("오늘", daily[today] || 0)}
+              {card("최근 7일", last7)}
+              {card("누적", total)}
+              {card("기록 일수", dates.length)}
+            </div>
+            <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, padding: 14, background: "#fff8ec" }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: C.muted, marginBottom: 10 }}>최근 30일</div>
+              <div style={{ display: "grid", gap: 5 }}>
+                {dates.slice(0, 30).map((d) => (
+                  <div key={d} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
+                    <span style={{ width: 80, flex: "0 0 auto", color: d === today ? "#9b3d2d" : C.muted, fontWeight: d === today ? 800 : 600 }}>{d}</span>
+                    <span style={{ height: 12, borderRadius: 99, background: d === today ? "#9b3d2d" : "#c9a86a", width: `${Math.max(4, ((daily[d] || 0) / max) * 100)}%` }} />
+                    <span style={{ fontWeight: 800, color: "#2f2419" }}>{daily[d] || 0}</span>
+                  </div>
+                ))}
+                {dates.length === 0 && <span style={{ fontSize: 12.5, color: C.muted }}>아직 집계된 방문이 없습니다(배포 후 방문부터 기록됩니다).</span>}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
