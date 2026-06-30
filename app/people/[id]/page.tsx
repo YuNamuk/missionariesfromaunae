@@ -7,7 +7,6 @@ import { GallerySection } from "@/components/gallery-section";
 import { SectionTabs } from "@/components/section-tabs";
 import { CiteBox } from "@/components/cite-box";
 import {
-  PEOPLE,
   getPerson,
   getPlace,
   relationshipsFor,
@@ -17,13 +16,13 @@ import {
 import { PHOTOS } from "@/lib/data/photos";
 import { profileFor } from "@/lib/data/profiles";
 import { fetchPersonContent, fetchReview } from "@/lib/db/editable";
+import { getLocale } from "@/lib/i18n/server";
+import { fetchPersonI18n, ov } from "@/lib/i18n/content";
 
-// 관리자 카드 편집(DB 오버레이)을 반영하기 위해 ISR. /admin 저장 시 revalidate로 즉시 반영.
-export const revalidate = 300;
+// 로케일 쿠키 + 관리자 오버레이를 반영하기 위해 요청별 동적 렌더.
 
-export function generateStaticParams() {
-  return PEOPLE.map((p) => ({ id: p.id }));
-}
+// 로케일별 콘텐츠(쿠키)라 빌드 시 정적 생성하지 않고 요청별로 렌더한다.
+export const dynamic = "force-dynamic";
 
 // YouTube 영상 ID 추출(watch?v= / youtu.be / embed). 페이지 내 임베드 재생용.
 function ytId(url: string): string | null {
@@ -52,6 +51,9 @@ export default async function PersonPage({
   const { id } = await params;
   const person = getPerson(id);
   if (!person) notFound();
+
+  const locale = await getLocale();
+  const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
 
   const place = getPlace(person.place);
   const rels = relationshipsFor(person.id);
@@ -82,21 +84,32 @@ export default async function PersonPage({
   const profile = profileFor(person.id);
   const burialPlace = BURIAL[person.id] ? getPlace(BURIAL[person.id]) : null;
 
-  // 관리자 카드 편집 오버레이 병합(없으면 코드 기본값).
-  const ov = await fetchPersonContent(person.id);
+  // 관리자 카드 편집 오버레이 병합(없으면 코드 기본값) — 한국어 원본 층.
+  const ovc = await fetchPersonContent(person.id);
+  // 번역 오버레이(영어·몽골어) — 한국어 위에 필드 단위로 덮고, 비면 한국어 폴백.
+  const tr = await fetchPersonI18n(person.id, locale);
   const c = {
-    summary: ov?.summary ?? person.summary,
-    story: ov?.story ?? profile?.story,
-    journey: ov?.journey ?? profile?.journey,
-    ministry: ov?.ministry ?? profile?.ministry ?? [],
-    influence: ov?.influence ?? profile?.influence,
-    beauty: ov?.beauty ?? profile?.beauty,
-    quote: ov?.quote ?? profile?.quote,
+    summary: ov(ovc?.summary ?? person.summary, tr?.summary),
+    story: ov(ovc?.story ?? profile?.story, tr?.story),
+    journey: ov(ovc?.journey ?? profile?.journey, tr?.journey),
+    ministry: ov(ovc?.ministry ?? profile?.ministry ?? [], tr?.ministry),
+    influence: ov(ovc?.influence ?? profile?.influence, tr?.influence),
+    beauty: ov(ovc?.beauty ?? profile?.beauty, tr?.beauty),
+    quote: ov(ovc?.quote ?? profile?.quote, tr?.quote),
+  };
+  // 헤더·사실·연표·관계 등 인물 메타도 번역 오버레이로(없으면 원본).
+  const L = {
+    name: ov(person.name, tr?.name),
+    role: ov(person.role, tr?.role),
+    org: ov(person.org, tr?.org),
+    country: ov(person.country, tr?.country),
+    facts: ov(person.facts, tr?.facts as unknown as typeof person.facts),
+    timeline: ov(person.timeline, tr?.timeline as unknown as typeof person.timeline),
   };
   // 관련 영상: 관리자 오버레이(있으면 우선) ?? 코드 기본. 여러 개 가능.
-  const videos = ov?.videos ?? profile?.videos ?? [];
+  const videos = ovc?.videos ?? profile?.videos ?? [];
   // 외부 링크: 관리자 오버레이(있으면 우선) ?? PHOTOS 기본.
-  const extLinks = ov?.links?.length ? ov.links.filter((l) => l.href) : defaultExtLinks;
+  const extLinks = ovc?.links?.length ? ovc.links.filter((l) => l.href) : defaultExtLinks;
   const hasNarrative = !!(c.story?.length || c.journey || c.ministry.length || c.influence || c.beauty);
 
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://missionaries-khaki.vercel.app";
@@ -119,11 +132,11 @@ export default async function PersonPage({
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-10 sm:px-7">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <nav aria-label="위치" className="flex flex-wrap items-center gap-1.5 text-[13px] font-bold text-ink-400">
-        <Link href="/" className="hover:text-sky-600">지도</Link>
+        <Link href="/" className="hover:text-sky-600">{T("지도", "Map", "Газрын зураг")}</Link>
         <span aria-hidden className="text-ink-300">›</span>
-        <Link href="/dictionary" className="hover:text-sky-600">인명사전</Link>
+        <Link href="/dictionary" className="hover:text-sky-600">{T("인명사전", "Directory", "Нэрсийн толь")}</Link>
         <span aria-hidden className="text-ink-300">›</span>
-        <span className="text-ink-700">{person.name}</span>
+        <span className="text-ink-700">{L.name}</span>
       </nav>
 
       {/* Header */}
@@ -155,17 +168,17 @@ export default async function PersonPage({
         )}
         <div className="min-w-0">
           <h1 className="font-serif text-3xl font-bold tracking-tight text-ink-900 sm:text-[40px]">
-            {person.name}
+            {L.name}
           </h1>
           <p className="font-serif mt-1.5 text-[15px] text-ink-500">
-            {person.en} · {person.life} · {person.country}
+            {person.en} · {person.life} · {L.country}
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             <span className="rounded-full bg-sky-500 px-3 py-1 text-[12px] font-bold text-white">
-              {person.org}
+              {L.org}
             </span>
             <span className="rounded-full bg-ink-100 px-3 py-1 text-[12px] font-bold text-ink-700">
-              {person.role}
+              {L.role}
             </span>
             {place && (
               <Link
@@ -199,7 +212,7 @@ export default async function PersonPage({
           {/* 잔잔한 스토리텔링 서사가 있으면 그것이 지면의 중심, 없으면 '큰 흐름 속 여정' */}
           {c.story?.length ? (
             <section>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">이야기</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">{T("이야기", "Story", "Түүх")}</div>
               <div className="mt-5 space-y-6">
                 {c.story.map((para, i) => (
                   <p key={i} className="font-serif text-[17px] leading-[2.1] text-ink-800 sm:text-[18.5px]">{para}</p>
@@ -212,7 +225,7 @@ export default async function PersonPage({
                 &ldquo;
               </span>
               <div className="pl-1">
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">한국 선교의 큰 흐름 속에서</div>
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-iris-700">{T("한국 선교의 큰 흐름 속에서", "Within the larger story of mission in Korea", "Солонгос дахь номлолын том урсгал дунд")}</div>
                 <p className="font-serif mt-4 text-[21px] leading-[2.0] text-ink-800 sm:text-[23px]">{c.journey}</p>
               </div>
             </section>
@@ -220,14 +233,14 @@ export default async function PersonPage({
 
           {c.beauty && (
             <section>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em]" style={{ color: "#9b3d2d" }}>이 삶에서 아름다운 것 · 치른 값</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em]" style={{ color: "#9b3d2d" }}>{T("이 삶에서 아름다운 것 · 치른 값", "What is beautiful in this life · the cost paid", "Энэ амьдралын сайхан нь · төлсөн үнэ")}</div>
               <p className="font-serif mt-4 text-[16.5px] leading-[2.0] text-ink-700">{c.beauty}</p>
             </section>
           )}
 
           {c.ministry.length > 0 && (
             <section>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">걸어온 사역</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink-400">{T("걸어온 사역", "Ministry", "Үйлчлэлийн зам")}</div>
               <ul className="mt-4 space-y-3.5">
                 {c.ministry.map((m, i) => (
                   <li key={i} className="font-serif flex gap-3.5 text-[15.5px] leading-[1.85] text-ink-700">
@@ -241,7 +254,7 @@ export default async function PersonPage({
 
           {c.influence && (
             <section className="rounded-3xl p-7 sm:p-8" style={{ borderLeft: "4px solid var(--aqua-500)", background: "var(--aqua-50)" }}>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-aqua-700">남긴 열매</div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-aqua-700">{T("남긴 열매", "The fruit left behind", "Үлдээсэн үр жимс")}</div>
               <p className="font-serif mt-3 text-[16.5px] leading-[2.0] text-ink-800">{c.influence}</p>
             </section>
           )}
@@ -258,18 +271,23 @@ export default async function PersonPage({
             Korea is home
           </div>
           <p className="font-serif mt-2 text-[16px] leading-[1.95] text-ink-800">
-            돌아갈 수도 있었지만, 조선을 집으로 삼았습니다.{" "}
-            <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>
-              {burialPlace.name}
-            </Link>
-            에 잠들어 있습니다.
+            {locale === "en" ? (
+              <>They could have returned, but made Korea their home. They rest at{" "}
+                <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>{burialPlace.name}</Link>.</>
+            ) : locale === "mn" ? (
+              <>Тэд буцаж болох байсан ч Солонгосыг гэрээ болгосон. Тэд{" "}
+                <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>{burialPlace.name}</Link>-д амарч байна.</>
+            ) : (
+              <>돌아갈 수도 있었지만, 조선을 집으로 삼았습니다.{" "}
+                <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>{burialPlace.name}</Link>에 잠들어 있습니다.</>
+            )}
           </p>
         </section>
       )}
 
       {/* Facts */}
       <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {person.facts.map(([label, value]) => (
+        {L.facts.map(([label, value]) => (
           <div key={label} className="rounded-2xl border border-ink-200 bg-white p-4">
             <div className="text-[11px] font-bold uppercase tracking-wide text-ink-400">
               {label}
@@ -282,9 +300,9 @@ export default async function PersonPage({
       {/* 연표 · 관계 — 좌우 두 열 */}
       <div className="mt-9 grid grid-cols-1 gap-8 lg:grid-cols-2">
         <section id="timeline" className="scroll-mt-28">
-          <h2 className="font-display text-lg font-extrabold text-ink-900">연표</h2>
+          <h2 className="font-display text-lg font-extrabold text-ink-900">{T("연표", "Timeline", "Он дараалал")}</h2>
           <ol className="mt-4 space-y-0">
-            {person.timeline.map(([yr, text], i) => (
+            {L.timeline.map(([yr, text], i) => (
               <li key={i} className="flex gap-4">
                 <div className="flex flex-col items-center">
                   <span className="font-display mt-0.5 w-12 flex-none text-right text-[14px] font-extrabold text-sky-600">
@@ -303,7 +321,7 @@ export default async function PersonPage({
 
         {relGroups.length > 0 && (
           <section id="relations" className="scroll-mt-28">
-            <h2 className="font-display text-lg font-extrabold text-ink-900">관계</h2>
+            <h2 className="font-display text-lg font-extrabold text-ink-900">{T("관계", "Relationships", "Харилцаа")}</h2>
             <div className="mt-4 space-y-5">
               {relGroups.map(([label, group]) => (
                 <div key={label}>
@@ -311,7 +329,7 @@ export default async function PersonPage({
                     <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white" style={{ background: group.color }}>
                       {label}
                     </span>
-                    <span className="text-[11px] text-ink-400">{group.items.length}명</span>
+                    <span className="text-[11px] text-ink-400">{group.items.length}{T("명", "", "")}</span>
                   </div>
                   <ul className="space-y-2">
                     {group.items.map((it, i) => (
@@ -339,7 +357,7 @@ export default async function PersonPage({
       {/* 관련 영상 — 페이지 안에서 재생(유튜브 로고 누르면 유튜브로 이동) */}
       {videos.length > 0 && (
         <section id="videos" className="mt-10 scroll-mt-28">
-          <h2 className="font-display text-lg font-extrabold text-ink-900">관련 영상</h2>
+          <h2 className="font-display text-lg font-extrabold text-ink-900">{T("관련 영상", "Related videos", "Холбоотой бичлэг")}</h2>
           <div className="mt-4 space-y-6">
             {videos.map((v) => {
               const id = ytId(v.url);
@@ -375,7 +393,7 @@ export default async function PersonPage({
         <div id="sources" className="mt-10 grid scroll-mt-28 grid-cols-1 gap-8 sm:grid-cols-2">
           {(sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (
             <div>
-              <h2 className="font-display text-lg font-extrabold text-ink-900">참고 출처</h2>
+              <h2 className="font-display text-lg font-extrabold text-ink-900">{T("참고 출처", "References", "Эх сурвалж")}</h2>
               {profile?.refs && profile.refs.length > 0 && (
                 <ul className="mt-3 space-y-2">
                   {profile.refs.map((r) => (
@@ -412,7 +430,7 @@ export default async function PersonPage({
 
           {(extLinks.length > 0 || photoSource) && (
             <div>
-              <h2 className="font-display text-lg font-extrabold text-ink-900">외부 링크</h2>
+              <h2 className="font-display text-lg font-extrabold text-ink-900">{T("외부 링크", "External links", "Гадаад холбоос")}</h2>
               {extLinks.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   {extLinks.map((l) => (
@@ -422,7 +440,7 @@ export default async function PersonPage({
                   ))}
                 </div>
               )}
-              {photoSource && <p className="mt-3 text-[11px] leading-relaxed text-ink-400">사진 출처: {photoSource} (CC/PD)</p>}
+              {photoSource && <p className="mt-3 text-[11px] leading-relaxed text-ink-400">{T("사진 출처", "Photo", "Зураг")}: {photoSource} (CC/PD)</p>}
             </div>
           )}
         </div>
@@ -436,28 +454,24 @@ export default async function PersonPage({
         style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8ec" }}
       >
         <div className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: "#e8a765" }}>
-          잠시, 묻는 자리
+          {T("잠시, 묻는 자리", "A moment to ask", "Түр зогсоод асуух")}
         </div>
         <p className="mx-auto mt-3 max-w-xl font-serif text-[21px] font-bold leading-snug sm:text-[25px]">
-          {person.name}의 삶에서,
-          <br />
-          당신은 무엇이 아름답다고 느꼈나요?
+          {locale === "en" ? <>In {L.name}&rsquo;s life,<br />what did you find beautiful?</>
+            : locale === "mn" ? <>{L.name}-ийн амьдралд,<br />та юуг сайхан гэж мэдэрсэн бэ?</>
+            : <>{L.name}의 삶에서,<br />당신은 무엇이 아름답다고 느꼈나요?</>}
         </p>
         <p className="mx-auto mt-4 max-w-xl font-serif text-[14.5px] leading-loose" style={{ color: "rgba(255,248,236,.8)" }}>
-          정답은 없습니다.
-          <br />
-          다만 이 질문을 가지고 가세요 —
-          <br />
-          나라면 무엇에 내 삶의 값을 치르고 싶은가.
-          <br />
-          복음이라는 바통은, 이제 당신의 손에 있습니다.
+          {locale === "en" ? <>There is no right answer.<br />Only carry this question with you —<br />what would I be willing to pay my life&rsquo;s cost for?<br />The baton of the gospel is now in your hands.</>
+            : locale === "mn" ? <>Зөв хариулт байхгүй.<br />Зөвхөн энэ асуултыг авч яваарай —<br />би юунд амьдралынхаа үнэ цэнийг зориулмаар байна вэ?<br />Сайн мэдээний бороохой одоо таны гарт байна.</>
+            : <>정답은 없습니다.<br />다만 이 질문을 가지고 가세요 —<br />나라면 무엇에 내 삶의 값을 치르고 싶은가.<br />복음이라는 바통은, 이제 당신의 손에 있습니다.</>}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link href="/story" className="rounded-full px-5 py-2.5 text-[14px] font-bold" style={{ background: "rgba(255,248,236,.14)", color: "#fff8ec" }}>
-            ← 두 움직임 다시 보기
+            {T("← 두 움직임 다시 보기", "← Revisit the two movements", "← Хоёр хөдөлгөөнийг дахин үзэх")}
           </Link>
           <Link href="/people" className="rounded-full px-5 py-2.5 text-[14px] font-bold" style={{ background: "linear-gradient(135deg,#9b3d2d,#bf6b22)", color: "#fff8ec" }}>
-            또 다른 사람을 만나기 →
+            {T("또 다른 사람을 만나기 →", "Meet another person →", "Өөр хүнтэй уулзах →")}
           </Link>
         </div>
       </section>
