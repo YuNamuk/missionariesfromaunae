@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { TOPICS, topicById, type Topic } from "@/lib/data/topics";
+import { topicById, type Topic } from "@/lib/data/topics";
 import { fetchDbTopics } from "@/lib/db/topics";
 import { getPerson, getPlace, getRelationships, activePeriods, type Person } from "@/lib/data";
 import { profileFor } from "@/lib/data/profiles";
 import { PHOTOS } from "@/lib/data/photos";
 import { Portrait } from "@/components/color-mode";
 import { HERITAGE } from "@/lib/data/heritage";
+import { getLocale } from "@/lib/i18n/server";
+import { fetchAllPersonI18n, fetchAllTopicI18n, fetchPlacesI18n, ov } from "@/lib/i18n/content";
 
-export const revalidate = 300;
-
-export function generateStaticParams() {
-  return TOPICS.map((t) => ({ id: t.id }));
-}
+export const dynamic = "force-dynamic";
 
 async function resolveTopic(id: string): Promise<Topic | undefined> {
   const db = await fetchDbTopics();
@@ -40,6 +38,17 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
   const topic = await resolveTopic(id);
   if (!topic) notFound();
 
+  const locale = await getLocale();
+  const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
+  const i18n = await fetchAllPersonI18n(locale);
+  const placesL = await fetchPlacesI18n(locale);
+  const ti = (await fetchAllTopicI18n(locale))[id];
+  const tTitle = ov(topic.title, ti?.title);
+  const tIntro = ov(topic.intro, ti?.intro);
+  const tAnalysis = ov(topic.analysis, ti?.analysis);
+  const tEra = ov(topic.era, ti?.era);
+  const nmOf = (pid: string, ko: string) => ov(ko, i18n[pid]?.name);
+
   const people = topic.people.map((pid) => getPerson(pid)).filter(Boolean) as Person[];
   const ids = new Set(people.map((p) => p.id));
   const names = new Set(people.map((p) => p.name));
@@ -64,29 +73,29 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
 
   return (
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-10 sm:px-7">
-      <Link href="/research" className="text-[13px] font-bold text-ink-400 hover:text-sky-600">← 주제연구</Link>
-      <p className="mt-4 text-[12px] font-extrabold uppercase tracking-[0.18em] text-sky-600">Topic Research · 통합 리포트</p>
-      <h1 className="font-serif mt-2 text-3xl font-bold tracking-tight text-ink-900 sm:text-[40px]">{topic.title}</h1>
-      <p className="font-serif mt-4 text-[17px] leading-[2.0] text-ink-700">{topic.intro}</p>
-      <p className="mt-3 text-[12.5px] font-bold text-ink-400">선교사 {people.length}명{topic.era ? ` · ${topic.era}` : ""}{topic.by ? ` · ${topic.by}` : ""}</p>
+      <Link href="/research" className="text-[13px] font-bold text-ink-400 hover:text-sky-600">{T("← 주제연구", "← Topic Research", "← Сэдэвчилсэн судалгаа")}</Link>
+      <p className="mt-4 text-[12px] font-extrabold uppercase tracking-[0.18em] text-sky-600">Topic Research · {T("통합 리포트", "Integrated Report", "Нэгдсэн тайлан")}</p>
+      <h1 className="font-serif mt-2 text-3xl font-bold tracking-tight text-ink-900 sm:text-[40px]">{tTitle}</h1>
+      <p className="font-serif mt-4 text-[17px] leading-[2.0] text-ink-700">{tIntro}</p>
+      <p className="mt-3 text-[12.5px] font-bold text-ink-400">{T(`선교사 ${people.length}명`, `${people.length} missionaries`, `${people.length} номлогч`)}{tEra ? ` · ${tEra}` : ""}{topic.by ? ` · ${topic.by}` : ""}</p>
 
-      {topic.analysis && (
+      {tAnalysis && (
         <section className="mt-8 rounded-3xl border p-6 sm:p-7" style={{ borderColor: "rgba(31,111,139,.3)", background: "var(--aqua-50)" }}>
-          <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-aqua-700">AI 분석 · 상관관계·시대 배경·역할·영향</div>
-          <div className="font-serif mt-3 whitespace-pre-wrap text-[15px] leading-[1.95] text-ink-800">{topic.analysis}</div>
-          <p className="mt-3 text-[11px] text-ink-400">선택 선교사의 사이트 검증 데이터(요약·연표·관계·인용)를 근거로 생성·검토된 분석입니다.</p>
+          <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-aqua-700">{T("AI 분석 · 상관관계·시대 배경·역할·영향", "AI Analysis · connections, context, roles, impact", "AI шинжилгээ · холбоо, нөхцөл, үүрэг, нөлөө")}</div>
+          <div className="font-serif mt-3 whitespace-pre-wrap text-[15px] leading-[1.95] text-ink-800">{tAnalysis}</div>
+          <p className="mt-3 text-[11px] text-ink-400">{T("선택 선교사의 사이트 검증 데이터(요약·연표·관계·인용)를 근거로 생성·검토된 분석입니다.", "Generated and reviewed from the site's verified data (summaries, timelines, relationships, quotes).", "Сайтын баталгаажсан өгөгдөл (хураангуй, он дараалал, харилцаа, эшлэл)-д тулгуурлан үүсгэж шалгасан шинжилгээ.")}</p>
         </section>
       )}
 
       {/* 활동기간 */}
       <section className="mt-10">
-        <h2 className="font-display text-lg font-extrabold text-ink-900">활동기간</h2>
+        <h2 className="font-display text-lg font-extrabold text-ink-900">{T("활동기간", "Activity Periods", "Үйл ажиллагааны хугацаа")}</h2>
         <div className="mt-3 rounded-2xl border border-ink-200 bg-white p-4">
           {[...people].sort((a, b) => a.year - b.year).map((p) => {
             const per = activePeriods(p);
             return (
               <div key={p.id} className="flex items-center" style={{ height: 24 }}>
-                <Link href={`/people/${p.id}`} className="flex-none truncate pr-2 text-[12px] font-bold text-ink-700 hover:text-sky-600" style={{ width: 92 }}>{p.name}</Link>
+                <Link href={`/people/${p.id}`} className="flex-none truncate pr-2 text-[12px] font-bold text-ink-700 hover:text-sky-600" style={{ width: 92 }}>{nmOf(p.id, p.name)}</Link>
                 <div className="relative h-full flex-1">
                   {[1900, 1920, 1940, 1960].map((d) => <span key={d} className="absolute top-0 h-full w-px bg-ink-100" style={{ left: `${pct(d)}%` }} />)}
                   {per.map(([s, e], i) => (
@@ -101,7 +110,7 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
 
       {/* 선교사 카드 */}
       <section className="mt-10">
-        <h2 className="font-display text-lg font-extrabold text-ink-900">이 주제의 선교사</h2>
+        <h2 className="font-display text-lg font-extrabold text-ink-900">{T("이 주제의 선교사", "Missionaries in this theme", "Энэ сэдвийн номлогчид")}</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {people.map((p) => {
             const pr = profileFor(p.id);
@@ -115,9 +124,9 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
                     <span className="font-display flex flex-none items-center justify-center rounded-xl text-2xl text-white" style={{ background: "var(--grad-dream)", width: 52, height: 64 }}>{p.glyph}</span>
                   )}
                   <div className="min-w-0">
-                    <div className="font-serif text-[16px] font-bold text-ink-900">{p.name} <span className="text-[12px] font-normal text-ink-400">{p.life}</span></div>
-                    <div className="text-[11.5px] font-bold text-sky-700">{p.org} · {p.role}</div>
-                    <p className="font-serif mt-1 line-clamp-3 text-[12.5px] leading-relaxed text-ink-600">{pr?.quote ? `“${pr.quote.text}”` : p.summary}</p>
+                    <div className="font-serif text-[16px] font-bold text-ink-900">{nmOf(p.id, p.name)} <span className="text-[12px] font-normal text-ink-400">{p.life}</span></div>
+                    <div className="text-[11.5px] font-bold text-sky-700">{ov(p.org, i18n[p.id]?.org)} · {ov(p.role, i18n[p.id]?.role)}</div>
+                    <p className="font-serif mt-1 line-clamp-3 text-[12.5px] leading-relaxed text-ink-600">{(() => { const q = ov(pr?.quote ?? null, i18n[p.id]?.quote); return q ? `“${q.text}”` : ov(p.summary, i18n[p.id]?.summary); })()}</p>
                   </div>
                 </div>
               </Link>
@@ -129,26 +138,26 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
       {/* 관계의 흐름 */}
       {edges.length > 0 && (
         <section className="mt-10">
-          <h2 className="font-display text-lg font-extrabold text-ink-900">관계의 흐름</h2>
+          <h2 className="font-display text-lg font-extrabold text-ink-900">{T("관계의 흐름", "The Flow of Relationships", "Харилцааны урсгал")}</h2>
           <ul className="mt-3 space-y-2">
             {edges.map((r, i) => (
               <li key={i} className="flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-3 py-2 text-[13px]">
                 <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ background: r.meta.color }}>{r.meta.label}</span>
-                <span className="font-bold text-ink-800">{r.from.name} → {r.to.name}</span>
+                <span className="font-bold text-ink-800">{nmOf(r.from.id, r.from.name)} → {nmOf(r.to.id, r.to.name)}</span>
                 {r.note && <span className="truncate text-[12px] text-ink-400">· {r.note}</span>}
               </li>
             ))}
           </ul>
-          <Link href="/flow" className="mt-3 inline-block text-[13px] font-bold text-sky-600 hover:text-sky-700">선교의 흐름에서 따라가기 →</Link>
+          <Link href="/flow" className="mt-3 inline-block text-[13px] font-bold text-sky-600 hover:text-sky-700">{T("선교의 흐름에서 따라가기 →", "Follow it in the Flow of Mission →", "Номлолын урсгалаас дагах →")}</Link>
         </section>
       )}
 
       {/* 장소·유적 */}
       <section className="mt-10">
-        <h2 className="font-display text-lg font-extrabold text-ink-900">장소 · 유적</h2>
+        <h2 className="font-display text-lg font-extrabold text-ink-900">{T("장소 · 유적", "Places · Heritage", "Газар · Дурсгал")}</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {places.map((pl) => pl && (
-            <Link key={pl.id} href={`/?focus=${pl.id}`} className="rounded-full border border-ink-200 bg-white px-3 py-1.5 text-[12.5px] font-bold text-ink-700 hover:border-sky-300 hover:text-sky-700">⚓ {pl.name}</Link>
+            <Link key={pl.id} href={`/?focus=${pl.id}`} className="rounded-full border border-ink-200 bg-white px-3 py-1.5 text-[12.5px] font-bold text-ink-700 hover:border-sky-300 hover:text-sky-700">⚓ {placesL[pl.id] ?? pl.name}</Link>
           ))}
         </div>
         {heritage.length > 0 && (
@@ -172,7 +181,7 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
       {/* 통합 링크 */}
       {links.length > 0 && (
         <section className="mt-10">
-          <h2 className="font-display text-lg font-extrabold text-ink-900">함께 보기 · 출처</h2>
+          <h2 className="font-display text-lg font-extrabold text-ink-900">{T("함께 보기 · 출처", "See Also · Sources", "Хамт үзэх · Эх сурвалж")}</h2>
           <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {links.map((l) => (
               <a key={l.url} href={l.url} target="_blank" rel="noreferrer" className="rounded-xl border border-ink-200 bg-white px-3 py-2 text-[12.5px] transition-colors hover:border-sky-300">

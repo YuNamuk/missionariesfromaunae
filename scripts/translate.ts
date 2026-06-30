@@ -12,6 +12,7 @@ import { PEOPLE, PLACES, type Person } from "../lib/data";
 import { profileFor } from "../lib/data/profiles";
 import { JOURNEY_COPY } from "../lib/data/page-copy";
 import { STUDENT_VOICES } from "../lib/data/voices";
+import { TOPICS } from "../lib/data/topics";
 
 type Locale = "en" | "mn";
 const LOCALE_NAME: Record<Locale, string> = { en: "English", mn: "Mongolian (Khalkha, Cyrillic script)" };
@@ -20,7 +21,7 @@ function parseArgs() {
   const a = process.argv.slice(2);
   const get = (k: string) => { const i = a.indexOf(k); return i >= 0 ? a[i + 1] : undefined; };
   const locales = (get("--locale") ?? "en,mn").split(",").map((s) => s.trim()).filter(Boolean) as Locale[];
-  const kinds = (get("--kind") ?? "pages,places,voices,people").split(",").map((s) => s.trim());
+  const kinds = (get("--kind") ?? "pages,places,topics,voices,people").split(",").map((s) => s.trim());
   const id = get("--id");
   const limit = get("--limit") ? Number(get("--limit")) : undefined;
   const force = a.includes("--force");
@@ -136,6 +137,31 @@ async function run() {
           await put(key, tr);
           done++; console.log(`  ✓ ${key}`);
         } catch (e) { failures.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
+        await SLEEP(400);
+      }
+    }
+    // 주제연구(제목·소개·분석) — 코드 TOPICS + DB topic.*
+    if (kinds.includes("topics")) {
+      const { data: dbRows } = await db.from("app_settings").select("key,value").like("key", "topic.%");
+      const merged: Record<string, { title?: string; intro?: string; analysis?: string; era?: string }> = {};
+      for (const t of TOPICS) merged[t.id] = { title: t.title, intro: t.intro, analysis: t.analysis, era: t.era };
+      for (const r of (dbRows ?? []) as { key: string; value: unknown }[]) {
+        const tid = r.key.replace("topic.", "");
+        const v = r.value as { title?: string; intro?: string; analysis?: string; era?: string; people?: unknown[] };
+        if (v && typeof v === "object" && Array.isArray(v.people) && v.people.length) merged[tid] = { title: v.title, intro: v.intro, analysis: v.analysis, era: v.era };
+      }
+      for (const [tid, t] of Object.entries(merged)) {
+        if (id && tid !== id) continue;
+        const key = `i18n.${locale}.topic.${tid}`;
+        if (!force && (await exists(key))) { skipped++; continue; }
+        const src: Record<string, unknown> = {};
+        if (t.title) src.title = t.title;
+        if (t.intro) src.intro = t.intro;
+        if (t.analysis) src.analysis = t.analysis;
+        if (t.era) src.era = t.era;
+        if (Object.keys(src).length === 0) { skipped++; continue; }
+        try { await put(key, await translate(locale, src)); done++; console.log(`  ✓ ${key}`); }
+        catch (e) { failures.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
         await SLEEP(400);
       }
     }

@@ -1335,10 +1335,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               <div style={{ display: "flex", alignItems: "stretch", gap: 16 }}>
                 {selPerson.photo ? (
                   <span style={{ flex: "0 0 auto" }}>
-                    <Portrait id={selPerson.id} src={selPerson.photo} alt={selPerson.name} controls badge style={{ width: 96, height: 124, borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)", display: "block" }} />
+                    <Portrait id={selPerson.id} src={selPerson.photo} alt={selPerson.name} controls badge style={{ width: 96, height: 138, borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)", display: "block" }} />
                   </span>
                 ) : (
-                  <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 96, height: 124, flex: "0 0 auto", borderRadius: 16, background: orgTint(selPerson.org), fontSize: 48 }}>{selPerson.glyph}</span>
+                  <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 96, height: 138, flex: "0 0 auto", borderRadius: 16, background: orgTint(selPerson.org), fontSize: 48 }}>{selPerson.glyph}</span>
                 )}
                 <div style={{ minWidth: 0, paddingTop: 2, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                   <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}년 {selPerson.country === "조선" ? "활동" : "입국"}</span>

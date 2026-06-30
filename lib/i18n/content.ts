@@ -86,6 +86,26 @@ export async function fetchPlacesI18n(locale: Locale): Promise<Record<string, st
   return (await readSetting<Record<string, string>>(`i18n.${locale}.places`)) ?? {};
 }
 
+export interface TopicI18n { title?: string; intro?: string; analysis?: string; era?: string }
+/** 모든 주제 번역 오버레이. ko면 빈 객체. */
+export async function fetchAllTopicI18n(locale: Locale): Promise<Record<string, TopicI18n>> {
+  if (locale === "ko") return {};
+  const db = getSupabase();
+  if (!db) return {};
+  try {
+    const prefix = `i18n.${locale}.topic.`;
+    const { data, error } = await db.from("app_settings").select("key,value").like("key", `${prefix}%`);
+    if (error || !data) return {};
+    const out: Record<string, TopicI18n> = {};
+    for (const row of data as { key: string; value: unknown }[]) {
+      if (row.value && typeof row.value === "object") out[row.key.replace(prefix, "")] = row.value as TopicI18n;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 /** ko 값 위에 번역 값을 덮어 고른다. 번역이 비었으면 ko. */
 export function ov<T>(ko: T, tr: T | null | undefined): T {
   if (tr == null) return ko;
