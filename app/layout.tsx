@@ -7,6 +7,7 @@ import { LocaleProvider } from "@/components/locale-mode";
 import { MapSettingsProvider } from "@/components/map-settings";
 import { VisitTracker } from "@/components/visit-tracker";
 import { SkipLink } from "@/components/skip-link";
+import { getLocale } from "@/lib/i18n/server";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://missionaries-khaki.vercel.app";
 const DESC =
@@ -46,11 +47,12 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
   return (
-    <html lang="ko">
+    <html lang={locale}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
