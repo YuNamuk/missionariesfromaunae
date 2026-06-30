@@ -25,6 +25,35 @@ export interface PersonProfile {
 }
 
 export const PROFILES: Record<string, PersonProfile> = {
+  jones: {
+    ministry: [
+      "1888년 21세에 미감리회 최연소 선교사로 입국 — 처음에는 배재학당에서 가르침",
+      "1892년 제물포(인천) 내리교회 담임으로 부임, 영화학교를 세워 제물포 지역 근대교육을 엶",
+      "인천·강화·부평·남양 등지를 순회하며 1903년까지 수십 개 교회를 개척하고 수천 명에게 세례를 베풂",
+      "1900년 제물포에서 한국어 신학지 『신학월보』를 창간 — 한국인을 위한 신학 문서선교의 출발",
+      "영문지 『코리안 리포지터리』·『코리아 리뷰』를 편집하며 한국의 역사·종교·언어를 학문적으로 연구해 세계에 알림",
+    ],
+    journey:
+      "복음이 아직 낯설던 항구 도시 제물포에서, 젊은 선교사는 교회와 학교와 잡지를 함께 일구었다. 그는 한국을 ‘가르칠 대상’이 아니라 ‘배워야 할 나라’로 대했고, 그 땅의 말과 종교를 학문으로 끌어안은 첫 세대였다.",
+    influence:
+      "그가 세운 내리교회와 영화학교는 인천 기독교와 근대교육의 뿌리가 되었고, 『신학월보』는 한국인 스스로 신학을 읽고 쓰는 길을 열었다. 그의 교회에서 자란 교인 다수가 1902년 첫 하와이 이민 길에 올라, 한국 교회는 일찍부터 바다 건너로 이어졌다.",
+    beauty:
+      "가장 어린 나이로 들어와 가장 부지런히 한국을 배운 사람. 그는 한국을 연구해 세계에 변호했고, 끝내 병을 얻어 고국으로 돌아간 뒤에도 한국을 마음에서 내려놓지 않았다.",
+  },
+  anniebaird: {
+    ministry: [
+      "1891년 남편 윌리엄 베어드와 함께 입국 — 부산·대구를 거쳐 1897년 평양에 정착",
+      "한국 여성들을 집으로 맞아들여 가르치고, 평양에서 첫 여성 사경회(성경 공부반)를 인도함",
+      "한국어를 깊이 익혀 남편의 번역과 저술을 도왔고, 여러 찬송가를 한국어로 옮김",
+      "『해 뜨는 동방(Daybreak in Korea, 1909)』·『한국어 학습자를 위한 50가지 도움(1911)』·『선교 생활의 안쪽 풍경(1913)』을 써 선교 현장을 안팎에 알림",
+    ],
+    journey:
+      "남편의 이름 뒤에 가려지기 쉬운 자리에서, 그는 자기 몫의 일을 조용히 감당했다. 여성들이 글을 읽고 성경을 배우도록 길을 냈고, 한국어로 찬송을 옮겨 예배의 말을 한국 사람의 입에 얹었다.",
+    influence:
+      "그가 연 평양의 여성 사경회는 이후 여성 신앙교육과 부흥의 밑거름이 되었고, 그의 글은 한국 선교의 현실을 세계 독자에게 전한 드문 창이었다. 숭실의 설립기를 함께 견딘 동역자이기도 했다.",
+    beauty:
+      "이름난 직책 없이도, 한 가정의 안주인이자 교사이자 번역자로 평양의 삶을 살아냈다. 1916년 그곳에서 생을 마쳤다.",
+  },
   allen: {
     ministry: [
       "1884년 미국 북장로회 의료선교사로 입국, 주한 미국공사관부 의사 신분으로 활동",
@@ -534,6 +563,40 @@ const QUOTES: Record<string, { text: string; source: string }> = {
 
 // 인물별 검증된 권위 참고 사료 링크(한국민족문화대백과·위키 등). 리서치로 인물 일치 확인된 것만.
 const REFS: Record<string, { title: string; url: string; publisher?: string }[]> = {
+  "jones": [
+    {
+      "title": "George Heber Jones — Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/George_Heber_Jones",
+      "publisher": "English Wikipedia"
+    },
+    {
+      "title": "교산교회 — 한국민족문화대백과사전",
+      "url": "https://encykorea.aks.ac.kr/Article/E0076692",
+      "publisher": "한국학중앙연구원"
+    },
+    {
+      "title": "The Korea mission of the Methodist Episcopal Church (1910) — 원저 G. H. Jones",
+      "url": "https://archive.org/details/koreamissionofme00jone",
+      "publisher": "Internet Archive"
+    }
+  ],
+  "anniebaird": [
+    {
+      "title": "Annie Laurie Adams Baird — Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Annie_Laurie_Adams_Baird",
+      "publisher": "English Wikipedia"
+    },
+    {
+      "title": "Daybreak in Korea (1909) — 원저 Annie L. A. Baird",
+      "url": "https://archive.org/details/daybreakinkoreat00bair",
+      "publisher": "Internet Archive"
+    },
+    {
+      "title": "Annie Laurie Adams Baird Papers — Presbyterian Historical Society",
+      "url": "https://www.history.pcusa.org/collections/research-tools/guides-archival-collections/rg-172",
+      "publisher": "Presbyterian Church (U.S.A.)"
+    }
+  ],
   "allen": [
     {
       "title": "호러스 뉴턴 알렌 — 위키백과",
