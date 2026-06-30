@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Portrait } from "@/components/color-mode";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type FlowPerson = {
   id: string;
@@ -22,7 +23,8 @@ export type RelItem = { id: string; name: string; type: string; label: string; c
 
 // 흐름 카드: 이미지·내용을 그대로 유지한 채 화면 폭에 맞춰 작아지고(폭 공유),
 // 마우스를 올리면 그 카드만 넓어지며 요약 전문이 펼쳐진다. 가로 스크롤 없음.
-function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelItem; fromName: string } }) {
+function FlowCard({ p, n, step, locale }: { p: FlowPerson; n: number; step?: { rel: RelItem; fromName: string }; locale: Locale }) {
+  const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
   return (
     <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border" style={{ height: 392, maxWidth: 300, borderColor: "rgba(77,56,34,.18)", background: "#fdf6ea", boxShadow: "0 10px 26px rgba(46,28,14,.12)" }}>
       <span className="font-display absolute right-2.5 top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-extrabold" style={{ background: "rgba(255,248,236,.18)", color: "#fff8ed", border: "1px solid rgba(255,248,236,.25)" }}>{n}</span>
@@ -34,7 +36,7 @@ function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelI
           <span className="font-display flex flex-none items-center justify-center rounded-2xl text-3xl" style={{ width: 66, height: 84, background: "rgba(255,248,236,.14)", color: "#fff8eb" }}>{p.glyph}</span>
         )}
         <div className="min-w-0 pt-0.5">
-          <span className="inline-block rounded-full px-2 py-0.5 text-[9.5px] font-extrabold" style={{ background: "rgba(255,255,255,.16)" }}>{p.year}년</span>
+          <span className="inline-block rounded-full px-2 py-0.5 text-[9.5px] font-extrabold" style={{ background: "rgba(255,255,255,.16)" }}>{p.year}{locale === "ko" ? "년" : ""}</span>
           <h2 className="font-serif mt-1 text-[18px] font-bold leading-tight" style={{ color: "#fff8eb" }}>{p.name}</h2>
           <p className="font-serif text-[11px]" style={{ color: "rgba(255,248,235,.8)" }}>{p.en}</p>
           <p className="font-serif text-[11px]" style={{ color: "rgba(255,248,235,.62)" }}>{p.life}</p>
@@ -46,7 +48,7 @@ function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelI
           <div className="flex-none rounded-2xl border px-2.5 py-2" style={{ borderColor: "rgba(31,111,139,.25)", background: "#eef5f7" }}>
             <div className="flex items-center gap-1.5">
               <span className="rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ background: step.rel.color }}>{step.rel.label}</span>
-              <span className="text-[11.5px] font-extrabold text-aqua-700">{step.rel.dir === "→" ? `${step.fromName}에게서` : `${step.fromName}와(과) 함께`}</span>
+              <span className="text-[11.5px] font-extrabold text-aqua-700">{step.rel.dir === "→" ? T(`${step.fromName}에게서`, `from ${step.fromName}`, `${step.fromName}-аас`) : T(`${step.fromName}와(과) 함께`, `with ${step.fromName}`, `${step.fromName}-тай хамт`)}</span>
             </div>
             {step.rel.note && <p className="mt-1 text-[11px] leading-snug text-ink-600">{step.rel.note}</p>}
           </div>
@@ -57,7 +59,7 @@ function FlowCard({ p, n, step }: { p: FlowPerson; n: number; step?: { rel: RelI
           </figure>
         )}
         <p className="font-serif flex-1 overflow-y-auto text-[12.5px] leading-[1.75] text-ink-700">{p.summary}</p>
-        <Link href={`/people/${p.id}`} className="flex-none text-[12px] font-bold text-sky-600 hover:text-sky-700">상세 페이지 →</Link>
+        <Link href={`/people/${p.id}`} className="flex-none text-[12px] font-bold text-sky-600 hover:text-sky-700">{T("상세 페이지 →", "Full profile →", "Дэлгэрэнгүй →")}</Link>
       </div>
     </div>
   );
@@ -75,7 +77,8 @@ function Column({ title, sub, children }: { title: string; sub?: string; childre
   );
 }
 
-export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Record<string, RelItem[]> }) {
+export function FlowExplorer({ people, rels, locale = "ko" }: { people: FlowPerson[]; rels: Record<string, RelItem[]>; locale?: Locale }) {
+  const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
   const byId = useMemo(() => Object.fromEntries(people.map((p) => [p.id, p])), [people]);
   // 각 단계: 인물 id + 직전 인물에게서 따라온 관계(rel). 처음 선택은 rel=null.
   const [path, setPath] = useState<{ id: string; rel: RelItem | null }[]>([]);
@@ -89,17 +92,20 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
   return (
     <div className="mx-auto max-w-6xl px-5 pb-24 pt-12 sm:px-7">
       <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-sky-600">The Flow of Mission</p>
-      <h1 className="font-serif mt-2 text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">선교의 흐름</h1>
+      <h1 className="font-serif mt-2 text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">{T("선교의 흐름", "The Flow of Mission", "Номлолын урсгал")}</h1>
       <p className="font-serif mt-3 max-w-2xl text-[16px] leading-relaxed text-ink-600">
-        한 선교사를 고르면 그와 이어진 사람들이 옆에 펼쳐집니다. 따라가며 눌러 보세요 —
-        누가 누구를 준비시키고, 길러내고, 함께 일했는지, <b className="text-ink-800">복음이 사람에서 사람으로 흘러온 길</b>이 드러납니다.
+        {T(
+          "한 선교사를 고르면 그와 이어진 사람들이 옆에 펼쳐집니다. 따라가며 눌러 보세요 — 누가 누구를 준비시키고, 길러내고, 함께 일했는지, 복음이 사람에서 사람으로 흘러온 길이 드러납니다.",
+          "Choose a missionary and those connected to them unfold beside them. Follow and click — who prepared, raised, and worked alongside whom: the path by which the gospel flowed from person to person.",
+          "Нэг номлогчийг сонгоход түүнтэй холбоотой хүмүүс хажууд нь дэлгэгдэнэ. Дагаж дараарай — хэн хэнийг бэлтгэж, өсгөж, хамт ажилласан нь: сайн мэдээ хүнээс хүнд урсаж ирсэн зам илэрнэ.",
+        )}
       </p>
 
       {/* 컬럼들: 가로 스크롤 */}
       <div className="mt-7 flex gap-3 overflow-x-auto pb-3">
         {/* 시작 컬럼 */}
-        <Column title="① 처음 선교사" sub={`${people.length}명 · 입국·활동 연도순`}>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="이름 검색" className="mb-1.5 w-full rounded-lg border border-ink-200 px-2.5 py-1.5 text-[12.5px]" />
+        <Column title={T("① 처음 선교사", "① Starting point", "① Эхлэх цэг")} sub={T(`${people.length}명 · 입국·활동 연도순`, `${people.length} people · by year`, `${people.length} хүн · оноор`)}>
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={T("이름 검색", "Search name", "Нэр хайх")} className="mb-1.5 w-full rounded-lg border border-ink-200 px-2.5 py-1.5 text-[12.5px]" />
           {starters.map((p) => (
             <button key={p.id} onClick={() => setPath([{ id: p.id, rel: null }])} className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-[13px] hover:bg-ink-50" style={path[0]?.id === p.id ? { background: "#2f2419", color: "#fff8ed" } : { color: "var(--ink-800)" }}>
               <span className="font-bold">{p.name}</span>
@@ -125,7 +131,7 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
           return (
             <div key={`${id}-${k}`} className="flex flex-none items-center gap-3">
               <span className="text-ink-300">→</span>
-              <Column title={`${["②", "③", "④", "⑤", "⑥"][k] ?? "·"} ${byId[id]?.name}의 연관`} sub={`${list.length}명`}>
+              <Column title={`${["②", "③", "④", "⑤", "⑥"][k] ?? "·"} ${T(`${byId[id]?.name}의 연관`, `Linked to ${byId[id]?.name}`, `${byId[id]?.name}-тай холбоотой`)}`} sub={T(`${list.length}명`, `${list.length}`, `${list.length}`)}>
                 {list.map((r) => (
                   <button key={r.id + r.type} onClick={() => setPath((pp) => [...pp.slice(0, k + 1), { id: r.id, rel: r }])} className="w-full rounded-lg px-2.5 py-1.5 text-left hover:bg-ink-50" style={chosenId === r.id ? { background: "#2f2419" } : undefined}>
                     <span className="flex items-center gap-1.5">
@@ -145,18 +151,18 @@ export function FlowExplorer({ people, rels }: { people: FlowPerson[]; rels: Rec
       <div className="mt-6">
         {path.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-ink-200 bg-ink-50 p-10 text-center font-serif text-[15px] text-ink-400">
-            위에서 처음 선교사를 선택하면, 따라간 인물들의 카드가 여기에 차례로 쌓입니다.
+            {T("위에서 처음 선교사를 선택하면, 따라간 인물들의 카드가 여기에 차례로 쌓입니다.", "Choose a missionary above, and the cards of those you follow will stack here in order.", "Дээрээс номлогч сонгоход дагасан хүмүүсийн карт энд дараалан овоорно.")}
           </div>
         ) : (
           <>
             <div className="mb-3 flex items-center justify-between">
-              <div className="font-display text-[13px] font-extrabold text-ink-500">선택한 흐름 · {path.length}명</div>
-              <button onClick={() => setPath([])} className="rounded-full border border-ink-200 px-3 py-1 text-[12px] font-bold text-ink-500 hover:border-sky-300 hover:text-sky-700">처음부터</button>
+              <div className="font-display text-[13px] font-extrabold text-ink-500">{T(`선택한 흐름 · ${path.length}명`, `Selected flow · ${path.length}`, `Сонгосон урсгал · ${path.length}`)}</div>
+              <button onClick={() => setPath([])} className="rounded-full border border-ink-200 px-3 py-1 text-[12px] font-bold text-ink-500 hover:border-sky-300 hover:text-sky-700">{T("처음부터", "Reset", "Дахин")}</button>
             </div>
             <div className="flex w-full gap-2">
-              {path.map((node, i) => byId[node.id] && <FlowCard key={node.id + i} p={byId[node.id]} n={i + 1} step={i > 0 && node.rel ? { rel: node.rel, fromName: byId[path[i - 1].id]?.name ?? "" } : undefined} />)}
+              {path.map((node, i) => byId[node.id] && <FlowCard key={node.id + i} p={byId[node.id]} n={i + 1} step={i > 0 && node.rel ? { rel: node.rel, fromName: byId[path[i - 1].id]?.name ?? "" } : undefined} locale={locale} />)}
             </div>
-            <p className="mt-2 text-[12px] text-ink-400">카드는 화면 폭에 맞춰 접히고, 마우스를 올리면 그 카드가 펼쳐집니다.</p>
+            <p className="mt-2 text-[12px] text-ink-400">{T("카드는 화면 폭에 맞춰 접히고, 마우스를 올리면 그 카드가 펼쳐집니다.", "Cards shrink to fit the width; hover to expand one.", "Картууд өргөнд тааруулж агшина; хулганаа аваачвал тэлнэ.")}</p>
           </>
         )}
       </div>

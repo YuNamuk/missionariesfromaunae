@@ -8,7 +8,7 @@
 // 필요한 env: ANTHROPIC_API_KEY (+ SUPABASE_*). 모델: ANALYSIS_MODEL || claude-sonnet-4-6.
 
 import { getServiceSupabase } from "../lib/db/supabase";
-import { PEOPLE, type Person } from "../lib/data";
+import { PEOPLE, PLACES, type Person } from "../lib/data";
 import { profileFor } from "../lib/data/profiles";
 import { JOURNEY_COPY } from "../lib/data/page-copy";
 import { STUDENT_VOICES } from "../lib/data/voices";
@@ -20,7 +20,7 @@ function parseArgs() {
   const a = process.argv.slice(2);
   const get = (k: string) => { const i = a.indexOf(k); return i >= 0 ? a[i + 1] : undefined; };
   const locales = (get("--locale") ?? "en,mn").split(",").map((s) => s.trim()).filter(Boolean) as Locale[];
-  const kinds = (get("--kind") ?? "pages,voices,people").split(",").map((s) => s.trim());
+  const kinds = (get("--kind") ?? "pages,places,voices,people").split(",").map((s) => s.trim());
   const id = get("--id");
   const limit = get("--limit") ? Number(get("--limit")) : undefined;
   const force = a.includes("--force");
@@ -134,6 +134,21 @@ async function run() {
           const koCopy = { ...JOURNEY_COPY, ...(await koPageOverlay("journey")) };
           const tr = await translate(locale, koCopy);
           await put(key, tr);
+          done++; console.log(`  ✓ ${key}`);
+        } catch (e) { failures.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
+        await SLEEP(400);
+      }
+    }
+    // 장소명
+    if (kinds.includes("places")) {
+      const key = `i18n.${locale}.places`;
+      if (!force && (await exists(key))) { skipped++; }
+      else {
+        try {
+          const koPlaces: Record<string, string> = {};
+          for (const pl of PLACES) koPlaces[pl.id] = pl.name;
+          const tr = await translate(locale, { places: koPlaces });
+          await put(key, (tr as { places: unknown }).places ?? tr);
           done++; console.log(`  ✓ ${key}`);
         } catch (e) { failures.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
         await SLEEP(400);

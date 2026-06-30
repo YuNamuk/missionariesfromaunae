@@ -80,6 +80,12 @@ export async function fetchVoicesI18n(locale: Locale): Promise<VoiceI18n[] | nul
   return readSetting<VoiceI18n[]>(`i18n.${locale}.voices`);
 }
 
+/** 장소명 번역 {id: name}. ko면 빈 객체. */
+export async function fetchPlacesI18n(locale: Locale): Promise<Record<string, string>> {
+  if (locale === "ko") return {};
+  return (await readSetting<Record<string, string>>(`i18n.${locale}.places`)) ?? {};
+}
+
 /** ko 값 위에 번역 값을 덮어 고른다. 번역이 비었으면 ko. */
 export function ov<T>(ko: T, tr: T | null | undefined): T {
   if (tr == null) return ko;

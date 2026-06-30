@@ -10,6 +10,7 @@ import { HERITAGE } from "@/lib/data/heritage";
 import { MapSettingsButton } from "@/components/map-settings";
 import { LocaleToggle, useLocale } from "@/components/locale-mode";
 import { t } from "@/lib/i18n/ui";
+import { tl } from "@/lib/i18n/labels";
 import type { Locale } from "@/lib/i18n/locale";
 
 // ── 정적 디렉터리 데이터(카테고리별 인물). 헤더는 '필터'가 아니라 '표기·탐색'. ──
@@ -117,12 +118,12 @@ function BrowseDrop({ open, setOpen, onPickPerson, onPickFocus, onPickYear, onPi
       </div>
     );
   }
-  function Groups({ groups, onPick }: { groups: Group[]; onPick: (pid: string) => void }) {
+  function Groups({ groups, onPick, type }: { groups: Group[]; onPick: (pid: string) => void; type?: string }) {
     return (
       <>
         {groups.map((g) => (
           <div key={g.key} className="mb-1">
-            <div className="px-1 pt-1 text-[10px] font-bold" style={{ color: "#a07d4e" }}>{g.label} <span className="opacity-55">{g.people.length}</span></div>
+            <div className="px-1 pt-1 text-[10px] font-bold" style={{ color: "#a07d4e" }}>{type ? tl(locale, type, g.key, g.label) : g.label} <span className="opacity-55">{g.people.length}</span></div>
             {g.people.map((p) => (
               <button key={p.id} onClick={() => onPick(p.id)} className={itemCls} style={{ color: "#3e2c1d" }}>
                 <span className="truncate">{p.name}</span>{p.year > 0 && <span className="text-[10px] opacity-50">{p.year}</span>}
@@ -146,7 +147,7 @@ function BrowseDrop({ open, setOpen, onPickPerson, onPickFocus, onPickYear, onPi
               <Card title={t(locale, "browse.eras")}>
                 {ERAS.map((e) => (
                   <button key={e.key} onClick={() => onPickYear(Math.round((e.from + e.to) / 2))} className={itemCls} style={{ color: "#3e2c1d" }}>
-                    <span className="truncate">{e.label}</span><span className="text-[10px] opacity-55">{Math.round((e.from + e.to) / 2)}{locale === "ko" ? "년" : ""}</span>
+                    <span className="truncate">{tl(locale, "era", e.key, e.label)}</span><span className="text-[10px] opacity-55">{Math.round((e.from + e.to) / 2)}{locale === "ko" ? "년" : ""}</span>
                   </button>
                 ))}
               </Card>
@@ -156,10 +157,10 @@ function BrowseDrop({ open, setOpen, onPickPerson, onPickFocus, onPickYear, onPi
                 ))}
               </Card>
               <Card title={t(locale, "browse.heritage")}><Groups groups={HERITAGE_GROUPS} onPick={onPickHeritage} /></Card>
-              <Card title={t(locale, "browse.denom")}><Groups groups={DENOM_GROUPS} onPick={onPickPerson} /></Card>
-              <Card title={t(locale, "browse.country")}><Groups groups={COUNTRY_GROUPS} onPick={onPickPerson} /></Card>
-              <Card title={t(locale, "browse.role")}><Groups groups={ROLE_GROUPS} onPick={onPickPerson} /></Card>
-              <Card title={t(locale, "browse.region")}><Groups groups={REGION_GROUPS} onPick={onPickPerson} /></Card>
+              <Card title={t(locale, "browse.denom")}><Groups groups={DENOM_GROUPS} onPick={onPickPerson} type="denom" /></Card>
+              <Card title={t(locale, "browse.country")}><Groups groups={COUNTRY_GROUPS} onPick={onPickPerson} type="country" /></Card>
+              <Card title={t(locale, "browse.role")}><Groups groups={ROLE_GROUPS} onPick={onPickPerson} type="role" /></Card>
+              <Card title={t(locale, "browse.region")}><Groups groups={REGION_GROUPS} onPick={onPickPerson} type="region" /></Card>
             </div>
           </div>
         </div>

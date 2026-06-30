@@ -17,7 +17,7 @@ import { PHOTOS } from "@/lib/data/photos";
 import { profileFor } from "@/lib/data/profiles";
 import { fetchPersonContent, fetchReview } from "@/lib/db/editable";
 import { getLocale } from "@/lib/i18n/server";
-import { fetchPersonI18n, ov } from "@/lib/i18n/content";
+import { fetchPersonI18n, fetchPlacesI18n, ov } from "@/lib/i18n/content";
 
 // 로케일 쿠키 + 관리자 오버레이를 반영하기 위해 요청별 동적 렌더.
 
@@ -54,6 +54,8 @@ export default async function PersonPage({
 
   const locale = await getLocale();
   const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
+  const placesL = await fetchPlacesI18n(locale);
+  const plName = (p: { id: string; name: string }) => placesL[p.id] ?? p.name;
 
   const place = getPlace(person.place);
   const rels = relationshipsFor(person.id);
@@ -185,7 +187,7 @@ export default async function PersonPage({
                 href={`/map?place=${place.id}`}
                 className="rounded-full bg-ink-100 px-3 py-1 text-[12px] font-bold text-ink-700 hover:bg-ink-200"
               >
-                ⚓ {place.name}
+                ⚓ {plName(place)}
               </Link>
             )}
           </div>
@@ -273,13 +275,13 @@ export default async function PersonPage({
           <p className="font-serif mt-2 text-[16px] leading-[1.95] text-ink-800">
             {locale === "en" ? (
               <>They could have returned, but made Korea their home. They rest at{" "}
-                <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>{burialPlace.name}</Link>.</>
+                <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>{plName(burialPlace)}</Link>.</>
             ) : locale === "mn" ? (
               <>Тэд буцаж болох байсан ч Солонгосыг гэрээ болгосон. Тэд{" "}
-                <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>{burialPlace.name}</Link>-д амарч байна.</>
+                <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>{plName(burialPlace)}</Link>-д амарч байна.</>
             ) : (
               <>돌아갈 수도 있었지만, 조선을 집으로 삼았습니다.{" "}
-                <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>{burialPlace.name}</Link>에 잠들어 있습니다.</>
+                <Link href={`/?focus=${burialPlace.id}`} className="font-extrabold underline underline-offset-2" style={{ color: "#9b3d2d" }}>{plName(burialPlace)}</Link>에 잠들어 있습니다.</>
             )}
           </p>
         </section>

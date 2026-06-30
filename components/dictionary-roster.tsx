@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Portrait } from "@/components/color-mode";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type RosterPerson = {
   id: string;
@@ -16,6 +17,23 @@ export type RosterPerson = {
   photo: string | null;
   featured: boolean;
   country: string;
+  /** 표시용(로케일) — 필터는 ko org/role, 표시는 이 필드 사용. */
+  nameD?: string;
+  orgD?: string;
+  roleD?: string;
+};
+
+// facet 칩 표시 라벨(필터 키는 한국어 유지, 표시만 로케일).
+const DEN_LABEL: Record<string, { en: string; mn: string }> = {
+  "장로회": { en: "Presbyterian", mn: "Пресбитериан" },
+  "감리회": { en: "Methodist", mn: "Методист" },
+  "기타": { en: "Other", mn: "Бусад" },
+};
+const FIELD_LABEL: Record<string, { en: string; mn: string }> = {
+  "의료": { en: "Medical", mn: "Анагаах" },
+  "교육": { en: "Education", mn: "Боловсрол" },
+  "번역": { en: "Translation", mn: "Орчуулга" },
+  "전도·목회": { en: "Evangelism", mn: "Сайн мэдээ" },
 };
 
 // 교단 계열(장로회/감리회/기타)로 거칠게 분류 — org 문자열 기준.
@@ -49,9 +67,12 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
   );
 }
 
-export function DictionaryRoster({ people }: { people: RosterPerson[] }) {
+export function DictionaryRoster({ people, locale = "ko" }: { people: RosterPerson[]; locale?: Locale }) {
   const [den, setDen] = useState<string | null>(null);
   const [field, setField] = useState<string | null>(null);
+  const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
+  const denLbl = (k: string) => (locale === "ko" ? k : DEN_LABEL[k]?.[locale] ?? k);
+  const fieldLbl = (k: string) => (locale === "ko" ? k : FIELD_LABEL[k]?.[locale] ?? k);
 
   const featuredCount = people.filter((p) => p.featured).length;
   const list = useMemo(() => {
@@ -69,33 +90,33 @@ export function DictionaryRoster({ people }: { people: RosterPerson[] }) {
     <section className="mt-12">
       <div className="flex items-end justify-between border-b border-ink-200 pb-3">
         <h2 className="font-display text-2xl font-black tracking-tight text-ink-900">
-          전체 인명 <span className="text-[13px] font-semibold text-ink-400">· 입국·활동 연도순</span>
+          {T("전체 인명", "All Names", "Бүх нэрс")} <span className="text-[13px] font-semibold text-ink-400">· {T("입국·활동 연도순", "by year", "оноор")}</span>
         </h2>
         <span className="text-[13px] font-bold text-ink-500">
-          {list.length === people.length ? `${people.length}명 · 대표 ${featuredCount}명` : `${list.length}명`}
+          {list.length === people.length ? T(`${people.length}명 · 대표 ${featuredCount}명`, `${people.length} · ★ ${featuredCount}`, `${people.length} · ★ ${featuredCount}`) : `${list.length}`}
         </span>
       </div>
 
       {/* facet 필터: 교단 · 사역 분야 */}
       <div className="mt-4 space-y-2">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-[11px] font-extrabold uppercase tracking-wide text-ink-400">교단</span>
-          <Chip on={!den} onClick={() => setDen(null)}>전체</Chip>
+          <span className="mr-1 text-[11px] font-extrabold uppercase tracking-wide text-ink-400">{T("교단", "Denomination", "Урсгал")}</span>
+          <Chip on={!den} onClick={() => setDen(null)}>{T("전체", "All", "Бүгд")}</Chip>
           {(["장로회", "감리회", "기타"] as const).map((d) => (
-            <Chip key={d} on={den === d} onClick={() => setDen(den === d ? null : d)}>{d}</Chip>
+            <Chip key={d} on={den === d} onClick={() => setDen(den === d ? null : d)}>{denLbl(d)}</Chip>
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-[11px] font-extrabold uppercase tracking-wide text-ink-400">사역</span>
-          <Chip on={!field} onClick={() => setField(null)}>전체</Chip>
+          <span className="mr-1 text-[11px] font-extrabold uppercase tracking-wide text-ink-400">{T("사역", "Ministry", "Үйлчлэл")}</span>
+          <Chip on={!field} onClick={() => setField(null)}>{T("전체", "All", "Бүгд")}</Chip>
           {FIELDS.map((f) => (
-            <Chip key={f.key} on={field === f.key} onClick={() => setField(field === f.key ? null : f.key)}>{f.key}</Chip>
+            <Chip key={f.key} on={field === f.key} onClick={() => setField(field === f.key ? null : f.key)}>{fieldLbl(f.key)}</Chip>
           ))}
         </div>
       </div>
 
       {list.length === 0 ? (
-        <p className="mt-6 text-[14px] text-ink-500">해당 조건의 인물이 없습니다.</p>
+        <p className="mt-6 text-[14px] text-ink-500">{T("해당 조건의 인물이 없습니다.", "No one matches these filters.", "Эдгээр шүүлтэд тохирох хүн алга.")}</p>
       ) : (
         <ul className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {list.map((p) => {
@@ -113,11 +134,11 @@ export function DictionaryRoster({ people }: { people: RosterPerson[] }) {
                   </div>
                   <div className="px-3 py-2.5">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="font-serif text-[15px] font-extrabold text-ink-900">{p.name}</span>
+                      <span className="font-serif text-[15px] font-extrabold text-ink-900">{p.nameD ?? p.name}</span>
                       <span className="text-[11.5px] font-bold text-ink-400">{p.year}</span>
                     </div>
                     {!isKorean && <div className="truncate text-[11px] text-ink-400">{p.en}</div>}
-                    <div className="truncate text-[11.5px] text-ink-500">{p.org} · {p.role}</div>
+                    <div className="truncate text-[11.5px] text-ink-500">{p.orgD ?? p.org} · {p.roleD ?? p.role}</div>
                   </div>
                 </Link>
               </li>
