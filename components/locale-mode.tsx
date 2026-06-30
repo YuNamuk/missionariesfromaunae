@@ -10,11 +10,21 @@ import { t } from "@/lib/i18n/ui";
 type Ctx = { locale: Locale; setLocale: (v: Locale) => void; toggle: () => void };
 const LocaleCtx = createContext<Ctx>({ locale: DEFAULT_LOCALE, setLocale: () => {}, toggle: () => {} });
 
+function readCookieRaw(): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  return document.cookie.match(new RegExp(`(?:^|; )${LOCALE_COOKIE}=([^;]*)`))?.[1];
+}
 function readCookie(): Locale {
-  if (typeof document === "undefined") return DEFAULT_LOCALE;
-  const m = document.cookie.match(new RegExp(`(?:^|; )${LOCALE_COOKIE}=([^;]*)`));
-  const v = m?.[1];
+  const v = readCookieRaw();
   return isLocale(v) ? v : DEFAULT_LOCALE;
+}
+/** 브라우저 언어로 첫 로케일 추정(쿠키 없을 때). 몽골어·영어면 그 언어, 아니면 한국어. */
+function detectLocale(): Locale {
+  if (typeof navigator === "undefined") return DEFAULT_LOCALE;
+  const langs = [navigator.language, ...(navigator.languages ?? [])].map((l) => (l || "").toLowerCase());
+  if (langs.some((l) => l.startsWith("mn"))) return "mn";
+  if (langs.some((l) => l.startsWith("en"))) return "en";
+  return "ko";
 }
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
@@ -22,10 +32,22 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
 
   useEffect(() => {
-    const v = readCookie();
-    setLocaleState(v);
-    document.documentElement.lang = v;
-  }, []);
+    // 쿠키가 있으면 그 값, 없으면 브라우저 언어로 첫 추정.
+    const saved = readCookieRaw();
+    if (isLocale(saved)) {
+      setLocaleState(saved);
+      document.documentElement.lang = saved;
+      return;
+    }
+    const guess = detectLocale();
+    setLocaleState(guess);
+    document.documentElement.lang = guess;
+    // 추정이 한국어가 아니면 쿠키 저장 + 서버 본문도 그 언어로 다시 렌더.
+    if (guess !== DEFAULT_LOCALE) {
+      try { document.cookie = `${LOCALE_COOKIE}=${guess}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`; } catch { /* ignore */ }
+      router.refresh();
+    }
+  }, [router]);
 
   const apply = useCallback((v: Locale) => {
     setLocaleState(v);
