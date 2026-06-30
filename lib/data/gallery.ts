@@ -278,7 +278,8 @@ export const GALLERY: Record<string, GalleryPhoto[]> = {
       "src": "https://upload.wikimedia.org/wikipedia/commons/4/4f/%EC%A1%B0%EC%84%A0_%EC%B5%9C%EC%B4%88%EC%9D%98_%EC%9C%A0%EC%95%84%EC%84%B8%EB%A1%80%EC%9E%90.png",
       "caption": "조선 최초의 유아세례자의 일부, 윗줄은 좌로부터 서병호, 김규식, 앉은 이는 김일, 원한경 순",
       "source": "Wikimedia Commons · Public domain",
-      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EC%A1%B0%EC%84%A0_%EC%B5%9C%EC%B4%88%EC%9D%98_%EC%9C%A0%EC%95%84%EC%84%B8%EB%A1%80%EC%9E%90.png"
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:%EC%A1%B0%EC%84%A0_%EC%B5%9C%EC%B4%88%EC%9D%98_%EC%9C%A0%EC%95%84%EC%84%B8%EB%A1%80%EC%9E%90.png",
+      "srcColor": "/portraits/gallery/hhunderwood-0-color.jpg"
     }
   ],
   "maclay": [
