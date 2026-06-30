@@ -5,11 +5,18 @@ import { fetchPageContent } from "@/lib/db/editable";
 import { getLocale } from "@/lib/i18n/server";
 import { pick } from "@/lib/i18n/locale";
 
-export const metadata: Metadata = {
-  title: "아름다운 삶은 무엇일까 · 들어가며",
-  description:
-    "성공이 아니라 섬김으로 산 사람들. 복음이 선교사를 통해 우리에게 왔고, 이제 우리를 통해 세계로 간다. 한 사람의 삶을 만나고, 다음 주자로 서는 자리.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const l = await getLocale();
+  const t = (ko: string, en: string, mn: string) => (l === "mn" ? mn : l === "en" ? en : ko);
+  return {
+    title: t("아름다운 삶은 무엇일까 · 들어가며", "What Makes a Life Beautiful? · Begin Here", "Сайхан амьдрал гэж юу вэ? · Эхлэл"),
+    description: t(
+      "성공이 아니라 섬김으로 산 사람들. 복음이 선교사를 통해 우리에게 왔고, 이제 우리를 통해 세계로 간다. 한 사람의 삶을 만나고, 다음 주자로 서는 자리.",
+      "People who lived by service, not success. The gospel came to us through missionaries, and now goes to the world through us. Meet one life, and take your place as the next runner.",
+      "Амжилт биш, үйлчлэлээр амьдарсан хүмүүс. Сайн мэдээ номлогчдоор дамжин бидэнд ирж, одоо бидээр дамжин дэлхийд тарна.",
+    ),
+  };
+}
 
 // 로케일 쿠키를 읽으므로 이 페이지는 요청별 동적 렌더(관리자 카피 편집도 즉시 반영).
 

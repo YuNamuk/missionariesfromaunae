@@ -7,8 +7,11 @@ import { PHOTOS } from "@/lib/data/photos";
 import { getLocale } from "@/lib/i18n/server";
 import { fetchAllTopicI18n, ov } from "@/lib/i18n/content";
 
-export const metadata: Metadata = { title: "주제연구" };
 export const dynamic = "force-dynamic";
+export async function generateMetadata(): Promise<Metadata> {
+  const l = await getLocale();
+  return { title: l === "mn" ? "Сэдэвчилсэн судалгаа" : l === "en" ? "Topic Research" : "주제연구" };
+}
 
 export default async function ResearchIndex() {
   const locale = await getLocale();

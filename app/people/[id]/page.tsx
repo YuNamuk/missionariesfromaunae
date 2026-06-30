@@ -41,7 +41,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const person = getPerson(id);
-  return { title: person ? person.name : "인물" };
+  if (!person) return { title: "인물" };
+  const locale = await getLocale();
+  const tr = await fetchPersonI18n(person.id, locale);
+  return { title: ov(person.name, tr?.name) };
 }
 
 export default async function PersonPage({

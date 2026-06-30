@@ -5,7 +5,10 @@ import { getLocale } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "선교묘역" };
+export async function generateMetadata(): Promise<Metadata> {
+  const l = await getLocale();
+  return { title: l === "mn" ? "Оршуулгын газар" : l === "en" ? "Mission Cemeteries" : "선교묘역" };
+}
 
 export default async function CemeteryPage() {
   return <AtlasLoader data={await buildAtlasData(await getLocale())} lens="cemetery" />;

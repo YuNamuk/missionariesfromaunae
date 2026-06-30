@@ -22,7 +22,10 @@ async function resolveTopic(id: string): Promise<Topic | undefined> {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const t = await resolveTopic(id);
-  return { title: t ? t.title : "주제연구" };
+  if (!t) return { title: "주제연구" };
+  const locale = await getLocale();
+  const ti = (await fetchAllTopicI18n(locale))[id];
+  return { title: ov(t.title, ti?.title) };
 }
 
 const MIN = 1882, MAX = 1965, SP = MAX - MIN;

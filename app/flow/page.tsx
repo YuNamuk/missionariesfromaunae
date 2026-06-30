@@ -7,8 +7,11 @@ import { getLocale } from "@/lib/i18n/server";
 import { fetchAllPersonI18n, fetchRelationsI18n, ov } from "@/lib/i18n/content";
 import { tl } from "@/lib/i18n/labels";
 
-export const metadata: Metadata = { title: "선교의 흐름" };
 export const dynamic = "force-dynamic"; // 로케일 쿠키 반영
+export async function generateMetadata(): Promise<Metadata> {
+  const l = await getLocale();
+  return { title: l === "mn" ? "Номлолын урсгал" : l === "en" ? "The Flow of Mission" : "선교의 흐름" };
+}
 
 // 방향성 있는(흐름) 관계 — from이 to를 준비/양성/계승/영향
 const DIRECTIONAL = new Set(["influence", "prepare", "succeed", "mentor"]);

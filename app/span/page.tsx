@@ -5,8 +5,11 @@ import { SpanChart, type SpanPerson } from "@/components/span-chart";
 import { getLocale } from "@/lib/i18n/server";
 import { fetchAllPersonI18n, ov } from "@/lib/i18n/content";
 
-export const metadata: Metadata = { title: "활동 연표" };
 export const dynamic = "force-dynamic"; // 로케일 쿠키 반영
+export async function generateMetadata(): Promise<Metadata> {
+  const l = await getLocale();
+  return { title: l === "mn" ? "Үйл ажиллагааны он дараалал" : l === "en" ? "Activity Timeline" : "활동 연표" };
+}
 
 export default async function SpanPage() {
   const locale = await getLocale();

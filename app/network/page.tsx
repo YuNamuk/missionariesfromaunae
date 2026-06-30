@@ -5,7 +5,10 @@ import { getLocale } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "관계망" };
+export async function generateMetadata(): Promise<Metadata> {
+  const l = await getLocale();
+  return { title: l === "mn" ? "Сүлжээ" : l === "en" ? "Network" : "관계망" };
+}
 
 export default async function NetworkPage() {
   return <AtlasLoader data={await buildAtlasData(await getLocale())} lens="network" />;

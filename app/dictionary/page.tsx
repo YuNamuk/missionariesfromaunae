@@ -11,8 +11,11 @@ import { DictionaryRoster, type RosterPerson } from "@/components/dictionary-ros
 import { getLocale } from "@/lib/i18n/server";
 import { fetchAllPersonI18n, fetchPlacesI18n, fetchPlaceDetailI18n, ov } from "@/lib/i18n/content";
 
-export const metadata: Metadata = { title: "인명사전" };
 export const dynamic = "force-dynamic"; // 로케일 쿠키 + 오버레이 반영
+export async function generateMetadata(): Promise<Metadata> {
+  const l = await getLocale();
+  return { title: l === "mn" ? "Намтрын толь" : l === "en" ? "Biographical Dictionary" : "인명사전" };
+}
 
 export default async function DictionaryPage() {
   const locale = await getLocale();

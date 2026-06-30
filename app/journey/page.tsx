@@ -6,11 +6,18 @@ import { fetchPageContent } from "@/lib/db/editable";
 import { getLocale } from "@/lib/i18n/server";
 import { fetchPageI18n, fetchVoicesI18n, ov } from "@/lib/i18n/content";
 
-export const metadata: Metadata = {
-  title: "우리의 여정 · 함께 걸어온 길",
-  description:
-    "한 사람의 삶을 만나고, 아름다운 삶을 묻고, 나의 응답을 적고, 다음 주자로 서기까지 — 이 수업을 함께 걸어온 여정과 학생들의 목소리.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const l = await getLocale();
+  const t = (ko: string, en: string, mn: string) => (l === "mn" ? mn : l === "en" ? en : ko);
+  return {
+    title: t("우리의 여정 · 함께 걸어온 길", "Our Journey · The Road We Walked", "Бидний аялал"),
+    description: t(
+      "한 사람의 삶을 만나고, 아름다운 삶을 묻고, 나의 응답을 적고, 다음 주자로 서기까지 — 이 수업을 함께 걸어온 여정과 학생들의 목소리.",
+      "Meeting a life, asking what a beautiful life is, writing our response, and standing as the next runner — the journey of this class and the students' voices.",
+      "Нэг амьдралтай уулзаж, сайхан амьдрал гэж юу болохыг асууж, өөрийн хариултаа бичих — энэ ангийн аялал ба сурагчдын дуу хоолой.",
+    ),
+  };
+}
 
 // 로케일 쿠키 + 관리자 카피 편집을 반영하기 위해 요청별 동적 렌더.
 export const dynamic = "force-dynamic";
