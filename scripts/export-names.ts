@@ -4,6 +4,11 @@
 import { getServiceSupabase } from "../lib/db/supabase";
 import { writeFileSync } from "node:fs";
 
+// env 없으면(로컬 빌드 등) 기존 정적 파일 유지하고 건너뜀 — 빌드 실패 방지.
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)) {
+  console.log("export-names: SUPABASE env 없음 — 건너뜀(기존 i18n-names.ts 유지)");
+  process.exit(0);
+}
 const db = getServiceSupabase();
 const LOCALES = ["en", "mn"] as const;
 
@@ -48,4 +53,4 @@ export function localName(locale: Locale, type: "person" | "place" | "heritage",
   console.log(`✓ lib/data/i18n-names.ts — en(person ${Object.keys(out.en.person).length}/place ${Object.keys(out.en.place).length}/heritage ${Object.keys(out.en.heritage).length}) · mn(person ${Object.keys(out.mn.person).length}/place ${Object.keys(out.mn.place).length}/heritage ${Object.keys(out.mn.heritage).length})`);
   process.exit(0);
 }
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => { console.error("export-names 실패(건너뜀, 기존 파일 유지):", String(e).slice(0, 200)); process.exit(0); });

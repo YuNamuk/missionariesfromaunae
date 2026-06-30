@@ -4,6 +4,11 @@
 import { getServiceSupabase } from "../lib/db/supabase";
 import { writeFileSync } from "node:fs";
 
+// env 없으면(로컬 빌드 등) 기존 정적 파일 유지하고 건너뜀 — 빌드 실패 방지.
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY || !(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL)) {
+  console.log("export-ui: SUPABASE env 없음 — 건너뜀(기존 overrides.ts 유지)");
+  process.exit(0);
+}
 const db = getServiceSupabase();
 const LOCALES = ["en", "mn"] as const;
 
@@ -34,4 +39,4 @@ export const LABEL_OVERRIDES: Partial<Record<Locale, Record<string, string>>> = 
   console.log(`✓ lib/i18n/overrides.ts — ui(en ${Object.keys(ui.en ?? {}).length}/mn ${Object.keys(ui.mn ?? {}).length}) · label(en ${Object.keys(label.en ?? {}).length}/mn ${Object.keys(label.mn ?? {}).length})`);
   process.exit(0);
 }
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => { console.error("export-ui 실패(건너뜀, 기존 파일 유지):", String(e).slice(0, 200)); process.exit(0); });

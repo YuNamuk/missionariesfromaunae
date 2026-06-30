@@ -209,6 +209,16 @@ export default function AdminPage() {
     return r.ok ? null : (await r.json()).error ?? "오류";
   }
 
+  // 사이트 재배포(전체 관리자) — 메뉴·라벨·이름 번역을 빌드시 DB에서 다시 병합해 반영.
+  async function redeploy() {
+    if (!window.confirm("메뉴·라벨·이름 번역을 사이트에 적용하기 위해 재배포합니다. 보통 1~2분 뒤 반영됩니다. 진행할까요?")) return;
+    setSaving(true); setMsg("");
+    const token = (await sb.auth.getSession()).data.session?.access_token;
+    const r = await fetch("/api/admin/redeploy", { method: "POST", headers: { authorization: `Bearer ${token}` } });
+    setSaving(false);
+    setMsg(r.ok ? "✓ 재배포 시작됨 — 1~2분 뒤 메뉴·라벨·이름 번역이 반영됩니다." : "재배포 실패: " + ((await r.json()).error ?? "오류"));
+  }
+
   async function savePerson() {
     if (!draft) return;
     setSaving(true); setMsg("");
@@ -752,6 +762,12 @@ export default function AdminPage() {
             <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: C.muted }}>
               자동 번역본을 한국어 원문과 대조해 다듬는 자리입니다. 왼쪽이 <b>한국어 원문</b>, 오른쪽이 <b>{LOCALE_NAME[trLang]} 번역</b>(수정 가능). 비우면 사이트에서 한국어로 표시됩니다. 몽골어는 방문 선생님 등 원어민 검수를 권장합니다.
             </p>
+            {myRole === "super" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, background: "rgba(31,111,139,.07)", border: `1px solid ${C.line}`, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, color: C.muted, flex: 1, minWidth: 200 }}>콘텐츠 번역은 저장 즉시 반영됩니다. <b>메뉴·라벨·이름</b> 번역은 아래 버튼으로 사이트에 적용하세요.</span>
+                <button onClick={redeploy} disabled={saving} style={{ ...btn, background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>사이트에 적용(재배포)</button>
+              </div>
+            )}
             {/* 언어 + 카테고리 */}
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <div style={{ display: "flex", gap: 6 }}>

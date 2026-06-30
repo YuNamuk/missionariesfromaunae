@@ -5,6 +5,8 @@
   "description": "조선 선교사 온라인 자료실 — 한국 초기 선교사 시각화·아카이브",
   "scripts": {
     "dev": "next dev",
+    "i18n:export": "tsx scripts/export-ui.ts && tsx scripts/export-names.ts",
+    "prebuild": "npm run i18n:export || true",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
