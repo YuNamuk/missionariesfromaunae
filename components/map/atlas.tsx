@@ -1347,8 +1347,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 )}
                 <div style={{ minWidth: 0, paddingTop: 2, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                   <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}{locale === "ko" ? "년 " : " "}{selPerson.country === "조선" ? T("활동", "active", "идэвхтэй") : T("입국", "arrived", "ирсэн")}</span>
-                  <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26, margin: "10px 0 0", letterSpacing: "-.03em" }}>{selPerson.name}</h2>
-                  {selPerson.en && <p style={{ margin: "3px 0 0", fontSize: 13.5, fontWeight: 600, color: "rgba(255,248,235,.82)" }}>{selPerson.en}</p>}
+                  <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: selPerson.name.length > 22 ? 17 : selPerson.name.length > 17 ? 20 : selPerson.name.length > 12 ? 23 : 26, margin: "10px 0 0", letterSpacing: "-.03em", lineHeight: 1.12, wordBreak: "keep-all", overflowWrap: "anywhere" }}>{selPerson.name}</h2>
+                  {selPerson.en && <p style={{ margin: "3px 0 0", fontSize: 13, fontWeight: 600, color: "rgba(255,248,235,.82)", lineHeight: 1.3 }}>{selPerson.en}</p>}
                   <p style={{ margin: "7px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.72)" }}>
                     {selPerson.life}{ageFromLife(selPerson.life) ? <span style={{ color: "#f0c98a", fontWeight: 700 }}> · {T(`향년 ${ageFromLife(selPerson.life)}세`, `aged ${ageFromLife(selPerson.life)}`, `${ageFromLife(selPerson.life)} насалсан`)}</span> : ""}
                   </p>
