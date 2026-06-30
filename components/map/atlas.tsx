@@ -410,6 +410,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const [shared, setShared] = useState(false);
+  // 폰: 첫 화면은 전체 지도(패널 닫힘). 마커/항목을 고르면 우측 상세를 하단 시트로 연다.
+  const isPhone = () => typeof window !== "undefined" && window.matchMedia("(max-width:760px)").matches;
+  useEffect(() => { if (isPhone()) { setLeftOpen(false); setRightOpen(false); } }, []);
+  useEffect(() => { if (selected && isPhone()) setRightOpen(true); }, [selected]);
   // 지도 표시 설정(줌 강도·마커 크기·이름표)은 상단 헤더의 ⚙에서 조작 — 전역 컨텍스트 구독.
   const { fit, markerScale, showLabels } = useMapSettings();
 
@@ -853,6 +857,13 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         .atlas-warm .reltip{background:rgba(40,26,14,.9)!important;color:#fff8ec!important;border:none!important;font-weight:800!important;font-size:10px!important;padding:2px 8px!important;border-radius:99px!important;}
         .atlas-warm .reltip::before{display:none!important;}
         @media(max-width:1100px){.atlas-warm{height:auto!important;}.atlas-grid{grid-template-columns:1fr!important;}.atlas-grid>*{grid-column:auto!important;}}
+        /* 폰: 전체화면 지도 + 좌/우 패널은 하단 시트(열릴 때만) */
+        @media(max-width:760px){
+          .atlas-warm{height:calc(100vh - 4rem)!important;}
+          .atlas-grid{display:block!important;position:relative;height:100%;}
+          .atlas-map{height:100%!important;min-height:0!important;border-radius:14px!important;}
+          .atlas-left,.atlas-right{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;max-height:76vh!important;border-radius:18px 18px 0 0!important;z-index:1200!important;box-shadow:0 -10px 40px rgba(38,25,10,.4)!important;}
+        }
       `}</style>
 
       {/* ── FULL-WIDTH BAR: 연도(길게) · 검색 · 설정 ── */}
@@ -987,7 +998,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       <div className="atlas-grid" style={{ flex: 1, minHeight: 0, minWidth: 0, display: "grid", gridTemplateColumns: `${showLeft && leftOpen ? "minmax(248px,300px)" : "0px"} minmax(0,1fr) ${rightOpen ? "minmax(320px,384px)" : "0px"}`, gap: 14, transition: "grid-template-columns .28s ease" }}>
 
       {/* ── LEFT: lens-specific list (연혁·묘역·관계망에서만) ── */}
-      <aside style={{ gridColumn: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, padding: 16, display: showLeft && leftOpen ? "flex" : "none", flexDirection: "column", gap: 14, minHeight: 0, position: "relative", backdropFilter: "blur(12px)", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
+      <aside className="atlas-left" style={{ gridColumn: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, padding: 16, display: showLeft && leftOpen ? "flex" : "none", flexDirection: "column", gap: 14, minHeight: 0, position: "relative", backdropFilter: "blur(12px)", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
         <button onClick={() => setLeftOpen(false)} title={T("접기", "Collapse", "Хураах")} style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#6b5e4b", cursor: "pointer", zIndex: 5 }}>
           <PanelLeftClose size={16} />
         </button>
@@ -1034,7 +1045,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       </aside>
 
       {/* ── CENTER: map ── */}
-      <section style={{ gridColumn: 2, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", minHeight: 420, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
+      <section className="atlas-map" style={{ gridColumn: 2, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", minHeight: 420, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
         <div style={{ position: "absolute", inset: 14, borderRadius: 18, overflow: "hidden", border: `1px solid ${C.line}` }}>
           <MapContainer center={[38.4, 127.5]} zoom={6} minZoom={4} maxZoom={18} zoomControl={false} scrollWheelZoom={false} zoomSnap={0} zoomDelta={0.6} zoomAnimationThreshold={4} style={{ height: "100%", width: "100%" }}>
             <SmoothWheelZoom />
@@ -1217,7 +1228,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       </section>
 
       {/* ── RIGHT: detail + relationships ── */}
-      <article style={{ gridColumn: 3, minWidth: 0, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", display: rightOpen ? "flex" : "none", flexDirection: "column", minHeight: 0, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
+      <article className="atlas-right" style={{ gridColumn: 3, minWidth: 0, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", display: rightOpen ? "flex" : "none", flexDirection: "column", minHeight: 0, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
         {(selPerson || selPlace || selEvent || selHeritage || selBuried) && (
           <button onClick={goBack} title={T("이전 선택으로", "Back", "Буцах")} style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 120px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
             <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> {T("뒤로", "Back", "Буцах")}
