@@ -409,24 +409,60 @@ export default function AdminPage() {
   };
   const visibleTabs = TABS_BY_ROLE[myRole];
   const activeTab = visibleTabs.includes(tab) ? tab : visibleTabs[0];
+  // 좌측 네비 — 기능을 그룹으로 묶어 직관적으로.
+  const TAB_ICON: Record<string, string> = { people: "👤", featured: "★", research: "📚", pages: "📄", i18n: "🌐", settings: "⚙", users: "👥", stats: "📊", review: "✅", devreq: "🛠" };
+  const TAB_DESC: Record<string, string> = { people: "인물 정보·카드 글·사진", featured: "지도·사전 대표(★) 표기", research: "주제별 통합 리포트", pages: "들어가며·여정 페이지 글", i18n: "콘텐츠·메뉴 번역 검수", settings: "연도 범위·역할 용어", users: "콘텐츠 관리자 권한", stats: "방문자 통계", review: "수정 제안·사진 검수", devreq: "기능 개선 요청" };
+  const NAV_GROUPS: { title: string; tabs: string[] }[] = [
+    { title: "콘텐츠", tabs: ["people", "featured", "research", "pages"] },
+    { title: "번역", tabs: ["i18n"] },
+    { title: "검수", tabs: ["review"] },
+    { title: "운영", tabs: ["users", "settings", "stats", "devreq"] },
+  ];
 
   return (
-    <div style={{ maxWidth: 920, margin: "0 auto", padding: "28px 20px 80px", fontFamily: "var(--font-body)", color: C.ink }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <div>
-          <h1 className="font-display" style={{ fontWeight: 900, fontSize: 26, margin: 0 }}>관리자 <span style={{ fontSize: 13, fontWeight: 800, color: "#1f6f8b", verticalAlign: "middle" }}>· {ROLE_LABEL[myRole]}</span></h1>
-          <p style={{ margin: "2px 0 0", fontSize: 12.5, color: C.muted }}>{session.user.email}</p>
+    <div style={{ maxWidth: 1140, margin: "0 auto", padding: "24px 20px 80px", fontFamily: "var(--font-body)", color: C.ink }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <h1 className="font-display" style={{ fontWeight: 900, fontSize: 24, margin: 0 }}>관리자</h1>
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: "#1f6f8b", background: "rgba(31,111,139,.1)", borderRadius: 99, padding: "3px 10px" }}>{ROLE_LABEL[myRole]}</span>
+          <span style={{ fontSize: 12, color: C.muted }}>{session.user.email}</span>
         </div>
-        <button onClick={() => sb.auth.signOut()} style={{ ...btn, background: "#2f2419" }}>로그아웃</button>
+        <button onClick={() => sb.auth.signOut()} style={{ ...btn, background: "#2f2419", padding: "7px 14px", fontSize: 12.5 }}>로그아웃</button>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
-        {visibleTabs.map((t) => (
-          <button key={t} onClick={() => setTab(t as typeof tab)} style={{ border: `1px solid ${activeTab === t ? "#2f2419" : C.line}`, borderRadius: 11, padding: "8px 16px", background: activeTab === t ? "#2f2419" : "transparent", color: activeTab === t ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
-            {TAB_LABEL[t]}
-          </button>
-        ))}
-      </div>
+      <div className="admin-shell" style={{ display: "grid", gridTemplateColumns: "210px 1fr", gap: 22, alignItems: "start" }}>
+        <style>{`@media(max-width:760px){.admin-shell{grid-template-columns:1fr!important;}.admin-nav{position:static!important;display:flex!important;flex-wrap:wrap!important;gap:6px!important;}.admin-nav .nav-group{margin:0!important;}.admin-nav .nav-group-title{display:none!important;}}`}</style>
+        {/* 좌측 그룹 네비 */}
+        <aside className="admin-nav" style={{ position: "sticky", top: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+          {NAV_GROUPS.map((g) => {
+            const ts = g.tabs.filter((t) => visibleTabs.includes(t));
+            if (!ts.length) return null;
+            return (
+              <div key={g.title} className="nav-group">
+                <div className="nav-group-title" style={{ fontSize: 10, fontWeight: 900, letterSpacing: ".1em", textTransform: "uppercase", color: "#a07d4e", padding: "0 6px 6px" }}>{g.title}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  {ts.map((t) => {
+                    const on = activeTab === t;
+                    return (
+                      <button key={t} onClick={() => setTab(t as typeof tab)} title={TAB_DESC[t]} style={{ display: "flex", alignItems: "center", gap: 9, textAlign: "left", border: 0, borderRadius: 10, padding: "9px 11px", background: on ? "#2f2419" : "transparent", color: on ? "#fff8ed" : "#5f4d39", fontWeight: 800, fontSize: 13, cursor: "pointer", width: "100%" }}>
+                        <span style={{ fontSize: 14, width: 18, textAlign: "center", flex: "0 0 auto" }}>{TAB_ICON[t]}</span>
+                        <span style={{ flex: 1, minWidth: 0 }}>{TAB_LABEL[t]}</span>
+                        {t === "review" && (() => { const n = (Array.isArray(settings.proposals) ? settings.proposals : []).filter((p: { status?: string }) => p?.status === "pending").length; return n > 0 ? <span style={{ background: "#9b3d2d", color: "#fff8ed", borderRadius: 99, fontSize: 10, fontWeight: 800, padding: "0 6px" }}>{n}</span> : null; })()}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </aside>
+
+        {/* 우측 콘텐츠 */}
+        <div style={{ minWidth: 0 }}>
+          <div style={{ marginBottom: 16 }}>
+            <h2 className="font-display" style={{ fontWeight: 900, fontSize: 19, margin: 0, display: "flex", alignItems: "center", gap: 8 }}><span>{TAB_ICON[activeTab]}</span>{TAB_LABEL[activeTab]}</h2>
+            <p style={{ margin: "3px 0 0", fontSize: 12.5, color: C.muted }}>{TAB_DESC[activeTab]}</p>
+          </div>
 
       {msg && <p style={{ marginBottom: 14, fontSize: 13, fontWeight: 700, color: msg.startsWith("✓") ? "#2f6b3b" : C.accent }}>{msg}</p>}
 
@@ -1336,6 +1372,8 @@ export default function AdminPage() {
           </div>
         );
       })()}
+        </div>
+      </div>
     </div>
   );
 }
