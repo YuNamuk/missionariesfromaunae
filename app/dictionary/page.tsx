@@ -60,10 +60,10 @@ export default async function DictionaryPage() {
       <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-sky-600">
         Biographical Dictionary
       </p>
-      <h1 className="font-display mt-2 text-3xl font-black tracking-tight text-ink-900 sm:text-4xl">
+      <h1 className="font-serif mt-2 text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
         {T("인명사전", "Biographical Dictionary", "Намтрын толь")}
       </h1>
-      <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink-600">
+      <p className="mt-3 max-w-2xl text-[16px] leading-relaxed text-ink-600">
         {T(
           "전체 인명을 먼저 한눈에 모았고, 아래에는 묘역별로 안장된 인물을 정리했습니다. 대표 선교사는 ★로 표시됩니다. 핵심 인물은 상세 프로필로, 그 밖의 안장자는 양화진 공식 명단·한국민족문화대백과·지자체 문화원 등 실제 출처와 Wikidata 매장지 기록으로 교차검증해 출처와 함께 실었습니다.",
           "First, all names at a glance; below, those buried at each cemetery. Featured missionaries are marked ★. Key figures have full profiles; other burials are cross-verified against real sources — Yanghwajin's official rolls, the Encyclopedia of Korean Culture, local cultural centers — and Wikidata burial records, listed with their sources.",
