@@ -420,7 +420,7 @@ export default function AdminPage() {
   ];
 
   return (
-    <div style={{ maxWidth: 1140, margin: "0 auto", padding: "24px 20px 80px", fontFamily: "var(--font-body)", color: C.ink }}>
+    <div style={{ width: "100%", padding: "24px 28px 80px", fontFamily: "var(--font-body)", color: C.ink }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <h1 className="font-display" style={{ fontWeight: 900, fontSize: 24, margin: 0 }}>관리자</h1>
@@ -752,7 +752,7 @@ export default function AdminPage() {
       )}
 
       {activeTab === "pages" && (
-        <div style={{ display: "grid", gap: 28, maxWidth: 680 }}>
+        <div style={{ display: "grid", gap: 28 }}>
           {([
             { page: "story" as const, title: "들어가며 (/story)", labels: { heroKicker: "상단 영문", heroQuestion: "히어로 질문 (줄바꿈 가능)", heroLead: "질문 소개", m1Title: "움직임 1 제목", costTitle: "‘값을 치른’ 제목", homeTitle: "‘Korea is home’ 제목", m2Title: "움직임 2 제목", nextRunner: "다음 주자 문구 (줄바꿈 가능)", closeTitle: "마무리 제목", closeLead: "마무리 글" } },
             { page: "journey" as const, title: "우리의 여정 (/journey)", labels: { heroTitle: "히어로 제목", heroLead: "히어로 소개", lineageTitle: "복음의 계보 제목", lineageLead: "복음의 계보 소개", bookTitle: "학생들이 쓴 책 제목", bookLead: "학생들이 쓴 책 소개", tripTitle: "탐방의 기록 제목", tripLead: "탐방의 기록 소개", voicesTitle: "학생들의 목소리 제목" } },
@@ -1050,7 +1050,7 @@ export default function AdminPage() {
       })()}
 
       {activeTab === "settings" && (
-        <div style={{ display: "grid", gap: 18, maxWidth: 520 }}>
+        <div style={{ display: "grid", gap: 18 }}>
           <div>
             <h3 className="font-display" style={{ fontWeight: 900, fontSize: 16, margin: "0 0 10px" }}>연도 표기 범위</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -1100,7 +1100,7 @@ export default function AdminPage() {
           </select>
         );
         return (
-          <div style={{ maxWidth: 640, display: "grid", gap: 18 }}>
+          <div style={{ display: "grid", gap: 18 }}>
             <div>
               <p style={{ fontSize: 13, color: C.muted, margin: "0 0 6px", lineHeight: 1.6 }}>
                 등록된 사용자만 <code>/admin</code>에 접근합니다. 역할: <b style={{ color: ROLE_COLOR.super }}>전체 관리자</b>(코어 설정·사용자 관리) · <b style={{ color: ROLE_COLOR.power }}>파워 콘텐츠 관리자</b>(즉시 수정·검수 승인) · <b style={{ color: ROLE_COLOR.content }}>콘텐츠 관리자</b>(수정은 교사 승인 — 곧 활성화).
@@ -1162,7 +1162,7 @@ export default function AdminPage() {
           </div>
         );
         return (
-          <div style={{ display: "grid", gap: 16, maxWidth: 560 }}>
+          <div style={{ display: "grid", gap: 16 }}>
             <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>방문자 수는 브라우저당 하루 1회 집계되는 근사 순방문자입니다.</p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               {card("오늘", daily[today] || 0)}
@@ -1339,7 +1339,7 @@ export default function AdminPage() {
           await post({ kind: "settings", settings: { devreq: next } });
         };
         return (
-          <div style={{ maxWidth: 720 }}>
+          <div>
             <p style={{ margin: "0 0 12px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
               기능 개선·수정을 프롬프트로 요청하면 큐에 쌓이고, <b>VSCode의 Claude Code(약 30분 주기 자동 점검)</b>가 폴링해 구현·응답합니다. 지금은 개발 단계라 완료 시 바로 반영됩니다(프리뷰/승인 게이팅은 추후).
             </p>

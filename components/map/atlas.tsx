@@ -857,15 +857,16 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         .atlas-warm .reltip{background:rgba(40,26,14,.9)!important;color:#fff8ec!important;border:none!important;font-weight:800!important;font-size:10px!important;padding:2px 8px!important;border-radius:99px!important;}
         .atlas-warm .reltip::before{display:none!important;}
         @media(max-width:1100px){.atlas-warm{height:auto!important;}.atlas-grid{grid-template-columns:1fr!important;}.atlas-grid>*{grid-column:auto!important;}}
-        /* 폰: 전체화면 지도 + 좌/우 패널은 지도 영역 위 오버레이(닫기 ×로 지도 복귀) */
-        @media(max-width:760px){
-          .atlas-warm{height:calc(100vh - 4rem)!important;}
-          .atlas-grid{display:block!important;position:relative!important;height:100%!important;}
-          .atlas-map{height:100%!important;min-height:0!important;border-radius:14px!important;}
-          .atlas-left,.atlas-right{position:absolute!important;inset:0!important;max-height:none!important;height:auto!important;border-radius:14px!important;z-index:1200!important;}
+        /* 폰: 지도 ↔ 상세를 맞바꿈(절대/고정 위치 없이). 패널 열리면 지도 숨기고 패널만 표시. */
+        @media(max-width:820px){
+          .atlas-warm{height:auto!important;}
+          .atlas-grid{display:block!important;}
+          .atlas-map{height:72vh!important;min-height:0!important;border-radius:14px!important;}
+          .atlas-left,.atlas-right{border-radius:14px!important;}
+          .atlas-grid[data-panel="1"] .atlas-map{display:none!important;}
         }
         .atlas-mback{display:none;}
-        @media(max-width:760px){.atlas-mback{display:flex!important;}}
+        @media(max-width:820px){.atlas-mback{display:flex!important;position:sticky;top:0;}}
       `}</style>
 
       {/* ── FULL-WIDTH BAR: 연도(길게) · 검색 · 설정 ── */}
@@ -997,7 +998,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       </div>
 
       {/* ── GRID: left · map · right ── */}
-      <div className="atlas-grid" style={{ flex: 1, minHeight: 0, minWidth: 0, display: "grid", gridTemplateColumns: `${showLeft && leftOpen ? "minmax(248px,300px)" : "0px"} minmax(0,1fr) ${rightOpen ? "minmax(320px,384px)" : "0px"}`, gap: 14, transition: "grid-template-columns .28s ease" }}>
+      <div className="atlas-grid" data-panel={(showLeft && leftOpen) || rightOpen ? "1" : "0"} style={{ flex: 1, minHeight: 0, minWidth: 0, display: "grid", gridTemplateColumns: `${showLeft && leftOpen ? "minmax(248px,300px)" : "0px"} minmax(0,1fr) ${rightOpen ? "minmax(320px,384px)" : "0px"}`, gap: 14, transition: "grid-template-columns .28s ease" }}>
 
       {/* ── LEFT: lens-specific list (연혁·묘역·관계망에서만) ── */}
       <aside className="atlas-left" style={{ gridColumn: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, padding: 16, display: showLeft && leftOpen ? "flex" : "none", flexDirection: "column", gap: 14, minHeight: 0, position: "relative", backdropFilter: "blur(12px)", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
