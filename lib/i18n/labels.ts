@@ -1,4 +1,5 @@
 import type { Locale } from "./locale";
+import { LABEL_OVERRIDES } from "./overrides";
 
 // 데이터 파생 라벨(시대·지역·교단·사역·나라)의 영어·몽골어. 키는 meta.ts와 동일.
 // 둘러보기 패널·인명사전 facet 등에서 쓰며, 한국어는 meta.ts 원본을 그대로 폴백한다.
@@ -52,10 +53,14 @@ const htregion: LocMap = {
 };
 
 const GROUPS: Record<string, LocMap> = { era, region, denom, role, country, cat, rel, htype, htregion };
+// 관리자 '번역 관리' 검수용 — 라벨 그룹 공개(키·기본 번역 참조).
+export const LABEL_GROUPS = GROUPS;
 
-/** 라벨 번역. ko면 원본(ko)을 그대로, 그 외엔 사전값(없으면 ko 폴백). */
+/** 라벨 번역. ko면 원본(ko), 그 외엔 오버라이드(DB) → 사전 → ko 폴백. */
 export function tl(locale: Locale, type: keyof typeof GROUPS | string, key: string, ko: string): string {
   if (locale === "ko") return ko;
+  const o = LABEL_OVERRIDES[locale]?.[`${type}.${key}`];
+  if (o) return o;
   const g = GROUPS[type];
   return (g && (g as LocMap)[locale as "en" | "mn"]?.[key]) || ko;
 }

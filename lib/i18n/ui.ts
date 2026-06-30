@@ -1,4 +1,5 @@
 import type { Locale } from "./locale";
+import { UI_OVERRIDES } from "./overrides";
 
 // UI 골격 문자열(메뉴·버튼·둘러보기 패널 제목 등). 데이터에서 파생되는 인물·시대
 // 목록 등은 아직 한국어로 둔다(점진 확장). 누락 키는 한국어로 폴백.
@@ -69,7 +70,13 @@ const MN: Dict = {
 
 const DICTS: Record<Locale, Dict> = { ko: KO, en: EN, mn: MN };
 
-/** UI 문자열 조회. 영어에 키가 없으면 한국어로 폴백. */
+// 관리자 '번역 관리'에서 검수/편집할 수 있도록 기본 사전을 공개(키 목록·원문 참조용).
+export const UI_DEFAULT: Record<Locale, Dict> = { ko: KO, en: EN, mn: MN };
+export const UI_KEYS = Object.keys(KO);
+
+/** UI 문자열 조회. 오버라이드(DB 검수본) → 사전 → 한국어 폴백. */
 export function t(locale: Locale, key: string): string {
+  const o = UI_OVERRIDES[locale]?.[key];
+  if (o) return o;
   return DICTS[locale][key] ?? KO[key] ?? key;
 }

@@ -13,8 +13,11 @@ import { colorSrc } from "@/lib/data/colorized";
 import { isFeatured } from "@/lib/data/meta";
 import { profileFor } from "@/lib/data/profiles";
 import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
+import { TOPICS } from "@/lib/data/topics";
 import { ROLE_LABEL, isEmail, parseEmails, type Role } from "@/lib/data/roles";
 import { LOCALES, LOCALE_NAME, type Locale } from "@/lib/i18n/locale";
+import { UI_DEFAULT, UI_KEYS } from "@/lib/i18n/ui";
+import { LABEL_GROUPS } from "@/lib/i18n/labels";
 
 const C = { ink: "#251c14", muted: "#6b5e4b", line: "rgba(77,56,34,.2)", accent: "#9b3d2d" };
 
@@ -41,7 +44,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "users" | "stats" | "review" | "devreq" | "i18n">("people");
   // 번역 검수 탭: 언어·카테고리·편집 드래프트
   const [trLang, setTrLang] = useState<"en" | "mn">("en");
-  const [trCat, setTrCat] = useState<"person" | "heritage" | "relations" | "voices">("person");
+  const [trCat, setTrCat] = useState<"person" | "heritage" | "relations" | "voices" | "ui" | "label" | "pages" | "topics">("person");
   const [trEdits, setTrEdits] = useState<Record<string, string>>({});
   const [trQ, setTrQ] = useState("");
   // 로그인한 사용자의 콘텐츠 권한(서버 /api/admin/me에서 받음). null이면 권한 없음.
@@ -387,7 +390,7 @@ export default function AdminPage() {
   }
 
   // 역할별 노출 탭. 콘텐츠 편집은 파워 이상, 코어 설정·사용자 관리는 전체 관리자만.
-  const TAB_LABEL: Record<string, string> = { people: "선교사 정보", featured: "대표 표기", research: "주제연구", pages: "페이지 글", i18n: "번역 검수", settings: "연도·용어 설정", users: "사용자 관리", stats: "방문 통계", review: "검수", devreq: "개발 요청" };
+  const TAB_LABEL: Record<string, string> = { people: "선교사 정보", featured: "대표 표기", research: "주제연구", pages: "페이지 글", i18n: "번역 관리", settings: "연도·용어 설정", users: "사용자 관리", stats: "방문 통계", review: "검수", devreq: "개발 요청" };
   const TABS_BY_ROLE: Record<Role, string[]> = {
     super: ["people", "featured", "research", "pages", "i18n", "settings", "users", "stats", "review", "devreq"],
     power: ["people", "featured", "research", "pages", "i18n", "stats", "review", "devreq"],
@@ -727,7 +730,8 @@ export default function AdminPage() {
 
       {activeTab === "i18n" && (() => {
         const langs: ("en" | "mn")[] = ["en", "mn"];
-        const cats = [["person", "선교사"], ["heritage", "유적지"], ["relations", "관계 설명"], ["voices", "학생 목소리"]] as const;
+        const cats = [["person", "선교사"], ["heritage", "유적지"], ["relations", "관계 설명"], ["voices", "학생 목소리"], ["topics", "주제연구"], ["pages", "페이지 글"], ["ui", "메뉴·버튼"], ["label", "분류 라벨"]] as const;
+        const isUiCat = trCat === "ui" || trCat === "label"; // 코드 사전 — 저장 후 export-ui+배포 필요
         const ev = (fid: string, fallback: string) => (fid in trEdits ? trEdits[fid] : fallback);
         const setEv = (fid: string, v: string) => setTrEdits((s) => ({ ...s, [fid]: v }));
         const switchTo = (next: Partial<{ lang: "en" | "mn"; cat: typeof trCat }>) => { setTrEdits({}); if (next.lang) setTrLang(next.lang); if (next.cat) setTrCat(next.cat); };
@@ -868,6 +872,121 @@ export default function AdminPage() {
                       <div key={i} style={{ border: `1px solid ${C.line}`, borderRadius: 10, padding: 10, background: "#fff8ec" }}>
                         <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 6 }}>{vo.author ?? "익명"} <span style={{ color: C.muted, fontWeight: 500 }}>· {vo.prompt}</span></div>
                         <div style={row2}>{koCell(vo.text)}{ta(`v:${i}:text`, b.text ?? "", 90)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* ── 주제연구 (제목·소개·분석) ── */}
+            {trCat === "topics" && (() => {
+              const codeTopics = TOPICS.map((t) => ({ id: t.id, title: t.title, intro: t.intro, analysis: t.analysis ?? "" }));
+              const dbTopics = Object.entries(settings).filter(([k, v]) => k.startsWith("topic.") && v && typeof v === "object" && Array.isArray((v as { people?: unknown }).people) && (v as { people: unknown[] }).people.length).map(([k, v]) => ({ id: k.replace("topic.", ""), ...(v as { title: string; intro: string; analysis?: string }) }));
+              const all = [...new Map([...codeTopics, ...dbTopics].map((t) => [t.id, t])).values()];
+              return (
+                <div style={{ display: "grid", gap: 14 }}>
+                  {all.filter((t) => !q || `${t.title} ${t.intro}`.toLowerCase().includes(q)).map((t) => {
+                    const base = (settings[`i18n.${trLang}.topic.${t.id}`] ?? {}) as { title?: string; intro?: string; analysis?: string };
+                    const save = () => {
+                      const v: Record<string, unknown> = { ...base };
+                      const ti = ev(`t:${t.id}:title`, base.title ?? "").trim(); if (ti) v.title = ti;
+                      const intro = ev(`t:${t.id}:intro`, base.intro ?? "").trim(); if (intro) v.intro = intro;
+                      const an = ev(`t:${t.id}:analysis`, base.analysis ?? "").trim(); if (an) v.analysis = an; else delete v.analysis;
+                      saveTr(`i18n.${trLang}.topic.${t.id}`, v);
+                    };
+                    return (
+                      <div key={t.id} style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: 12, background: "#fff8ec" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                          <span style={{ fontWeight: 900, fontSize: 14 }}>{t.title}</span>
+                          <button onClick={save} disabled={saving} style={{ ...btn, padding: "5px 12px", fontSize: 12, background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>저장</button>
+                        </div>
+                        <div style={{ display: "grid", gap: 8 }}>
+                          <div><label style={label}>제목</label><div style={row2}>{koCell(t.title)}{ta(`t:${t.id}:title`, base.title ?? "", 38)}</div></div>
+                          <div><label style={label}>소개</label><div style={row2}>{koCell(t.intro)}{ta(`t:${t.id}:intro`, base.intro ?? "", 70)}</div></div>
+                          {t.analysis && <div><label style={label}>AI 분석</label><div style={row2}>{koCell(t.analysis)}{ta(`t:${t.id}:analysis`, base.analysis ?? "", 160)}</div></div>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* ── 페이지 글(들어가며·여정) ── */}
+            {trCat === "pages" && (() => {
+              const pages = [["story", "들어가며", STORY_COPY], ["journey", "우리의 여정", JOURNEY_COPY]] as const;
+              return (
+                <div style={{ display: "grid", gap: 16 }}>
+                  {pages.map(([pg, title, copy]) => {
+                    const koMap = { ...copy, ...((settings[`content.page.${pg}`] ?? {}) as Record<string, string>) };
+                    const base = (settings[`i18n.${trLang}.page.${pg}`] ?? {}) as Record<string, string>;
+                    const save = () => {
+                      const v: Record<string, string> = { ...base };
+                      for (const k of Object.keys(koMap)) { const t = ev(`pg:${pg}:${k}`, base[k] ?? "").trim(); if (t) v[k] = t; }
+                      saveTr(`i18n.${trLang}.page.${pg}`, v);
+                    };
+                    return (
+                      <div key={pg} style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: 12, background: "#fff8ec" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                          <span style={{ fontWeight: 900, fontSize: 14 }}>{title} (/{pg})</span>
+                          <button onClick={save} disabled={saving} style={{ ...btn, padding: "5px 12px", fontSize: 12, background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>저장</button>
+                        </div>
+                        <div style={{ display: "grid", gap: 8 }}>
+                          {Object.keys(koMap).filter((k) => !q || koMap[k].toLowerCase().includes(q)).map((k) => (
+                            <div key={k}><label style={label}>{k}</label><div style={row2}>{koCell(koMap[k])}{ta(`pg:${pg}:${k}`, base[k] ?? "", 50)}</div></div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* ── 메뉴·버튼(UI 사전) ── 저장 후 export-ui+배포 필요 ── */}
+            {trCat === "ui" && (() => {
+              const base = (settings[`i18n.${trLang}.ui`] ?? {}) as Record<string, string>;
+              const saveAll = () => {
+                const v: Record<string, string> = { ...base };
+                for (const k of UI_KEYS) { const fid = `ui:${k}`; if (fid in trEdits) { const t = trEdits[fid].trim(); if (t) v[k] = t; } }
+                saveTr(`i18n.${trLang}.ui`, v);
+              };
+              return (
+                <div style={{ display: "grid", gap: 10 }}>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#9b3d2d" }}>※ 메뉴·라벨은 코드 사전이라 저장 후 <code>export-ui</code> + 재배포해야 사이트에 반영됩니다(개발자 단계).</p>
+                  <button onClick={saveAll} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "메뉴·버튼 일괄 저장"}</button>
+                  {UI_KEYS.filter((k) => !q || `${k} ${UI_DEFAULT.ko[k]}`.toLowerCase().includes(q)).map((k) => (
+                    <div key={k} style={{ border: `1px solid ${C.line}`, borderRadius: 10, padding: 10, background: "#fff8ec" }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, marginBottom: 5 }}>{k}</div>
+                      <div style={row2}>{koCell(UI_DEFAULT.ko[k])}{ta(`ui:${k}`, base[k] ?? UI_DEFAULT[trLang][k] ?? "", 38)}</div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {/* ── 분류 라벨(시대·교단·지역·유형 등) ── 저장 후 export-ui+배포 필요 ── */}
+            {trCat === "label" && (() => {
+              const base = (settings[`i18n.${trLang}.label`] ?? {}) as Record<string, string>;
+              const TYPE_LABEL: Record<string, string> = { era: "시대", region: "지역", denom: "교단", role: "사역", country: "나라", cat: "장소 분류", rel: "관계", htype: "유적 유형", htregion: "유적 권역" };
+              const entries: { type: string; key: string; en: string }[] = [];
+              for (const [type, m] of Object.entries(LABEL_GROUPS)) for (const key of Object.keys((m as { en: Record<string, string> }).en)) entries.push({ type, key, en: (m as { en: Record<string, string> }).en[key] });
+              const saveAll = () => {
+                const v: Record<string, string> = { ...base };
+                for (const e of entries) { const fid = `lb:${e.type}.${e.key}`; if (fid in trEdits) { const t = trEdits[fid].trim(); if (t) v[`${e.type}.${e.key}`] = t; } }
+                saveTr(`i18n.${trLang}.label`, v);
+              };
+              return (
+                <div style={{ display: "grid", gap: 10 }}>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#9b3d2d" }}>※ 저장 후 <code>export-ui</code> + 재배포 반영. 왼쪽은 영어 기본값(참조), 오른쪽이 {LOCALE_NAME[trLang]} 번역.</p>
+                  <button onClick={saveAll} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "라벨 일괄 저장"}</button>
+                  {entries.filter((e) => !q || `${e.type} ${e.key} ${e.en}`.toLowerCase().includes(q)).map((e) => {
+                    const lm = LABEL_GROUPS[e.type] as { en: Record<string, string>; mn: Record<string, string> };
+                    return (
+                      <div key={`${e.type}.${e.key}`} style={{ border: `1px solid ${C.line}`, borderRadius: 10, padding: 10, background: "#fff8ec" }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, marginBottom: 5 }}>{TYPE_LABEL[e.type] ?? e.type} · {e.key}</div>
+                        <div style={row2}>{koCell(e.en)}{ta(`lb:${e.type}.${e.key}`, base[`${e.type}.${e.key}`] ?? (lm[trLang]?.[e.key] ?? ""), 38)}</div>
                       </div>
                     );
                   })}
