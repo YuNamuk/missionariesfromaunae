@@ -12,6 +12,7 @@ import { isFeatured } from "@/lib/data/meta";
 import { profileFor } from "@/lib/data/profiles";
 import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
 import { ROLE_LABEL, isEmail, parseEmails, type Role } from "@/lib/data/roles";
+import { LOCALES, LOCALE_NAME, type Locale } from "@/lib/i18n/locale";
 
 const C = { ink: "#251c14", muted: "#6b5e4b", line: "rgba(77,56,34,.2)", accent: "#9b3d2d" };
 
@@ -68,6 +69,8 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   // 상세 페이지 카드 글(스토리텔링 등) 편집 — content.person.<id> 오버레이로 저장.
   const [cd, setCd] = useState<Record<string, string>>({});
+  // 카드 글 편집 언어 — ko는 content.person.<id>(원본), en/mn은 i18n.<lang>.person.<id>(번역).
+  const [contentLang, setContentLang] = useState<Locale>("ko");
   const [cdVideos, setCdVideos] = useState<{ url: string; title: string; source?: string }[]>([]); // 관련 영상(유튜브) 링크들
   const [cdLinks, setCdLinks] = useState<{ label: string; href: string }[]>([]); // 외부 링크
   const [roleAdd, setRoleAdd] = useState(""); // 사역 수동 추가 입력
@@ -129,21 +132,27 @@ export default function AdminPage() {
     const p = people.find((x) => x.id === sel) ?? null;
     setDraft(p ? { ...p } : null);
     setActiveText(p?.active_periods?.map((a) => `${a[0]}-${a[1]}`).join("; ") ?? "");
-    // 카드 글: 저장된 오버레이 ?? 코드 기본값으로 초기화
+    // 카드 글: 편집 언어에 맞는 오버레이로 초기화.
+    //  - ko : content.person.<id>(원본) ?? 코드 기본값
+    //  - en/mn : i18n.<lang>.person.<id>(번역). 한국어 폴백 없이 번역값/빈값만 보여줌.
     if (sel) {
-      const base = profileFor(sel);
-      const tsPerson = PEOPLE.find((x) => x.id === sel);
-      const ovStored = (settings[`content.person.${sel}`] ?? {}) as {
+      const isKo = contentLang === "ko";
+      const base = isKo ? profileFor(sel) : undefined;
+      const tsPerson = isKo ? PEOPLE.find((x) => x.id === sel) : undefined;
+      const key = isKo ? `content.person.${sel}` : `i18n.${contentLang}.person.${sel}`;
+      const ovStored = (settings[key] ?? {}) as {
         summary?: string; story?: string[]; journey?: string; ministry?: string[]; influence?: string; beauty?: string; quote?: { text: string; source: string }; videos?: { url: string; title: string; source?: string }[]; links?: { label: string; href: string }[];
       };
-      setCdVideos(ovStored.videos ?? base?.videos ?? []);
+      // 영상·링크는 언어 공통(원본 ko 오버레이에서만 편집).
+      const koOv = (settings[`content.person.${sel}`] ?? {}) as { videos?: { url: string; title: string; source?: string }[]; links?: { label: string; href: string }[] };
+      setCdVideos(koOv.videos ?? base?.videos ?? []);
       const ph = PHOTOS[sel];
       const defLinks = [
         ph?.wiki ? { label: "위키백과", href: ph.wiki } : null,
         ph?.wikiEn ? { label: "Wikipedia (EN)", href: ph.wikiEn } : null,
         ph?.namu ? { label: "나무위키", href: ph.namu } : null,
       ].filter(Boolean) as { label: string; href: string }[];
-      setCdLinks(ovStored.links ?? defLinks);
+      setCdLinks(koOv.links ?? defLinks);
       setCd({
         summary: ovStored.summary ?? tsPerson?.summary ?? "",
         story: (ovStored.story ?? base?.story ?? []).join("\n\n"),
@@ -155,7 +164,7 @@ export default function AdminPage() {
         quoteSource: ovStored.quote?.source ?? base?.quote?.source ?? "",
       });
     } else { setCd({}); setCdVideos([]); setCdLinks([]); }
-  }, [sel, people, settings]);
+  }, [sel, people, settings, contentLang]);
 
   async function login(e: React.FormEvent) {
     e.preventDefault();
@@ -232,13 +241,18 @@ export default function AdminPage() {
     if (t(cd.influence)) value.influence = t(cd.influence);
     if (t(cd.beauty)) value.beauty = t(cd.beauty);
     if (t(cd.quoteText)) value.quote = { text: t(cd.quoteText), source: t(cd.quoteSource) };
-    const vids = cdVideos.map((v) => ({ url: v.url.trim(), title: v.title.trim(), ...(v.source?.trim() ? { source: v.source.trim() } : {}) })).filter((v) => v.url);
-    if (vids.length) value.videos = vids;
-    const lks = cdLinks.map((l) => ({ label: l.label.trim(), href: l.href.trim() })).filter((l) => l.href);
-    if (lks.length) value.links = lks;
-    const err = await post({ kind: "settings", settings: { [`content.person.${sel}`]: value } });
+    const isKo = contentLang === "ko";
+    if (isKo) {
+      // 영상·링크는 언어 공통 — 한국어(원본) 오버레이에만 저장.
+      const vids = cdVideos.map((v) => ({ url: v.url.trim(), title: v.title.trim(), ...(v.source?.trim() ? { source: v.source.trim() } : {}) })).filter((v) => v.url);
+      if (vids.length) value.videos = vids;
+      const lks = cdLinks.map((l) => ({ label: l.label.trim(), href: l.href.trim() })).filter((l) => l.href);
+      if (lks.length) value.links = lks;
+    }
+    const key = isKo ? `content.person.${sel}` : `i18n.${contentLang}.person.${sel}`;
+    const err = await post({ kind: "settings", settings: { [key]: value } });
     setSaving(false);
-    setMsg(err ? "저장 실패: " + err : "✓ 카드 글 저장됨 (상세 페이지에 곧 반영)");
+    setMsg(err ? "저장 실패: " + err : `✓ ${isKo ? "카드 글" : LOCALE_NAME[contentLang] + " 번역"} 저장됨 (상세 페이지에 곧 반영)`);
     if (!err) loadData();
   }
 
@@ -493,8 +507,20 @@ export default function AdminPage() {
 
               {/* 상세 페이지 카드 글 편집 — content.person.<id> 오버레이 */}
               <div style={{ marginTop: 10, paddingTop: 16, borderTop: `1px solid ${C.line}` }}>
-                <h3 className="font-display" style={{ fontWeight: 900, fontSize: 16, margin: "0 0 4px" }}>상세 페이지 카드 글</h3>
-                <p style={{ margin: "0 0 14px", fontSize: 11.5, color: C.muted }}>인물 상세(/people/{sel}) 페이지의 카드. 비우면 기본값으로 되돌아갑니다. 저장 후 잠시 뒤 반영.</p>
+                <h3 className="font-display" style={{ fontWeight: 900, fontSize: 16, margin: "0 0 8px" }}>상세 페이지 카드 글</h3>
+                {/* 편집 언어 선택 — ko는 원본, en/mn은 번역(자동 생성본을 여기서 다듬음) */}
+                <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+                  {LOCALES.map((l) => (
+                    <button key={l} onClick={() => setContentLang(l)} style={{ border: `1px solid ${contentLang === l ? "#1f6f8b" : C.line}`, borderRadius: 99, padding: "4px 12px", background: contentLang === l ? "#1f6f8b" : "transparent", color: contentLang === l ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 12, cursor: "pointer" }}>
+                      {LOCALE_NAME[l]}{l === "ko" ? " (원본)" : ""}
+                    </button>
+                  ))}
+                </div>
+                <p style={{ margin: "0 0 14px", fontSize: 11.5, color: C.muted }}>
+                  {contentLang === "ko"
+                    ? <>인물 상세(/people/{sel}) 페이지의 카드. 비우면 기본값으로 되돌아갑니다. 저장 후 잠시 뒤 반영.</>
+                    : <><b>{LOCALE_NAME[contentLang]} 번역</b> 편집 — 자동 번역본을 다듬는 자리입니다. 비우면 한국어로 표시됩니다. (영상·링크는 ‘원본’ 탭에서만 편집)</>}
+                </p>
                 <div style={{ display: "grid", gap: 12 }}>
                   <div><label style={label}>상세 요약</label><textarea style={{ ...input, minHeight: 70, resize: "vertical" }} value={cd.summary ?? ""} onChange={(e) => cdu("summary", e.target.value)} /></div>
                   <div><label style={label}>이야기 (서사) — 문단은 빈 줄로 구분</label><textarea style={{ ...input, minHeight: 200, resize: "vertical", lineHeight: 1.6 }} value={cd.story ?? ""} onChange={(e) => cdu("story", e.target.value)} /></div>
@@ -506,6 +532,8 @@ export default function AdminPage() {
                     <div><label style={label}>1차 자료 인용</label><textarea style={{ ...input, minHeight: 60, resize: "vertical" }} value={cd.quoteText ?? ""} onChange={(e) => cdu("quoteText", e.target.value)} /></div>
                     <div><label style={label}>인용 출처</label><textarea style={{ ...input, minHeight: 60, resize: "vertical" }} value={cd.quoteSource ?? ""} onChange={(e) => cdu("quoteSource", e.target.value)} /></div>
                   </div>
+                  {/* 영상·링크는 언어 공통 — 원본(한국어) 편집에서만 노출 */}
+                  {contentLang === "ko" && (<>
                   {/* 관련 영상(유튜브) — 여러 개 추가·수정·삭제 */}
                   <div>
                     <label style={label}>관련 영상 (유튜브 등) · {cdVideos.length}개</label>
@@ -534,7 +562,8 @@ export default function AdminPage() {
                     </div>
                     <button onClick={() => setCdLinks((arr) => [...arr, { label: "", href: "" }])} style={{ marginTop: 8, border: `1px dashed ${C.line}`, borderRadius: 10, padding: "7px 14px", background: "transparent", color: C.muted, cursor: "pointer", fontSize: 12.5, fontWeight: 800 }}>+ 링크 추가</button>
                   </div>
-                  <button onClick={saveContent} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "카드 글·링크 저장 (상세 페이지)"}</button>
+                  </>)}
+                  <button onClick={saveContent} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : (contentLang === "ko" ? "카드 글·링크 저장 (상세 페이지)" : `${LOCALE_NAME[contentLang]} 번역 저장`)}</button>
                 </div>
               </div>
             </div>
