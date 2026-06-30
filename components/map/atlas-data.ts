@@ -16,7 +16,7 @@ import { PHOTOS } from "@/lib/data/photos";
 import { isFeaturedWith } from "@/lib/data/meta";
 import { EVENTS } from "@/lib/data/events";
 import { fetchOverlay } from "@/lib/db/content";
-import { fetchAllPersonI18n, fetchPlacesI18n, fetchPlaceDetailI18n, ov } from "@/lib/i18n/content";
+import { fetchAllPersonI18n, fetchPlacesI18n, fetchPlaceDetailI18n, fetchRelationsI18n, fetchAllHeritageI18n, ov } from "@/lib/i18n/content";
 import { tl } from "@/lib/i18n/labels";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locale";
 
@@ -85,6 +85,7 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
     };
   }).filter((p) => p.lat !== 0);
 
+  const relNotes = await fetchRelationsI18n(locale);
   const nameOf = (id: string) => ov(PEOPLE.find((p) => p.id === id)?.name ?? id, i18n[id]?.name);
   const edges: MapEdge[] = getRelationships().map((r) => ({
     from: r.from.id,
@@ -93,7 +94,7 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
     label: tl(locale, "rel", r.type, r.meta.label),
     color: r.meta.color,
     dash: r.meta.dash,
-    note: r.note,
+    note: relNotes[`${r.from.id}|${r.to.id}|${r.type}`] || r.note,
     directional: DIRECTIONAL.has(r.type),
   }));
 
@@ -124,6 +125,9 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
     if (d.total || d.extra) placeDetail[id] = { ...(d.total ? { total: d.total } : {}), ...(d.extra ? { extra: d.extra } : {}) };
   }
 
+  // 선교 유적지 번역(이름·도시·권역·소개·유네스코) — 클라이언트가 HERITAGE 위에 덮음.
+  const heritage = await fetchAllHeritageI18n(locale);
+
   return {
     places,
     people,
@@ -134,5 +138,6 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
     yearMin: overlay?.yearMin ?? YEAR_MIN,
     yearMax: overlay?.yearMax ?? YEAR_MAX,
     placeDetail,
+    heritage,
   };
 }

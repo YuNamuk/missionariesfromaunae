@@ -83,4 +83,6 @@ export interface AtlasData {
   yearMax: number;
   /** 묘역 안내문·추가 안장자(BURIED_*) 번역 오버레이(로케일). 클라이언트가 원본 위에 덮음. */
   placeDetail?: Record<string, { total?: string; extra?: { role?: string; note?: string }[] }>;
+  /** 선교 유적지(HERITAGE) 번역 오버레이(로케일). */
+  heritage?: Record<string, { name?: string; city?: string; region?: string; summary?: string; unesco?: string }>;
 }

@@ -11,6 +11,7 @@ import { MapSettingsButton } from "@/components/map-settings";
 import { LocaleToggle, useLocale } from "@/components/locale-mode";
 import { t } from "@/lib/i18n/ui";
 import { tl } from "@/lib/i18n/labels";
+import { localName } from "@/lib/data/i18n-names";
 import type { Locale } from "@/lib/i18n/locale";
 
 // ── 정적 디렉터리 데이터(카테고리별 인물). 헤더는 '필터'가 아니라 '표기·탐색'. ──
@@ -118,7 +119,7 @@ function BrowseDrop({ open, setOpen, onPickPerson, onPickFocus, onPickYear, onPi
       </div>
     );
   }
-  function Groups({ groups, onPick, type }: { groups: Group[]; onPick: (pid: string) => void; type?: string }) {
+  function Groups({ groups, onPick, type, itemType = "person" }: { groups: Group[]; onPick: (pid: string) => void; type?: string; itemType?: "person" | "heritage" }) {
     return (
       <>
         {groups.map((g) => (
@@ -126,7 +127,7 @@ function BrowseDrop({ open, setOpen, onPickPerson, onPickFocus, onPickYear, onPi
             <div className="px-1 pt-1 text-[10px] font-bold" style={{ color: "#a07d4e" }}>{type ? tl(locale, type, g.key, g.label) : g.label} <span className="opacity-55">{g.people.length}</span></div>
             {g.people.map((p) => (
               <button key={p.id} onClick={() => onPick(p.id)} className={itemCls} style={{ color: "#3e2c1d" }}>
-                <span className="truncate">{p.name}</span>{p.year > 0 && <span className="text-[10px] opacity-50">{p.year}</span>}
+                <span className="truncate">{localName(locale, itemType, p.id, p.name)}</span>{p.year > 0 && <span className="text-[10px] opacity-50">{p.year}</span>}
               </button>
             ))}
           </div>
@@ -153,10 +154,10 @@ function BrowseDrop({ open, setOpen, onPickPerson, onPickFocus, onPickYear, onPi
               </Card>
               <Card title={t(locale, "browse.cemeteries")}>
                 {CEMETERIES.map((c) => (
-                  <button key={c.id} onClick={() => onPickFocus(c.id)} className={itemCls} style={{ color: "#3e2c1d" }}><span className="truncate">{c.name}</span></button>
+                  <button key={c.id} onClick={() => onPickFocus(c.id)} className={itemCls} style={{ color: "#3e2c1d" }}><span className="truncate">{localName(locale, "place", c.id, c.name)}</span></button>
                 ))}
               </Card>
-              <Card title={t(locale, "browse.heritage")}><Groups groups={HERITAGE_GROUPS} onPick={onPickHeritage} /></Card>
+              <Card title={t(locale, "browse.heritage")}><Groups groups={HERITAGE_GROUPS} onPick={onPickHeritage} type="htregion" itemType="heritage" /></Card>
               <Card title={t(locale, "browse.denom")}><Groups groups={DENOM_GROUPS} onPick={onPickPerson} type="denom" /></Card>
               <Card title={t(locale, "browse.country")}><Groups groups={COUNTRY_GROUPS} onPick={onPickPerson} type="country" /></Card>
               <Card title={t(locale, "browse.role")}><Groups groups={ROLE_GROUPS} onPick={onPickPerson} type="role" /></Card>

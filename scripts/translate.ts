@@ -8,8 +8,9 @@
 // 필요한 env: ANTHROPIC_API_KEY (+ SUPABASE_*). 모델: ANALYSIS_MODEL || claude-sonnet-4-6.
 
 import { getServiceSupabase } from "../lib/db/supabase";
-import { PEOPLE, PLACES, resourcesFor, type Person } from "../lib/data";
+import { PEOPLE, PLACES, resourcesFor, getRelationships, type Person } from "../lib/data";
 import { profileFor } from "../lib/data/profiles";
+import { HERITAGE } from "../lib/data/heritage";
 import { JOURNEY_COPY } from "../lib/data/page-copy";
 import { STUDENT_VOICES } from "../lib/data/voices";
 import { TOPICS } from "../lib/data/topics";
@@ -22,7 +23,7 @@ function parseArgs() {
   const a = process.argv.slice(2);
   const get = (k: string) => { const i = a.indexOf(k); return i >= 0 ? a[i + 1] : undefined; };
   const locales = (get("--locale") ?? "en,mn").split(",").map((s) => s.trim()).filter(Boolean) as Locale[];
-  const kinds = (get("--kind") ?? "pages,places,placedetail,topics,voices,people").split(",").map((s) => s.trim());
+  const kinds = (get("--kind") ?? "pages,places,placedetail,relations,heritage,topics,voices,people").split(",").map((s) => s.trim());
   const id = get("--id");
   const limit = get("--limit") ? Number(get("--limit")) : undefined;
   const force = a.includes("--force");
@@ -167,6 +168,34 @@ async function run() {
         if (t.era) src.era = t.era;
         if (Object.keys(src).length === 0) { skipped++; continue; }
         try { await put(key, await translate(locale, src)); done++; console.log(`  ✓ ${key}`); }
+        catch (e) { failures.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
+        await SLEEP(400);
+      }
+    }
+    // 관계 설명(note) — 전체를 한 객체로 1콜. 키: from|to|type.
+    if (kinds.includes("relations")) {
+      const key = `i18n.${locale}.relations`;
+      if (!force && (await exists(key))) { skipped++; }
+      else {
+        const notes: Record<string, string> = {};
+        for (const r of getRelationships()) if (r.note) notes[`${r.from.id}|${r.to.id}|${r.type}`] = r.note;
+        if (Object.keys(notes).length) {
+          try { await put(key, await translate(locale, notes)); done++; console.log(`  ✓ ${key} (${Object.keys(notes).length})`); }
+          catch (e) { failures.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
+          await SLEEP(400);
+        }
+      }
+    }
+    // 선교 유적지(이름·도시·권역·소개·유네스코) — 유적별 1콜.
+    if (kinds.includes("heritage")) {
+      for (const h of HERITAGE) {
+        if (id && h.id !== id) continue;
+        const key = `i18n.${locale}.heritage.${h.id}`;
+        if (!force && (await exists(key))) { skipped++; continue; }
+        const d: Record<string, unknown> = { name: h.name, city: h.city, region: h.region };
+        if (h.summary) d.summary = h.summary;
+        if (h.unesco) d.unesco = h.unesco;
+        try { await put(key, await translate(locale, d)); done++; console.log(`  ✓ ${key}`); }
         catch (e) { failures.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
         await SLEEP(400);
       }

@@ -429,6 +429,11 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const { color: colorPhoto } = useColorMode(); // 초상 컬러 복원본 보기(전역)
   const { locale } = useLocale();
   const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
+  // 선교 유적지 번역 오버레이(로케일) 조회 헬퍼.
+  const hL = (h: { id: string; name: string; city: string; region?: string; summary?: string; unesco?: string }) => {
+    const t = data.heritage?.[h.id];
+    return { name: t?.name || h.name, city: t?.city || h.city, region: t?.region || h.region, summary: t?.summary || h.summary, unesco: t?.unesco || h.unesco };
+  };
   // 컬러 모드일 때 인물 초상(마커·리스트·관련 인물·바로가기 아이콘)을 복원 컬러본으로 스왑.
   const cphoto = (s: string | null | undefined) => (colorPhoto ? colorSrc(s) : bwSrc(s)) || s || undefined;
   // 클러스터 스파이더리: 클릭한 클러스터의 인물들을 중심 주위로 부채꼴(많으면 나선) 펼침.
@@ -962,7 +967,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                         {hm.map((h) => (
                           <button key={h.id} onClick={() => { setShowHeritage(true); setSelected({ kind: "heritage", id: h.id }); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", padding: "6px 7px", borderRadius: 10, border: 0, background: "transparent", cursor: "pointer", color: "#4a3a28" }}>
                             <span style={{ flex: "0 0 auto", width: 26, height: 26, borderRadius: 8, background: heritageStyle(h.type).color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 13 }}>{heritageStyle(h.type).glyph}</span>
-                            <span style={{ fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{h.name} <span style={{ color: C.muted, fontWeight: 600 }}>· {h.city}</span></span>
+                            <span style={{ fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{hL(h).name} <span style={{ color: C.muted, fontWeight: 600 }}>· {hL(h).city}</span></span>
                           </button>
                         ))}
                       </>
@@ -1492,8 +1497,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           <>
             <div style={{ background: `linear-gradient(145deg,#2e2218,${heritageStyle(selHeritage.type).color})`, color: "#fff8eb", padding: "22px 22px 20px" }}>
               <span style={pill("rgba(255,255,255,.16)")}>{heritageStyle(selHeritage.type).glyph} {T("선교 유적지", "Heritage", "Дурсгал")} · {tl(locale, "htype", selHeritage.type, selHeritage.type)}</span>
-              <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, margin: "12px 0 4px", letterSpacing: "-.03em" }}>{selHeritage.name}</h2>
-              <p style={{ margin: 0, fontSize: 13, color: "rgba(255,248,235,.85)" }}>{selHeritage.city} · {selHeritage.region}{selHeritage.year ? ` · ${selHeritage.year}${locale === "ko" ? "년" : ""}` : ""}{selHeritage.coordUncertain ? ` · ${T("좌표 근사치", "approx. location", "ойролцоо байршил")}` : ""}</p>
+              <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, margin: "12px 0 4px", letterSpacing: "-.03em" }}>{hL(selHeritage).name}</h2>
+              <p style={{ margin: 0, fontSize: 13, color: "rgba(255,248,235,.85)" }}>{hL(selHeritage).city} · {hL(selHeritage).region}{selHeritage.year ? ` · ${selHeritage.year}${locale === "ko" ? "년" : ""}` : ""}{selHeritage.coordUncertain ? ` · ${T("좌표 근사치", "approx. location", "ойролцоо байршил")}` : ""}</p>
             </div>
             <div style={{ padding: "18px 20px 24px", overflowY: "auto" }}>
               {selHeritage.photo && (
@@ -1503,12 +1508,12 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 </figure>
               )}
               <section style={{ padding: 15, background: "#fff9ee", border: `1px solid ${C.line}`, borderRadius: 18, marginBottom: 14 }}>
-                <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.75, color: "#594935" }}>{selHeritage.summary}</p>
+                <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.75, color: "#594935" }}>{hL(selHeritage).summary}</p>
               </section>
               {selHeritage.unesco && (
                 <section style={{ marginBottom: 14, padding: "11px 13px", borderRadius: 14, background: "rgba(191,107,34,.1)", border: "1px solid rgba(191,107,34,.3)" }}>
                   <div style={{ fontSize: 11, fontWeight: 900, color: "#a0641f", marginBottom: 3 }}>🏛 {T("유네스코 등재 추진", "UNESCO bid in progress", "ЮНЕСКО-д санал болгож буй")}</div>
-                  <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: "#6b4a1f" }}>{selHeritage.unesco}</p>
+                  <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: "#6b4a1f" }}>{hL(selHeritage).unesco}</p>
                 </section>
               )}
               {selHeritage.people.length > 0 && (
@@ -1546,7 +1551,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                       ))}
                       {nearHeritage.map(({ h, d }) => (
                         <button key={`h-${h.id}`} onClick={() => { setShowHeritage(true); setSelected({ kind: "heritage", id: h.id }); }} style={{ ...pill("rgba(122,74,158,.1)", "#5a3f72"), border: `1px solid ${C.line}`, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
-                          {heritageStyle(h.type).glyph} {h.name} <span style={{ color: C.faint, fontWeight: 700 }}>{km(d)}</span>
+                          {heritageStyle(h.type).glyph} {hL(h).name} <span style={{ color: C.faint, fontWeight: 700 }}>{km(d)}</span>
                         </button>
                       ))}
                     </div>
@@ -1678,7 +1683,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {["gwangju_wilson_house", "daegu_cheongna_houses", "jeonju_seomun_church", "suncheon_coit_house", "jeongdong_first_church"].map((id) => {
                 const h = HERITAGE.find((x) => x.id === id);
-                return h ? <button key={id} onClick={() => setSelected({ kind: "heritage", id })} style={{ ...pill(heritageStyle(h.type).color), border: 0, cursor: "pointer" }}>{heritageStyle(h.type).glyph} {h.city}</button> : null;
+                return h ? <button key={id} onClick={() => setSelected({ kind: "heritage", id })} style={{ ...pill(heritageStyle(h.type).color), border: 0, cursor: "pointer" }}>{heritageStyle(h.type).glyph} {hL(h).city}</button> : null;
               })}
             </div>
             <p style={{ margin: "8px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>{T(

@@ -9,7 +9,8 @@ import { PHOTOS } from "@/lib/data/photos";
 import { Portrait } from "@/components/color-mode";
 import { HERITAGE } from "@/lib/data/heritage";
 import { getLocale } from "@/lib/i18n/server";
-import { fetchAllPersonI18n, fetchAllTopicI18n, fetchPlacesI18n, ov } from "@/lib/i18n/content";
+import { fetchAllPersonI18n, fetchAllTopicI18n, fetchPlacesI18n, fetchRelationsI18n, fetchAllHeritageI18n, ov } from "@/lib/i18n/content";
+import { tl } from "@/lib/i18n/labels";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,8 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
   const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
   const i18n = await fetchAllPersonI18n(locale);
   const placesL = await fetchPlacesI18n(locale);
+  const relNotes = await fetchRelationsI18n(locale);
+  const heritageL = await fetchAllHeritageI18n(locale);
   const ti = (await fetchAllTopicI18n(locale))[id];
   const tTitle = ov(topic.title, ti?.title);
   const tIntro = ov(topic.intro, ti?.intro);
@@ -65,9 +68,11 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
   const linkMap = new Map<string, { title: string; url: string; publisher?: string }>();
   for (const p of people) {
     const ph = PHOTOS[p.id];
-    if (ph?.wiki) linkMap.set(ph.wiki, { title: `${p.name} — 위키백과`, url: ph.wiki });
-    if (ph?.wikiEn) linkMap.set(ph.wikiEn, { title: `${p.name} — Wikipedia`, url: ph.wikiEn });
-    for (const r of profileFor(p.id)?.refs ?? []) if (!linkMap.has(r.url)) linkMap.set(r.url, r);
+    const pname = nmOf(p.id, p.name);
+    if (ph?.wiki) linkMap.set(ph.wiki, { title: `${pname} — ${T("위키백과", "Wikipedia (KO)", "Wikipedia (KO)")}`, url: ph.wiki });
+    if (ph?.wikiEn) linkMap.set(ph.wikiEn, { title: `${pname} — Wikipedia`, url: ph.wikiEn });
+    const refsKo = profileFor(p.id)?.refs ?? [];
+    refsKo.forEach((r, i) => { if (!linkMap.has(r.url)) linkMap.set(r.url, { url: r.url, title: i18n[p.id]?.refs?.[i]?.title || r.title, publisher: i18n[p.id]?.refs?.[i]?.publisher || r.publisher }); });
   }
   const links = [...linkMap.values()];
 
@@ -142,9 +147,9 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
           <ul className="mt-3 space-y-2">
             {edges.map((r, i) => (
               <li key={i} className="flex items-center gap-2 rounded-xl border border-ink-200 bg-white px-3 py-2 text-[13px]">
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ background: r.meta.color }}>{r.meta.label}</span>
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ background: r.meta.color }}>{tl(locale, "rel", r.type, r.meta.label)}</span>
                 <span className="font-bold text-ink-800">{nmOf(r.from.id, r.from.name)} → {nmOf(r.to.id, r.to.name)}</span>
-                {r.note && <span className="truncate text-[12px] text-ink-400">· {r.note}</span>}
+                {(relNotes[`${r.from.id}|${r.to.id}|${r.type}`] || r.note) && <span className="truncate text-[12px] text-ink-400">· {relNotes[`${r.from.id}|${r.to.id}|${r.type}`] || r.note}</span>}
               </li>
             ))}
           </ul>
@@ -169,8 +174,8 @@ export default async function ResearchReport({ params }: { params: Promise<{ id:
                   <img src={h.photo} alt={h.name} className="h-24 w-full object-cover" />
                 )}
                 <div className="p-2.5">
-                  <div className="text-[12.5px] font-bold text-ink-800">{h.name}</div>
-                  <div className="text-[11px] text-ink-400">{h.city} · {h.type}</div>
+                  <div className="text-[12.5px] font-bold text-ink-800">{heritageL[h.id]?.name || h.name}</div>
+                  <div className="text-[11px] text-ink-400">{heritageL[h.id]?.city || h.city} · {tl(locale, "htype", h.type, h.type)}</div>
                 </div>
               </Link>
             ))}

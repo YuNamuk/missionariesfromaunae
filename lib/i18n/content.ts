@@ -113,6 +113,32 @@ export async function fetchPlaceDetailI18n(locale: Locale): Promise<Record<strin
   }
 }
 
+/** 관계 설명 번역 {`from|to|type`: note}. ko면 빈 객체. */
+export async function fetchRelationsI18n(locale: Locale): Promise<Record<string, string>> {
+  if (locale === "ko") return {};
+  return (await readSetting<Record<string, string>>(`i18n.${locale}.relations`)) ?? {};
+}
+
+export interface HeritageI18n { name?: string; city?: string; region?: string; summary?: string; unesco?: string }
+/** 선교 유적지 번역 {id: {...}}. ko면 빈 객체. */
+export async function fetchAllHeritageI18n(locale: Locale): Promise<Record<string, HeritageI18n>> {
+  if (locale === "ko") return {};
+  const db = getSupabase();
+  if (!db) return {};
+  try {
+    const prefix = `i18n.${locale}.heritage.`;
+    const { data, error } = await db.from("app_settings").select("key,value").like("key", `${prefix}%`);
+    if (error || !data) return {};
+    const out: Record<string, HeritageI18n> = {};
+    for (const row of data as { key: string; value: unknown }[]) {
+      if (row.value && typeof row.value === "object") out[row.key.replace(prefix, "")] = row.value as HeritageI18n;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 export interface TopicI18n { title?: string; intro?: string; analysis?: string; era?: string }
 /** 모든 주제 번역 오버레이. ko면 빈 객체. */
 export async function fetchAllTopicI18n(locale: Locale): Promise<Record<string, TopicI18n>> {

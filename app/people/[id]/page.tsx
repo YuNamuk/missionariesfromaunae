@@ -17,7 +17,8 @@ import { PHOTOS } from "@/lib/data/photos";
 import { profileFor } from "@/lib/data/profiles";
 import { fetchPersonContent, fetchReview } from "@/lib/db/editable";
 import { getLocale } from "@/lib/i18n/server";
-import { fetchPersonI18n, fetchPlacesI18n, ov } from "@/lib/i18n/content";
+import { fetchPersonI18n, fetchAllPersonI18n, fetchPlacesI18n, fetchRelationsI18n, ov } from "@/lib/i18n/content";
+import { tl } from "@/lib/i18n/labels";
 
 // 로케일 쿠키 + 관리자 오버레이를 반영하기 위해 요청별 동적 렌더.
 
@@ -57,19 +58,22 @@ export default async function PersonPage({
   const placesL = await fetchPlacesI18n(locale);
   const plName = (p: { id: string; name: string }) => placesL[p.id] ?? p.name;
 
+  const allI18n = await fetchAllPersonI18n(locale);
+  const relNotes = await fetchRelationsI18n(locale);
   const place = getPlace(person.place);
   const rels = relationshipsFor(person.id);
-  // 같은 종류(관계 유형)끼리 묶고, 관련 인물의 간단한 소개(사역·생애)를 함께 둔다.
+  // 같은 종류(관계 유형)끼리 묶고, 관련 인물의 간단한 소개(사역·생애)를 함께 둔다. 라벨·이름·사역·설명 로케일.
   const relGroups = (() => {
-    const m = new Map<string, { color: string; items: { id: string; name: string; dir: string; note: string; role: string; org: string; life: string }[] }>();
+    const m = new Map<string, { label: string; color: string; items: { id: string; name: string; dir: string; note: string; role: string; org: string; life: string }[] }>();
     for (const r of rels) {
       const otherRef = r.from.id === person.id ? r.to : r.from;
       const dir = r.from.id === person.id ? "→" : "←";
       const o = getPerson(otherRef.id);
-      if (!m.has(r.meta.label)) m.set(r.meta.label, { color: r.meta.color, items: [] });
-      m.get(r.meta.label)!.items.push({ id: otherRef.id, name: otherRef.name, dir, note: r.note, role: o?.role ?? "", org: o?.org ?? "", life: o?.life ?? "" });
+      const note = relNotes[`${r.from.id}|${r.to.id}|${r.type}`] || r.note;
+      if (!m.has(r.type)) m.set(r.type, { label: tl(locale, "rel", r.type, r.meta.label), color: r.meta.color, items: [] });
+      m.get(r.type)!.items.push({ id: otherRef.id, name: ov(otherRef.name, allI18n[otherRef.id]?.name), dir, note, role: ov(o?.role ?? "", allI18n[otherRef.id]?.role), org: o?.org ?? "", life: o?.life ?? "" });
     }
-    return [...m.entries()];
+    return [...m.values()];
   })();
   const sourcesRaw = resourcesFor(person);
   const ph = PHOTOS[person.id];
@@ -328,11 +332,11 @@ export default async function PersonPage({
           <section id="relations" className="scroll-mt-28">
             <h2 className="font-display text-lg font-extrabold text-ink-900">{T("관계", "Relationships", "Харилцаа")}</h2>
             <div className="mt-4 space-y-5">
-              {relGroups.map(([label, group]) => (
-                <div key={label}>
+              {relGroups.map((group) => (
+                <div key={group.label}>
                   <div className="mb-2 flex items-center gap-2">
                     <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white" style={{ background: group.color }}>
-                      {label}
+                      {group.label}
                     </span>
                     <span className="text-[11px] text-ink-400">{group.items.length}{T("명", "", "")}</span>
                   </div>

@@ -45,7 +45,13 @@ const htype: LocMap = {
   mn: { "교회": "Сүм", "학교": "Сургууль", "병원": "Эмнэлэг", "선교부": "Номлолын төв", "사택·양관": "Орон сууц", "기념관": "Дурсгалын танхим", "마을·구역": "Тосгон/Бүс" },
 };
 
-const GROUPS: Record<string, LocMap> = { era, region, denom, role, country, cat, rel, htype };
+// 선교 유적지 권역(둘러보기 그룹 라벨)
+const htregion: LocMap = {
+  en: { "서울·경기": "Seoul · Gyeonggi", "인천·강화": "Incheon · Ganghwa", "충청": "Chungcheong", "호남": "Honam", "영남": "Yeongnam", "관북·서북(북한)": "North (Gwanbuk · Seobuk)", "제주": "Jeju" },
+  mn: { "서울·경기": "Сөүл · Гёнги", "인천·강화": "Инчон · Канхва", "충청": "Чүнчон", "호남": "Хонам", "영남": "Ённам", "관북·서북(북한)": "Хойд (Гванбук · Сэобук)", "제주": "Жэжү" },
+};
+
+const GROUPS: Record<string, LocMap> = { era, region, denom, role, country, cat, rel, htype, htregion };
 
 /** 라벨 번역. ko면 원본(ko)을 그대로, 그 외엔 사전값(없으면 ko 폴백). */
 export function tl(locale: Locale, type: keyof typeof GROUPS | string, key: string, ko: string): string {
