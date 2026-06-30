@@ -22,6 +22,7 @@ const C = "Wikimedia Commons";
 export const PHOTOS: Record<string, PersonPhoto> = {
   jones: { qid: "Q5540374", photo: "/portraits/jones.png", wiki: "", wikiEn: "https://en.wikipedia.org/wiki/George_Heber_Jones", source: C },
   anniebaird: { qid: "Q101136682", photo: "/portraits/anniebaird.png", wiki: "", wikiEn: "https://en.wikipedia.org/wiki/Annie_Laurie_Adams_Baird", source: C },
+  trollope: { qid: "Q6770039", photo: "/portraits/trollope.jpg", wiki: "", wikiEn: "https://en.wikipedia.org/wiki/Mark_Trollope", source: C },
   allen: { qid: "Q505508", photo: "/portraits/allen.jpg", wiki: "https://ko.wikipedia.org/wiki/호러스_뉴턴_알렌", wikiEn: "https://en.wikipedia.org/wiki/Horace_Newton_Allen", namu: "https://namu.wiki/w/호러스 뉴턴 알렌", source: C },
   underwood: { qid: "Q623878", photo: "/portraits/underwood.jpg", wiki: "https://ko.wikipedia.org/wiki/호러스_그랜트_언더우드", wikiEn: "https://en.wikipedia.org/wiki/Horace_Grant_Underwood", namu: "https://namu.wiki/w/호러스 그랜트 언더우드", source: C },
   appenzeller: { qid: "Q1145616", photo: "/portraits/appenzeller.jpg", wiki: "https://ko.wikipedia.org/wiki/헨리_아펜젤러", wikiEn: "https://en.wikipedia.org/wiki/Henry_Appenzeller", namu: "https://namu.wiki/w/헨리 아펜젤러", source: C },

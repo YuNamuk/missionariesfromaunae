@@ -54,6 +54,34 @@ export const PROFILES: Record<string, PersonProfile> = {
     beauty:
       "이름난 직책 없이도, 한 가정의 안주인이자 교사이자 번역자로 평양의 삶을 살아냈다. 1916년 그곳에서 생을 마쳤다.",
   },
+  corfe: {
+    ministry: [
+      "1889년 웨스트민스터 사원에서 초대 조선교구장 주교로 서품 — 영국 성공회의 한국 선교 시작",
+      "1890년 동료들과 함께 제물포에 상륙, 강화도를 첫 선교지로 삼아 사역을 폄",
+      "서울에 성미카엘교회를 세우고, 서울 두 곳·제물포 한 곳에 병원을 열어 의료선교의 기초를 놓음",
+      "영국 해군 군종 출신으로, 요란한 전도보다 의료·교육·기도로 다가가는 절제된 선교를 지향",
+    ],
+    journey:
+      "장로회·감리회가 먼저 들어와 있던 땅에, 성공회는 늦게 그러나 다른 결로 닿았다. 코프는 서두르지 않았다. 강화의 작은 마을에서 병을 고치고 글을 가르치며, 천천히 신뢰를 쌓는 길을 택했다.",
+    influence:
+      "그가 놓은 강화·서울의 토대 위에 한국 성공회가 자랐고, 의료와 교육을 앞세운 그의 방식은 뒤이은 터너·트롤로프 주교에게로 이어졌다. 한국 교회사에서 자주 가려지지만, 성공회라는 또 하나의 큰 줄기가 이 사람에게서 시작되었다.",
+    beauty:
+      "해군 군종의 절제와 겸손으로, 자기 이름을 내세우지 않고 한 교파의 첫 길을 묵묵히 닦았다. 1904년 주교직을 내려놓고 조용히 귀국했다.",
+  },
+  trollope: {
+    ministry: [
+      "1890년 성공회 선교단의 일원으로 내한, 약 10년간 강화·서울에서 사역",
+      "1911년 제3대 조선교구장 주교로 다시 부임 — 세상을 떠날 때까지 한국 성공회를 이끎",
+      "왕립아시아학회(RAS) 한국지부 회장을 13년간 맡아 한국의 역사·서지·문화를 깊이 연구",
+      "서울 정동에 로마네스크 양식의 주교좌성당(성공회 서울대성당)을 1924년 착공해 세움",
+    ],
+    journey:
+      "트롤로프는 한국을 ‘선교지’이자 ‘연구해야 할 문명’으로 함께 바라본 드문 사람이었다. 그는 한국의 옛 책과 역사를 모으고 읽었고, 그 존중의 마음을 돌과 벽돌로 옮겨 한 채의 성당을 세웠다.",
+    influence:
+      "그가 세운 서울대성당은 오늘까지 도심 한복판에 남아 한국 성공회의 상징이 되었고, 그의 한국학 연구는 서양이 한국을 학문으로 이해하는 통로가 되었다. 선교와 학문, 신앙과 문화를 함께 끌어안은 자취다.",
+    beauty:
+      "유럽에서 교회 회의를 마치고 한국으로 돌아오던 길, 입항하던 배가 다른 배와 충돌했고 그 충격으로 그는 1930년 세상을 떠났다. 마지막 순간까지 그의 얼굴은 한국을 향하고 있었다.",
+  },
   allen: {
     ministry: [
       "1884년 미국 북장로회 의료선교사로 입국, 주한 미국공사관부 의사 신분으로 활동",
@@ -595,6 +623,40 @@ const REFS: Record<string, { title: string; url: string; publisher?: string }[]>
       "title": "Annie Laurie Adams Baird Papers — Presbyterian Historical Society",
       "url": "https://www.history.pcusa.org/collections/research-tools/guides-archival-collections/rg-172",
       "publisher": "Presbyterian Church (U.S.A.)"
+    }
+  ],
+  "corfe": [
+    {
+      "title": "Charles John Corfe — Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Charles_John_Corfe",
+      "publisher": "English Wikipedia"
+    },
+    {
+      "title": "찰스 존 코프 — 나무위키",
+      "url": "https://namu.wiki/w/찰스 존 코프",
+      "publisher": "나무위키"
+    },
+    {
+      "title": "대한성공회의 역사",
+      "url": "https://www.skh.or.kr/3",
+      "publisher": "대한성공회"
+    }
+  ],
+  "trollope": [
+    {
+      "title": "Mark Trollope — Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Mark_Trollope",
+      "publisher": "English Wikipedia"
+    },
+    {
+      "title": "Mark Napier Trollope — National Portrait Gallery",
+      "url": "https://www.npg.org.uk/collections/search/person/mp135715/mark-napier-trollope",
+      "publisher": "National Portrait Gallery"
+    },
+    {
+      "title": "The Church in Corea (1915) — 원저 M. N. Trollope",
+      "url": "https://open.bu.edu/handle/2144/1075",
+      "publisher": "Boston University"
     }
   ],
   "allen": [
