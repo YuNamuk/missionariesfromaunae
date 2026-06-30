@@ -185,6 +185,7 @@ export function SiteHeader() {
   const router = useRouter();
   const { locale } = useLocale();
   const [open, setOpen] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const goPerson = (pid: string) => { router.push(`/?person=${pid}`); setOpen(null); };
   const goFocus = (placeId: string) => { router.push(`/?focus=${placeId}`); setOpen(null); };
@@ -204,25 +205,49 @@ export function SiteHeader() {
       </Link>
 
       <nav className="flex items-center gap-0.5">
-        {PAGES.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-          return (
-            <Link key={item.href} href={item.href}
-              className={clsx("rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors", active ? "bg-white/12 text-white" : "text-white/55 hover:bg-white/8 hover:text-white")}>
-              {t(locale, item.key)}
-            </Link>
-          );
-        })}
-
-        <span className="mx-1.5 h-5 w-px bg-white/15" />
-
-        <BrowseDrop open={open} setOpen={setOpen} onPickPerson={goPerson} onPickFocus={goFocus} onPickYear={goYear} onPickHeritage={goHeritage} locale={locale} />
+        {/* 데스크톱 내비(좁은 화면에선 햄버거로) */}
+        <div className="hidden items-center gap-0.5 lg:flex">
+          {PAGES.map((item) => {
+            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            return (
+              <Link key={item.href} href={item.href}
+                className={clsx("rounded-full px-3 py-1.5 text-[13px] font-bold transition-colors", active ? "bg-white/12 text-white" : "text-white/55 hover:bg-white/8 hover:text-white")}>
+                {t(locale, item.key)}
+              </Link>
+            );
+          })}
+          <span className="mx-1.5 h-5 w-px bg-white/15" />
+          <BrowseDrop open={open} setOpen={setOpen} onPickPerson={goPerson} onPickFocus={goFocus} onPickYear={goYear} onPickHeritage={goHeritage} locale={locale} />
+        </div>
 
         <LocaleToggle />
 
         {/* 설정 ⚙ — 전 페이지(헤더 우측 끝). 지도 전용 항목은 지도 페이지에서만 노출 */}
         <MapSettingsButton />
+
+        {/* 모바일 햄버거 */}
+        <button onClick={() => setMobileOpen((v) => !v)} aria-label={t(locale, "nav.browse")} aria-expanded={mobileOpen}
+          className="ml-0.5 flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white lg:hidden">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">{mobileOpen ? <><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}</svg>
+        </button>
       </nav>
+
+      {/* 모바일 메뉴 패널 */}
+      {mobileOpen && (
+        <div className="absolute left-0 right-0 top-16 z-[999] border-t border-white/10 px-4 py-3 lg:hidden" style={{ background: "linear-gradient(180deg,#2e2218,#3a2a1c)", boxShadow: "0 12px 28px rgba(38,25,10,.45)" }}>
+          <div className="flex flex-col gap-1">
+            {PAGES.map((item) => {
+              const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}
+                  className={clsx("rounded-lg px-3 py-2.5 text-[15px] font-bold transition-colors", active ? "bg-white/14 text-white" : "text-white/65 hover:bg-white/8 hover:text-white")}>
+                  {t(locale, item.key)}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
