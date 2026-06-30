@@ -3,7 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { browserSupabase } from "@/lib/db/browser";
-import { PEOPLE } from "@/lib/data";
+import { PEOPLE, getRelationships } from "@/lib/data";
+import { HERITAGE } from "@/lib/data/heritage";
+import { STUDENT_VOICES } from "@/lib/data/voices";
 import { PHOTOS } from "@/lib/data/photos";
 import { GALLERY } from "@/lib/data/gallery";
 import { STATUS_LABEL, type DevReq } from "@/lib/data/devreq";
@@ -36,7 +38,12 @@ export default function AdminPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "users" | "stats" | "review" | "devreq">("people");
+  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "users" | "stats" | "review" | "devreq" | "i18n">("people");
+  // 번역 검수 탭: 언어·카테고리·편집 드래프트
+  const [trLang, setTrLang] = useState<"en" | "mn">("en");
+  const [trCat, setTrCat] = useState<"person" | "heritage" | "relations" | "voices">("person");
+  const [trEdits, setTrEdits] = useState<Record<string, string>>({});
+  const [trQ, setTrQ] = useState("");
   // 로그인한 사용자의 콘텐츠 권한(서버 /api/admin/me에서 받음). null이면 권한 없음.
   const [myRole, setMyRole] = useState<Role | null | undefined>(undefined);
   // 사용자(콘텐츠 관리자) 역할 맵 — app_settings 'roles'(+레거시 admins 병합).
@@ -380,10 +387,10 @@ export default function AdminPage() {
   }
 
   // 역할별 노출 탭. 콘텐츠 편집은 파워 이상, 코어 설정·사용자 관리는 전체 관리자만.
-  const TAB_LABEL: Record<string, string> = { people: "선교사 정보", featured: "대표 표기", research: "주제연구", pages: "페이지 글", settings: "연도·용어 설정", users: "사용자 관리", stats: "방문 통계", review: "검수", devreq: "개발 요청" };
+  const TAB_LABEL: Record<string, string> = { people: "선교사 정보", featured: "대표 표기", research: "주제연구", pages: "페이지 글", i18n: "번역 검수", settings: "연도·용어 설정", users: "사용자 관리", stats: "방문 통계", review: "검수", devreq: "개발 요청" };
   const TABS_BY_ROLE: Record<Role, string[]> = {
-    super: ["people", "featured", "research", "pages", "settings", "users", "stats", "review", "devreq"],
-    power: ["people", "featured", "research", "pages", "stats", "review", "devreq"],
+    super: ["people", "featured", "research", "pages", "i18n", "settings", "users", "stats", "review", "devreq"],
+    power: ["people", "featured", "research", "pages", "i18n", "stats", "review", "devreq"],
     content: ["stats"],
   };
   const visibleTabs = TABS_BY_ROLE[myRole];
@@ -717,6 +724,159 @@ export default function AdminPage() {
           ))}
         </div>
       )}
+
+      {activeTab === "i18n" && (() => {
+        const langs: ("en" | "mn")[] = ["en", "mn"];
+        const cats = [["person", "선교사"], ["heritage", "유적지"], ["relations", "관계 설명"], ["voices", "학생 목소리"]] as const;
+        const ev = (fid: string, fallback: string) => (fid in trEdits ? trEdits[fid] : fallback);
+        const setEv = (fid: string, v: string) => setTrEdits((s) => ({ ...s, [fid]: v }));
+        const switchTo = (next: Partial<{ lang: "en" | "mn"; cat: typeof trCat }>) => { setTrEdits({}); if (next.lang) setTrLang(next.lang); if (next.cat) setTrCat(next.cat); };
+        const saveTr = async (key: string, value: unknown) => {
+          setSaving(true); setMsg("");
+          const err = await post({ kind: "settings", settings: { [key]: value } });
+          setSaving(false);
+          setMsg(err ? "저장 실패: " + err : "✓ 번역 저장됨 (잠시 뒤 사이트 반영)");
+          if (!err) loadData();
+        };
+        const q = trQ.trim().toLowerCase();
+        const koCell = (s: string) => <div style={{ fontSize: 12.5, lineHeight: 1.6, color: C.muted, background: "rgba(0,0,0,.03)", border: `1px solid ${C.line}`, borderRadius: 8, padding: "7px 9px", whiteSpace: "pre-wrap" }}>{s || <span style={{ opacity: 0.5 }}>—</span>}</div>;
+        const ta = (fid: string, fallback: string, minH = 56) => <textarea value={ev(fid, fallback)} onChange={(e) => setEv(fid, e.target.value)} style={{ ...input, minHeight: minH, resize: "vertical", lineHeight: 1.6 }} placeholder={`${LOCALE_NAME[trLang]} 번역`} />;
+        const row2: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, alignItems: "start" };
+
+        return (
+          <div style={{ display: "grid", gap: 14 }}>
+            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: C.muted }}>
+              자동 번역본을 한국어 원문과 대조해 다듬는 자리입니다. 왼쪽이 <b>한국어 원문</b>, 오른쪽이 <b>{LOCALE_NAME[trLang]} 번역</b>(수정 가능). 비우면 사이트에서 한국어로 표시됩니다. 몽골어는 방문 선생님 등 원어민 검수를 권장합니다.
+            </p>
+            {/* 언어 + 카테고리 */}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 6 }}>
+                {langs.map((l) => (
+                  <button key={l} onClick={() => switchTo({ lang: l })} style={{ border: `1px solid ${trLang === l ? "#1f6f8b" : C.line}`, borderRadius: 99, padding: "5px 14px", background: trLang === l ? "#1f6f8b" : "transparent", color: trLang === l ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>{LOCALE_NAME[l]}</button>
+                ))}
+              </div>
+              <span style={{ width: 1, height: 20, background: C.line }} />
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {cats.map(([k, lbl]) => (
+                  <button key={k} onClick={() => switchTo({ cat: k })} style={{ border: `1px solid ${trCat === k ? "#9b3d2d" : C.line}`, borderRadius: 99, padding: "5px 12px", background: trCat === k ? "#9b3d2d" : "transparent", color: trCat === k ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>{lbl}</button>
+                ))}
+              </div>
+            </div>
+            <input style={input} value={trQ} onChange={(e) => setTrQ(e.target.value)} placeholder="검색(원문/이름)" />
+
+            {/* ── 선교사 (이름·요약·이야기) ── */}
+            {trCat === "person" && (
+              <div style={{ display: "grid", gap: 14 }}>
+                {PEOPLE.filter((p) => !q || `${p.name} ${p.en} ${p.summary}`.toLowerCase().includes(q)).map((p) => {
+                  const base = (settings[`i18n.${trLang}.person.${p.id}`] ?? {}) as { name?: string; summary?: string; story?: string[] };
+                  const koStory = (profileFor(p.id)?.story ?? []).join("\n\n");
+                  const save = () => {
+                    const v: Record<string, unknown> = { ...base };
+                    const nm = ev(`p:${p.id}:name`, base.name ?? "").trim(); if (nm) v.name = nm; else delete v.name;
+                    const sm = ev(`p:${p.id}:summary`, base.summary ?? "").trim(); if (sm) v.summary = sm; else delete v.summary;
+                    const st = ev(`p:${p.id}:story`, (base.story ?? []).join("\n\n")).split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean); if (st.length) v.story = st; else delete v.story;
+                    saveTr(`i18n.${trLang}.person.${p.id}`, v);
+                  };
+                  return (
+                    <div key={p.id} style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: 12, background: "#fff8ec" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontWeight: 900, fontSize: 14 }}>{p.name} <span style={{ fontWeight: 500, color: C.muted, fontSize: 12 }}>{p.en}</span></span>
+                        <button onClick={save} disabled={saving} style={{ ...btn, padding: "5px 12px", fontSize: 12, background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>저장</button>
+                      </div>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        <div><label style={label}>이름</label><div style={row2}>{koCell(p.name)}{ta(`p:${p.id}:name`, base.name ?? "", 38)}</div></div>
+                        <div><label style={label}>요약</label><div style={row2}>{koCell(p.summary)}{ta(`p:${p.id}:summary`, base.summary ?? "", 70)}</div></div>
+                        {koStory && <div><label style={label}>이야기 (문단 빈 줄 구분)</label><div style={row2}>{koCell(koStory)}{ta(`p:${p.id}:story`, (base.story ?? []).join("\n\n"), 140)}</div></div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ── 유적지 (이름·소개) ── */}
+            {trCat === "heritage" && (
+              <div style={{ display: "grid", gap: 14 }}>
+                {HERITAGE.filter((h) => !q || `${h.name} ${h.city} ${h.summary}`.toLowerCase().includes(q)).map((h) => {
+                  const base = (settings[`i18n.${trLang}.heritage.${h.id}`] ?? {}) as { name?: string; city?: string; region?: string; summary?: string; unesco?: string };
+                  const save = () => {
+                    const v: Record<string, unknown> = { ...base };
+                    const nm = ev(`h:${h.id}:name`, base.name ?? "").trim(); if (nm) v.name = nm;
+                    const ct = ev(`h:${h.id}:city`, base.city ?? "").trim(); if (ct) v.city = ct;
+                    const sm = ev(`h:${h.id}:summary`, base.summary ?? "").trim(); if (sm) v.summary = sm; else delete v.summary;
+                    saveTr(`i18n.${trLang}.heritage.${h.id}`, v);
+                  };
+                  return (
+                    <div key={h.id} style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: 12, background: "#fff8ec" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontWeight: 900, fontSize: 14 }}>{h.name} <span style={{ fontWeight: 500, color: C.muted, fontSize: 12 }}>{h.city} · {h.type}</span></span>
+                        <button onClick={save} disabled={saving} style={{ ...btn, padding: "5px 12px", fontSize: 12, background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>저장</button>
+                      </div>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        <div><label style={label}>이름</label><div style={row2}>{koCell(h.name)}{ta(`h:${h.id}:name`, base.name ?? "", 38)}</div></div>
+                        <div><label style={label}>도시</label><div style={row2}>{koCell(h.city)}{ta(`h:${h.id}:city`, base.city ?? "", 38)}</div></div>
+                        {h.summary && <div><label style={label}>소개</label><div style={row2}>{koCell(h.summary)}{ta(`h:${h.id}:summary`, base.summary ?? "", 80)}</div></div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ── 관계 설명 (단일 맵, 일괄 저장) ── */}
+            {trCat === "relations" && (() => {
+              const baseMap = (settings[`i18n.${trLang}.relations`] ?? {}) as Record<string, string>;
+              const edges = getRelationships().filter((r) => r.note && (!q || `${r.from.name} ${r.to.name} ${r.note}`.toLowerCase().includes(q)));
+              const saveAll = () => {
+                const v: Record<string, string> = { ...baseMap };
+                for (const r of getRelationships()) { if (!r.note) continue; const k = `${r.from.id}|${r.to.id}|${r.type}`; const fid = `r:${k}`; if (fid in trEdits) { const t = trEdits[fid].trim(); if (t) v[k] = t; } }
+                saveTr(`i18n.${trLang}.relations`, v);
+              };
+              return (
+                <div style={{ display: "grid", gap: 10 }}>
+                  <button onClick={saveAll} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "관계 설명 일괄 저장"}</button>
+                  {edges.map((r) => { const k = `${r.from.id}|${r.to.id}|${r.type}`; return (
+                    <div key={k} style={{ border: `1px solid ${C.line}`, borderRadius: 10, padding: 10, background: "#fff8ec" }}>
+                      <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 6 }}>{r.from.name} <span style={{ color: r.meta.color }}>→[{r.meta.label}]</span> {r.to.name}</div>
+                      <div style={row2}>{koCell(r.note)}{ta(`r:${k}`, baseMap[k] ?? "", 44)}</div>
+                    </div>
+                  ); })}
+                </div>
+              );
+            })()}
+
+            {/* ── 학생 목소리 (단일 배열, 일괄 저장) ── */}
+            {trCat === "voices" && (() => {
+              const baseArr = (settings[`i18n.${trLang}.voices`] ?? []) as { text?: string; prompt?: string; context?: string }[];
+              const saveAll = () => {
+                const v = STUDENT_VOICES.map((vo, i) => {
+                  const b = baseArr[i] ?? {};
+                  return {
+                    text: (ev(`v:${i}:text`, b.text ?? "").trim()) || undefined,
+                    prompt: (ev(`v:${i}:prompt`, b.prompt ?? vo.prompt ?? "").trim()) || undefined,
+                    context: b.context ?? vo.context ?? "",
+                  };
+                });
+                saveTr(`i18n.${trLang}.voices`, v);
+              };
+              return (
+                <div style={{ display: "grid", gap: 10 }}>
+                  <button onClick={saveAll} disabled={saving} style={{ ...btn, justifySelf: "start", background: "#1f6f8b", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "학생 목소리 일괄 저장"}</button>
+                  {STUDENT_VOICES.filter((vo) => !q || `${vo.text} ${vo.author ?? ""}`.toLowerCase().includes(q)).map((vo) => {
+                    const i = STUDENT_VOICES.indexOf(vo); const b = baseArr[i] ?? {};
+                    return (
+                      <div key={i} style={{ border: `1px solid ${C.line}`, borderRadius: 10, padding: 10, background: "#fff8ec" }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 6 }}>{vo.author ?? "익명"} <span style={{ color: C.muted, fontWeight: 500 }}>· {vo.prompt}</span></div>
+                        <div style={row2}>{koCell(vo.text)}{ta(`v:${i}:text`, b.text ?? "", 90)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
 
       {activeTab === "settings" && (
         <div style={{ display: "grid", gap: 18, maxWidth: 520 }}>
