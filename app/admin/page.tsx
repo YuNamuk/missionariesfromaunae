@@ -15,6 +15,7 @@ import { profileFor } from "@/lib/data/profiles";
 import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
 import { TOPICS } from "@/lib/data/topics";
 import { ROLE_LABEL, isEmail, parseEmails, type Role } from "@/lib/data/roles";
+import { PROPOSAL_STATUS_LABEL, type Proposal } from "@/lib/data/proposals";
 import { LOCALES, LOCALE_NAME, type Locale } from "@/lib/i18n/locale";
 import { UI_DEFAULT, UI_KEYS } from "@/lib/i18n/ui";
 import { LABEL_GROUPS } from "@/lib/i18n/labels";
@@ -227,7 +228,7 @@ export default function AdminPage() {
       .filter(Boolean);
     const err = await post({ kind: "person", person: { id: draft.id, name: draft.name, name_en: draft.name_en, life: draft.life, org: draft.org, role: draft.role, summary: draft.summary, photo: draft.photo || null, wiki: draft.wiki || null, burial_place_id: draft.burial_place_id || null, active_periods: active } });
     setSaving(false);
-    setMsg(err ? "저장 실패: " + err : "✓ 저장됨 (지도 새로고침 시 반영)");
+    setMsg(err ? "저장 실패: " + err : myRole === "content" ? "✓ 제안 등록됨 — 교사 승인 후 반영됩니다" : "✓ 저장됨 (지도 새로고침 시 반영)");
     if (!err) loadData();
   }
 
@@ -272,7 +273,7 @@ export default function AdminPage() {
     const key = isKo ? `content.person.${sel}` : `i18n.${contentLang}.person.${sel}`;
     const err = await post({ kind: "settings", settings: { [key]: value } });
     setSaving(false);
-    setMsg(err ? "저장 실패: " + err : `✓ ${isKo ? "카드 글" : LOCALE_NAME[contentLang] + " 번역"} 저장됨 (상세 페이지에 곧 반영)`);
+    setMsg(err ? "저장 실패: " + err : myRole === "content" ? "✓ 제안 등록됨 — 교사 승인 후 반영됩니다" : `✓ ${isKo ? "카드 글" : LOCALE_NAME[contentLang] + " 번역"} 저장됨 (상세 페이지에 곧 반영)`);
     if (!err) loadData();
   }
 
@@ -404,7 +405,7 @@ export default function AdminPage() {
   const TABS_BY_ROLE: Record<Role, string[]> = {
     super: ["people", "featured", "research", "pages", "i18n", "settings", "users", "stats", "review", "devreq"],
     power: ["people", "featured", "research", "pages", "i18n", "stats", "review", "devreq"],
-    content: ["stats"],
+    content: ["people", "i18n", "stats"],
   };
   const visibleTabs = TABS_BY_ROLE[myRole];
   const activeTab = visibleTabs.includes(tab) ? tab : visibleTabs[0];
@@ -430,9 +431,8 @@ export default function AdminPage() {
       {msg && <p style={{ marginBottom: 14, fontSize: 13, fontWeight: 700, color: msg.startsWith("✓") ? "#2f6b3b" : C.accent }}>{msg}</p>}
 
       {myRole === "content" && (
-        <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, padding: 18, background: "#fff8ec", fontSize: 13.5, lineHeight: 1.7, color: C.ink }}>
-          <b>콘텐츠 관리자로 오신 것을 환영합니다.</b><br />
-          선교사 정보·학생 목소리의 추가·수정·삭제 기능은 곧(검수 워크플로 적용 후) 활성화됩니다. 그때부터 작성한 내용은 교사 승인을 거쳐 사이트에 반영됩니다.
+        <div style={{ border: `1px solid rgba(31,111,139,.3)`, borderRadius: 14, padding: "12px 16px", background: "rgba(31,111,139,.06)", fontSize: 13, lineHeight: 1.65, color: C.ink, marginBottom: 14 }}>
+          <b>콘텐츠 관리자</b> — 선교사 정보·번역을 수정하면 <b>교사(파워/전체 관리자) 승인 대기 제안</b>으로 등록됩니다. 승인되면 사이트에 반영돼요.
         </div>
       )}
 
@@ -749,7 +749,7 @@ export default function AdminPage() {
           setSaving(true); setMsg("");
           const err = await post({ kind: "settings", settings: { [key]: value } });
           setSaving(false);
-          setMsg(err ? "저장 실패: " + err : "✓ 번역 저장됨 (잠시 뒤 사이트 반영)");
+          setMsg(err ? "저장 실패: " + err : myRole === "content" ? "✓ 번역 제안 등록됨 — 교사 승인 후 반영" : "✓ 번역 저장됨 (잠시 뒤 사이트 반영)");
           if (!err) loadData();
         };
         const q = trQ.trim().toLowerCase();
@@ -1178,8 +1178,50 @@ export default function AdminPage() {
         const segBtn = (on: boolean, color: string, label: string, onClick: () => void) => (
           <button onClick={onClick} style={{ border: `1px solid ${on ? color : C.line}`, borderRadius: 8, padding: "3px 9px", background: on ? color : "transparent", color: on ? "#fff8ed" : C.muted, cursor: "pointer", fontSize: 11, fontWeight: 800 }}>{label}</button>
         );
+        // ── 콘텐츠 관리자(학생) 제안 검토 ──
+        const proposals = (Array.isArray(settings.proposals) ? settings.proposals : []) as Proposal[];
+        const pendingProps = proposals.filter((p) => p.status === "pending");
+        const actProp = async (id: string, kind: "proposal-approve" | "proposal-reject" | "proposal-delete", note?: string) => {
+          setSaving(true); setMsg("");
+          const err = await post({ kind, id, ...(note ? { note } : {}) });
+          setSaving(false);
+          setMsg(err ? "처리 실패: " + err : kind === "proposal-approve" ? "✓ 승인·반영됨" : kind === "proposal-reject" ? "✓ 반려됨" : "✓ 삭제됨");
+          if (!err) loadData();
+        };
         return (
           <div>
+            {/* 제안 검토(콘텐츠 관리자 수정) */}
+            <section style={{ marginBottom: 22 }}>
+              <h3 className="font-display" style={{ fontWeight: 900, fontSize: 16, margin: "0 0 4px" }}>수정 제안 검토 <span style={{ fontSize: 12.5, color: pendingProps.length ? "#9b3d2d" : C.muted }}>· 대기 {pendingProps.length}</span></h3>
+              <p style={{ margin: "0 0 10px", fontSize: 12, color: C.muted }}>콘텐츠 관리자(학생)가 올린 수정 제안입니다. 승인하면 사이트에 즉시 반영됩니다.</p>
+              {proposals.length === 0 && <p style={{ fontSize: 12.5, color: C.muted }}>아직 제안이 없습니다.</p>}
+              <div style={{ display: "grid", gap: 8 }}>
+                {proposals.slice(0, 40).map((p) => {
+                  const sc = p.status === "pending" ? "#bf6b22" : p.status === "approved" ? "#3f7f4b" : "#c2453a";
+                  return (
+                    <div key={p.id} style={{ border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 12px", background: "#fff8ec" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <span style={{ background: sc, color: "#fff8ed", borderRadius: 99, padding: "2px 9px", fontSize: 10.5, fontWeight: 800 }}>{PROPOSAL_STATUS_LABEL[p.status]}</span>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: C.ink }}>{p.label}</span>
+                        <span style={{ fontSize: 11, color: C.muted }}>· {p.author}</span>
+                        {p.status === "pending" && (
+                          <span style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+                            <button onClick={() => actProp(p.id, "proposal-approve")} disabled={saving} style={{ border: 0, borderRadius: 8, padding: "4px 12px", background: "#3f7f4b", color: "#fff8ed", fontWeight: 800, fontSize: 12, cursor: "pointer" }}>승인</button>
+                            <button onClick={() => { const n = window.prompt("반려 사유(선택)"); if (n !== null) actProp(p.id, "proposal-reject", n.trim() || undefined); }} disabled={saving} style={{ border: `1px solid ${C.line}`, borderRadius: 8, padding: "4px 12px", background: "transparent", color: C.accent, fontWeight: 800, fontSize: 12, cursor: "pointer" }}>반려</button>
+                          </span>
+                        )}
+                        {p.status !== "pending" && <button onClick={() => actProp(p.id, "proposal-delete")} style={{ marginLeft: "auto", border: 0, background: "transparent", color: C.muted, fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>삭제</button>}
+                      </div>
+                      <div style={{ marginTop: 6, fontSize: 11.5, color: C.muted, whiteSpace: "pre-wrap", maxHeight: 90, overflow: "auto", borderTop: `1px solid ${C.line}`, paddingTop: 6 }}>
+                        {p.kind === "person" ? Object.entries(p.person ?? {}).filter(([k]) => k !== "id").map(([k, v]) => `${k}: ${typeof v === "string" ? v : JSON.stringify(v)}`).join("\n").slice(0, 600) : Object.entries(p.settings ?? {}).map(([k, v]) => `${k}: ${JSON.stringify(v)}`).join("\n").slice(0, 600)}
+                      </div>
+                      {p.note && <p style={{ margin: "5px 0 0", fontSize: 11, color: "#9b3d2d" }}>사유: {p.note}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
             <p style={{ margin: "0 0 6px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
               Commons 자동 스캔으로 모은 <b>후보</b>입니다(동명이인·비초상 섞일 수 있음). 본인 사진이 맞으면 <b>✓ 채택</b>, 아니면 <b>제외</b>하세요. <b>채택한 사진만 공개</b>되고, 채택 후 자동으로 컬러 복원됩니다. (이미 채택된 항목은 목록에서 빠짐)
             </p>
