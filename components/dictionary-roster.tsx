@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Portrait } from "@/components/color-mode";
+import { Portrait, useColorMode } from "@/components/color-mode";
 import type { Locale } from "@/lib/i18n/locale";
 
 export type RosterPerson = {
@@ -73,6 +73,7 @@ export function DictionaryRoster({ people, locale = "ko" }: { people: RosterPers
   const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
   const denLbl = (k: string) => (locale === "ko" ? k : DEN_LABEL[k]?.[locale] ?? k);
   const fieldLbl = (k: string) => (locale === "ko" ? k : FIELD_LABEL[k]?.[locale] ?? k);
+  const { color, setColor } = useColorMode();
 
   const featuredCount = people.filter((p) => p.featured).length;
   const list = useMemo(() => {
@@ -88,13 +89,21 @@ export function DictionaryRoster({ people, locale = "ko" }: { people: RosterPers
 
   return (
     <section className="mt-12">
-      <div className="flex items-end justify-between border-b border-ink-200 pb-3">
+      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-ink-200 pb-3">
         <h2 className="font-display text-2xl font-black tracking-tight text-ink-900">
           {T("전체 인명", "All Names", "Бүх нэрс")} <span className="text-[13px] font-semibold text-ink-400">· {T("입국·활동 연도순", "by year", "оноор")}</span>
         </h2>
-        <span className="text-[13px] font-bold text-ink-500">
-          {list.length === people.length ? T(`${people.length}명 · 대표 ${featuredCount}명`, `${people.length} · ★ ${featuredCount}`, `${people.length} · ★ ${featuredCount}`) : `${list.length}`}
-        </span>
+        <div className="flex items-center gap-3">
+          {/* 원본/컬러 토글 — 전역 초상 컬러 모드 */}
+          <div className="flex overflow-hidden rounded-full border border-ink-200">
+            {([["원본", false, T("원본", "Original", "Эх хувь")], ["컬러", true, T("컬러", "Color", "Өнгөт")]] as const).map(([key, val, lbl]) => (
+              <button key={key} onClick={() => setColor(val)} className="px-3 py-1 text-[12px] font-bold transition-colors" style={color === val ? { background: "#9b3d2d", color: "#fff8ed" } : { background: "transparent", color: "var(--ink-500)" }}>{lbl}</button>
+            ))}
+          </div>
+          <span className="text-[13px] font-bold text-ink-500">
+            {list.length === people.length ? T(`${people.length}명 · 대표 ${featuredCount}명`, `${people.length} · ★ ${featuredCount}`, `${people.length} · ★ ${featuredCount}`) : `${list.length}`}
+          </span>
+        </div>
       </div>
 
       {/* facet 필터: 교단 · 사역 분야 */}
