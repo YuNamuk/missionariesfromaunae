@@ -6,6 +6,7 @@ import { ColorModeProvider } from "@/components/color-mode";
 import { LocaleProvider } from "@/components/locale-mode";
 import { MapSettingsProvider } from "@/components/map-settings";
 import { VisitTracker } from "@/components/visit-tracker";
+import { SkipLink } from "@/components/skip-link";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://missionaries-khaki.vercel.app";
 const DESC =
@@ -62,7 +63,7 @@ export default function RootLayout({
         <LocaleProvider>
           <ColorModeProvider>
             <MapSettingsProvider>
-              <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[2000] focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:font-bold focus:text-white">본문으로 건너뛰기</a>
+              <SkipLink />
               <Suspense fallback={<div style={{ height: "4rem", background: "#2e2218" }} />}>
                 <SiteHeader />
               </Suspense>

@@ -23,7 +23,7 @@ const Atlas = dynamic(() => import("./atlas").then((m) => m.Atlas), {
       {/* 중앙 핀 + 안내 */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
         <div className="h-7 w-7 animate-bounce rounded-full" style={{ background: "#9b3d2d", boxShadow: "0 6px 16px rgba(155,61,45,.35)" }} />
-        <span className="text-[13px] font-bold" style={{ color: "#9b3d2d" }}>지도를 준비하는 중…</span>
+        <span className="text-[13px] font-bold" style={{ color: "#9b3d2d" }}>{typeof document !== "undefined" && document.documentElement.lang === "en" ? "Preparing the map…" : typeof document !== "undefined" && document.documentElement.lang === "mn" ? "Газрын зургийг бэлдэж байна…" : "지도를 준비하는 중…"}</span>
       </div>
     </div>
   ),

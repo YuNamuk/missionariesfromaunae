@@ -47,7 +47,7 @@ export function SectionTabs() {
     <nav
       className="sticky top-16 z-30 -mx-5 mb-2 mt-6 flex gap-1.5 overflow-x-auto border-b border-ink-200 px-5 py-2.5 sm:-mx-7 sm:px-7"
       style={{ background: "rgba(247,239,225,.92)", backdropFilter: "blur(8px)" }}
-      aria-label="섹션 바로가기"
+      aria-label={locale === "mn" ? "Хэсэг рүү очих" : locale === "en" ? "Jump to section" : "섹션 바로가기"}
     >
       {tabs.map((t) => (
         <button

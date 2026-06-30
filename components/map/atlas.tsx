@@ -267,14 +267,15 @@ function OffscreenIndicators({ targets, origin, onPick }: { targets: { id: strin
 }
 
 /** Warm zoom / reset controls rendered inside the map. */
-function MapControls() {
+function MapControls({ locale }: { locale: string }) {
   const map = useMap();
+  const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
   const btn: React.CSSProperties = { width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(73,48,22,.2)", background: "rgba(255,250,237,.92)", color: "#493728", cursor: "pointer", fontSize: 18, fontWeight: 900, lineHeight: 1 };
   return createPortal(
     <div style={{ position: "absolute", right: 16, bottom: 16, zIndex: 500, display: "flex", flexDirection: "column", borderRadius: 12, overflow: "hidden", boxShadow: "0 6px 18px rgba(46,28,14,.3)" }}>
-      <button title="확대" onClick={() => map.zoomIn()} style={{ ...btn, borderBottom: 0 }}>＋</button>
-      <button title="축소" onClick={() => map.zoomOut()} style={{ ...btn, borderBottom: 0 }}>−</button>
-      <button title="처음 위치" onClick={() => map.flyTo([38.4, 127.5], 6, { duration: 0.5 })} style={{ ...btn, fontSize: 14 }}>⤾</button>
+      <button title={T("확대", "Zoom in", "Томруулах")} onClick={() => map.zoomIn()} style={{ ...btn, borderBottom: 0 }}>＋</button>
+      <button title={T("축소", "Zoom out", "Жижигрүүлэх")} onClick={() => map.zoomOut()} style={{ ...btn, borderBottom: 0 }}>−</button>
+      <button title={T("처음 위치", "Reset view", "Эхний байрлал")} onClick={() => map.flyTo([38.4, 127.5], 6, { duration: 0.5 })} style={{ ...btn, fontSize: 14 }}>⤾</button>
     </div>,
     map.getContainer(),
   );
@@ -863,7 +864,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             {[1885, 1895, 1905, 1915, 1925, 1935, 1948, 1960].filter((y) => y >= data.yearMin && y <= data.yearMax).map((y) => {
               const left = ((y - data.yearMin) / (data.yearMax - data.yearMin)) * 100;
               const on = snapshot && Math.abs(year - y) < 4;
-              return <button key={y} onClick={() => setYearSnapshot(y)} title={`${y}년 시점`} style={{ position: "absolute", left: `${left}%`, transform: "translateX(-50%)", border: 0, background: "transparent", padding: 0, cursor: "pointer", fontSize: 10, fontWeight: 800, color: on ? "#9b3d2d" : C.faint }}>{y}</button>;
+              return <button key={y} onClick={() => setYearSnapshot(y)} title={locale === "ko" ? `${y}년 시점` : `${y}`} style={{ position: "absolute", left: `${left}%`, transform: "translateX(-50%)", border: 0, background: "transparent", padding: 0, cursor: "pointer", fontSize: 10, fontWeight: 800, color: on ? "#9b3d2d" : C.faint }}>{y}</button>;
             })}
           </div>
         </div>
@@ -1043,7 +1044,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <MapBinder mapRef={mapRef} viewRef={viewRef} />
             <ZoomLevel onZoom={setMapZoom} />
             <InvalidateOnResize deps={[leftOpen, rightOpen]} />
-            <MapControls />
+            <MapControls locale={locale} />
             <FitToSelection targets={focusTargets} focusKey={focusKey} fit={fit} skipFirst skipRef={skipFitRef} />
             <OffscreenIndicators targets={farConnected} origin={selPerson ? coordOf(selPerson.id) : null} onPick={(id) => setSelected({ kind: "person", id })} />
 
