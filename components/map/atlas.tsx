@@ -857,13 +857,15 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         .atlas-warm .reltip{background:rgba(40,26,14,.9)!important;color:#fff8ec!important;border:none!important;font-weight:800!important;font-size:10px!important;padding:2px 8px!important;border-radius:99px!important;}
         .atlas-warm .reltip::before{display:none!important;}
         @media(max-width:1100px){.atlas-warm{height:auto!important;}.atlas-grid{grid-template-columns:1fr!important;}.atlas-grid>*{grid-column:auto!important;}}
-        /* 폰: 전체화면 지도 + 좌/우 패널은 하단 시트(열릴 때만) */
+        /* 폰: 전체화면 지도 + 좌/우 패널은 지도 영역 위 오버레이(닫기 ×로 지도 복귀) */
         @media(max-width:760px){
           .atlas-warm{height:calc(100vh - 4rem)!important;}
-          .atlas-grid{display:block!important;position:relative;height:100%;}
+          .atlas-grid{display:block!important;position:relative!important;height:100%!important;}
           .atlas-map{height:100%!important;min-height:0!important;border-radius:14px!important;}
-          .atlas-left,.atlas-right{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;max-height:76vh!important;border-radius:18px 18px 0 0!important;z-index:1200!important;box-shadow:0 -10px 40px rgba(38,25,10,.4)!important;}
+          .atlas-left,.atlas-right{position:absolute!important;inset:0!important;max-height:none!important;height:auto!important;border-radius:14px!important;z-index:1200!important;}
         }
+        .atlas-mback{display:none;}
+        @media(max-width:760px){.atlas-mback{display:flex!important;}}
       `}</style>
 
       {/* ── FULL-WIDTH BAR: 연도(길게) · 검색 · 설정 ── */}
@@ -999,6 +1001,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
       {/* ── LEFT: lens-specific list (연혁·묘역·관계망에서만) ── */}
       <aside className="atlas-left" style={{ gridColumn: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, padding: 16, display: showLeft && leftOpen ? "flex" : "none", flexDirection: "column", gap: 14, minHeight: 0, position: "relative", backdropFilter: "blur(12px)", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
+        <button className="atlas-mback" onClick={() => setLeftOpen(false)} style={{ alignItems: "center", gap: 6, width: "100%", padding: "11px 14px", margin: "-16px -16px 4px", border: 0, borderBottom: `1px solid ${C.line}`, borderRadius: "14px 14px 0 0", background: "#2f2419", color: "#fff8ed", cursor: "pointer", fontSize: 13.5, fontWeight: 800 }}>
+          <ArrowRight size={16} style={{ transform: "rotate(180deg)" }} /> {T("지도로 돌아가기", "Back to map", "Газрын зураг руу буцах")}
+        </button>
         <button onClick={() => setLeftOpen(false)} title={T("접기", "Collapse", "Хураах")} style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#6b5e4b", cursor: "pointer", zIndex: 5 }}>
           <PanelLeftClose size={16} />
         </button>
@@ -1229,6 +1234,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
       {/* ── RIGHT: detail + relationships ── */}
       <article className="atlas-right" style={{ gridColumn: 3, minWidth: 0, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", display: rightOpen ? "flex" : "none", flexDirection: "column", minHeight: 0, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
+        {/* 모바일 전용: 지도로 돌아가기 */}
+        <button className="atlas-mback" onClick={() => setRightOpen(false)} style={{ flex: "0 0 auto", alignItems: "center", gap: 6, width: "100%", padding: "11px 14px", border: 0, borderBottom: `1px solid ${C.line}`, background: "#2f2419", color: "#fff8ed", cursor: "pointer", fontSize: 13.5, fontWeight: 800, zIndex: 13 }}>
+          <ArrowRight size={16} style={{ transform: "rotate(180deg)" }} /> {T("지도로 돌아가기", "Back to map", "Газрын зураг руу буцах")}
+        </button>
         {(selPerson || selPlace || selEvent || selHeritage || selBuried) && (
           <button onClick={goBack} title={T("이전 선택으로", "Back", "Буцах")} style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 120px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
             <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> {T("뒤로", "Back", "Буцах")}
