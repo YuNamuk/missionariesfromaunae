@@ -11,6 +11,7 @@ import { colorSrc } from "@/lib/data/colorized";
 import { isFeatured } from "@/lib/data/meta";
 import { profileFor } from "@/lib/data/profiles";
 import { STORY_COPY, JOURNEY_COPY } from "@/lib/data/page-copy";
+import { ROLE_LABEL, isEmail, parseEmails, type Role } from "@/lib/data/roles";
 
 const C = { ink: "#251c14", muted: "#6b5e4b", line: "rgba(77,56,34,.2)", accent: "#9b3d2d" };
 
@@ -34,7 +35,15 @@ export default function AdminPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "admins" | "stats" | "review" | "devreq">("people");
+  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "users" | "stats" | "review" | "devreq">("people");
+  // 로그인한 사용자의 콘텐츠 권한(서버 /api/admin/me에서 받음). null이면 권한 없음.
+  const [myRole, setMyRole] = useState<Role | null | undefined>(undefined);
+  // 사용자(콘텐츠 관리자) 역할 맵 — app_settings 'roles'(+레거시 admins 병합).
+  const [roleMap, setRoleMap] = useState<Record<string, Role>>({});
+  const [bulkText, setBulkText] = useState("");
+  const [bulkRole, setBulkRole] = useState<Role>("content");
+  const [oneEmail, setOneEmail] = useState("");
+  const [oneRole, setOneRole] = useState<Role>("content");
   // 대표(featured) 토글 — 코드 FEATURED 위에 덮어쓸 오버라이드(app_settings 'meta.featured').
   const [feat, setFeat] = useState<Record<string, boolean>>({});
   const [featQ, setFeatQ] = useState("");
@@ -50,8 +59,6 @@ export default function AdminPage() {
   const [tPrompt, setTPrompt] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [pc, setPc] = useState<{ story: Record<string, string>; journey: Record<string, string> }>({ story: {}, journey: {} });
-  const [adminEmails, setAdminEmails] = useState<string[]>([]);
-  const [newAdmin, setNewAdmin] = useState("");
   const [people, setPeople] = useState<PersonRow[]>([]);
   const [places, setPlaces] = useState<PlaceRow[]>([]);
   const [settings, setSettings] = useState<Record<string, unknown>>({});
@@ -88,13 +95,35 @@ export default function AdminPage() {
     const s: Record<string, unknown> = {};
     for (const r of (st.data ?? []) as { key: string; value: unknown }[]) s[r.key] = r.value;
     setSettings(s);
-    setAdminEmails(Array.isArray(s.admins) ? (s.admins as string[]) : []);
+    const legacyAdmins = Array.isArray(s.admins) ? (s.admins as string[]) : [];
+    // 역할 맵: 레거시 admins(→전체) 위에 roles 맵을 덮는다.
+    const rm: Record<string, Role> = {};
+    for (const e of legacyAdmins) rm[e.toLowerCase()] = "super";
+    if (s.roles && typeof s.roles === "object") {
+      for (const [e, v] of Object.entries(s.roles as Record<string, unknown>)) {
+        if (v === "super" || v === "power" || v === "content") rm[e.toLowerCase()] = v;
+      }
+    }
+    setRoleMap(rm);
     setReview((s.review && typeof s.review === "object" ? s.review : {}) as Record<string, "approved" | "rejected">);
     setDevreqs(Array.isArray(s.devreq) ? (s.devreq as DevReq[]) : []);
     setRework((s.rework && typeof s.rework === "object" ? s.rework : {}) as Record<string, string>);
   }, [sb]);
 
   useEffect(() => { if (session) loadData(); }, [session, loadData]);
+
+  // 로그인 후 서버에서 권위 있는 내 역할을 받는다(UI 게이팅용 — 실제 권한은 서버가 강제).
+  useEffect(() => {
+    if (!session) { setMyRole(undefined); return; }
+    (async () => {
+      try {
+        const token = (await sb.auth.getSession()).data.session?.access_token;
+        const r = await fetch("/api/admin/me", { headers: { authorization: `Bearer ${token}` } });
+        const j = await r.json();
+        setMyRole((j.role ?? null) as Role | null);
+      } catch { setMyRole(null); }
+    })();
+  }, [session, sb]);
 
   useEffect(() => {
     const p = people.find((x) => x.id === sel) ?? null;
@@ -144,12 +173,14 @@ export default function AdminPage() {
     if (error) setMsg("구글 로그인 실패: " + error.message);
   }
 
-  async function saveAdmins(next: string[]) {
+  // 역할 맵 저장(전체 관리자 전용). 본인은 서버에서 항상 전체로 유지된다.
+  async function saveRoles(next: Record<string, Role>) {
     setSaving(true); setMsg("");
-    const err = await post({ kind: "admins", admins: next });
+    setRoleMap(next);
+    const err = await post({ kind: "roles", roles: next });
     setSaving(false);
     if (err) { setMsg("저장 실패: " + err); return; }
-    setMsg("✓ 관리자 목록 저장됨");
+    setMsg("✓ 사용자 권한 저장됨");
     loadData();
   }
 
@@ -317,27 +348,61 @@ export default function AdminPage() {
     );
   }
 
+  // 로그인했지만 서버 역할 확인 중.
+  if (myRole === undefined) return <div style={{ padding: 40, fontFamily: "var(--font-body)" }}>권한 확인 중…</div>;
+
+  // 로그인했지만 등록된 권한이 없음.
+  if (myRole === null) {
+    return (
+      <div style={{ minHeight: "calc(100vh - 4rem)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-body)", color: C.ink }}>
+        <div style={{ width: 360, textAlign: "center", background: "#fffdf7", border: `1px solid ${C.line}`, borderRadius: 18, padding: 28 }}>
+          <h1 className="font-display" style={{ fontWeight: 900, fontSize: 20, margin: "0 0 8px" }}>접근 권한이 없습니다</h1>
+          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, margin: "0 0 6px" }}>{session.user.email}</p>
+          <p style={{ fontSize: 12.5, color: C.muted, lineHeight: 1.6, margin: "0 0 18px" }}>이 계정은 아직 콘텐츠 관리자로 등록되지 않았습니다. 전체 관리자에게 등록을 요청하세요.</p>
+          <button onClick={() => sb.auth.signOut()} style={{ ...btn, width: "100%", background: "#2f2419" }}>로그아웃</button>
+        </div>
+      </div>
+    );
+  }
+
+  // 역할별 노출 탭. 콘텐츠 편집은 파워 이상, 코어 설정·사용자 관리는 전체 관리자만.
+  const TAB_LABEL: Record<string, string> = { people: "선교사 정보", featured: "대표 표기", research: "주제연구", pages: "페이지 글", settings: "연도·용어 설정", users: "사용자 관리", stats: "방문 통계", review: "검수", devreq: "개발 요청" };
+  const TABS_BY_ROLE: Record<Role, string[]> = {
+    super: ["people", "featured", "research", "pages", "settings", "users", "stats", "review", "devreq"],
+    power: ["people", "featured", "research", "pages", "stats", "review", "devreq"],
+    content: ["stats"],
+  };
+  const visibleTabs = TABS_BY_ROLE[myRole];
+  const activeTab = visibleTabs.includes(tab) ? tab : visibleTabs[0];
+
   return (
     <div style={{ maxWidth: 920, margin: "0 auto", padding: "28px 20px 80px", fontFamily: "var(--font-body)", color: C.ink }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div>
-          <h1 className="font-display" style={{ fontWeight: 900, fontSize: 26, margin: 0 }}>관리자</h1>
+          <h1 className="font-display" style={{ fontWeight: 900, fontSize: 26, margin: 0 }}>관리자 <span style={{ fontSize: 13, fontWeight: 800, color: "#1f6f8b", verticalAlign: "middle" }}>· {ROLE_LABEL[myRole]}</span></h1>
           <p style={{ margin: "2px 0 0", fontSize: 12.5, color: C.muted }}>{session.user.email}</p>
         </div>
         <button onClick={() => sb.auth.signOut()} style={{ ...btn, background: "#2f2419" }}>로그아웃</button>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {(["people", "featured", "research", "pages", "settings", "admins", "stats", "review", "devreq"] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)} style={{ border: `1px solid ${tab === t ? "#2f2419" : C.line}`, borderRadius: 11, padding: "8px 16px", background: tab === t ? "#2f2419" : "transparent", color: tab === t ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
-            {t === "people" ? "선교사 정보" : t === "featured" ? "대표 표기" : t === "research" ? "주제연구" : t === "pages" ? "페이지 글" : t === "settings" ? "연도·용어 설정" : t === "admins" ? "관리자 계정" : t === "stats" ? "방문 통계" : t === "review" ? "검수" : "개발 요청"}
+      <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+        {visibleTabs.map((t) => (
+          <button key={t} onClick={() => setTab(t as typeof tab)} style={{ border: `1px solid ${activeTab === t ? "#2f2419" : C.line}`, borderRadius: 11, padding: "8px 16px", background: activeTab === t ? "#2f2419" : "transparent", color: activeTab === t ? "#fff8ed" : C.muted, fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
+            {TAB_LABEL[t]}
           </button>
         ))}
       </div>
 
       {msg && <p style={{ marginBottom: 14, fontSize: 13, fontWeight: 700, color: msg.startsWith("✓") ? "#2f6b3b" : C.accent }}>{msg}</p>}
 
-      {tab === "people" && (
+      {myRole === "content" && (
+        <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, padding: 18, background: "#fff8ec", fontSize: 13.5, lineHeight: 1.7, color: C.ink }}>
+          <b>콘텐츠 관리자로 오신 것을 환영합니다.</b><br />
+          선교사 정보·학생 목소리의 추가·수정·삭제 기능은 곧(검수 워크플로 적용 후) 활성화됩니다. 그때부터 작성한 내용은 교사 승인을 거쳐 사이트에 반영됩니다.
+        </div>
+      )}
+
+      {activeTab === "people" && (
         <div style={{ display: "grid", gridTemplateColumns: "270px 1fr", gap: 20 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
             <input style={input} value={peopleQ} onChange={(e) => setPeopleQ(e.target.value)} placeholder="이름·영문·사역 검색" />
@@ -477,7 +542,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {tab === "featured" && (() => {
+      {activeTab === "featured" && (() => {
         const list = PEOPLE.filter((p) => !featQ || `${p.name} ${p.en}`.toLowerCase().includes(featQ.toLowerCase())).slice().sort((a, b) => a.year - b.year);
         const count = PEOPLE.filter((p) => featOn(p.id)).length;
         return (
@@ -514,7 +579,7 @@ export default function AdminPage() {
         );
       })()}
 
-      {tab === "research" && (
+      {activeTab === "research" && (
         <div>
           <p style={{ margin: "0 0 12px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
             주제에 선교사를 묶어 등록하면 <b>/research</b>에 통합 리포트(인물·관계·장소·유적·링크·활동기간)가 생깁니다. 코드 기본 예시 주제 위에 누적되며, 같은 id면 등록 주제가 우선합니다.
@@ -601,7 +666,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {tab === "pages" && (
+      {activeTab === "pages" && (
         <div style={{ display: "grid", gap: 28, maxWidth: 680 }}>
           {([
             { page: "story" as const, title: "들어가며 (/story)", labels: { heroKicker: "상단 영문", heroQuestion: "히어로 질문 (줄바꿈 가능)", heroLead: "질문 소개", m1Title: "움직임 1 제목", costTitle: "‘값을 치른’ 제목", homeTitle: "‘Korea is home’ 제목", m2Title: "움직임 2 제목", nextRunner: "다음 주자 문구 (줄바꿈 가능)", closeTitle: "마무리 제목", closeLead: "마무리 글" } },
@@ -624,7 +689,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      {tab === "settings" && (
+      {activeTab === "settings" && (
         <div style={{ display: "grid", gap: 18, maxWidth: 520 }}>
           <div>
             <h3 className="font-display" style={{ fontWeight: 900, fontSize: 16, margin: "0 0 10px" }}>연도 표기 범위</h3>
@@ -645,29 +710,85 @@ export default function AdminPage() {
         </div>
       )}
 
-      {tab === "admins" && (
-        <div style={{ maxWidth: 480, display: "grid", gap: 14 }}>
-          <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>여기에 등록된 이메일(구글/이메일 로그인)만 관리자로 접근·편집할 수 있습니다.</p>
-          <div style={{ display: "grid", gap: 8 }}>
-            {adminEmails.map((e) => {
-              const self = e.toLowerCase() === session.user.email?.toLowerCase();
-              return (
-                <div key={e} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 11, padding: "9px 12px", background: "#fff8ec" }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 700 }}>{e}{self && <span style={{ color: C.muted, fontWeight: 600 }}> (나)</span>}</span>
-                  {!self && <button onClick={() => saveAdmins(adminEmails.filter((x) => x !== e))} style={{ border: 0, background: "transparent", color: C.accent, fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>삭제</button>}
-                </div>
-              );
-            })}
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input style={{ ...input, flex: 1 }} type="email" placeholder="추가할 관리자 이메일" value={newAdmin} onChange={(e) => setNewAdmin(e.target.value)} />
-            <button disabled={saving || !newAdmin} onClick={() => { saveAdmins([...adminEmails, newAdmin]); setNewAdmin(""); }} style={{ ...btn, opacity: saving || !newAdmin ? 0.6 : 1 }}>추가</button>
-          </div>
-          <p style={{ fontSize: 11.5, color: C.muted, margin: 0 }}>※ 추가된 사람은 본인 구글 계정으로 <code>/admin</code>에 로그인하면 됩니다. (해당 이메일이 구글 계정이어야 함)</p>
-        </div>
-      )}
+      {activeTab === "users" && (() => {
+        const myEmail = session.user.email?.toLowerCase() ?? "";
+        const ROLES: Role[] = ["super", "power", "content"];
+        const ROLE_COLOR: Record<Role, string> = { super: "#9b3d2d", power: "#1f6f8b", content: "#3f7f4b" };
+        // 본인이 env ADMIN_EMAIL로 super인데 roles/admins에 아직 없을 수 있어 항상 표시.
+        const displayMap: Record<string, Role> = { ...roleMap };
+        if (myEmail && !(myEmail in displayMap)) displayMap[myEmail] = "super";
+        const RANK: Record<Role, number> = { super: 0, power: 1, content: 2 };
+        const entries = Object.entries(displayMap).sort((a, b) => (RANK[a[1]] - RANK[b[1]]) || a[0].localeCompare(b[0]));
+        const setOne = (e: string, r: Role) => saveRoles({ ...roleMap, [e.toLowerCase()]: r });
+        const removeOne = (e: string) => { const n = { ...roleMap }; delete n[e.toLowerCase()]; saveRoles(n); };
+        const addOne = () => { const e = oneEmail.trim().toLowerCase(); if (!isEmail(e)) { setMsg("저장 실패: 올바른 이메일이 아닙니다"); return; } saveRoles({ ...roleMap, [e]: oneRole }); setOneEmail(""); };
+        const bulkAdd = () => {
+          const emails = parseEmails(bulkText);
+          if (emails.length === 0) { setMsg("등록할 이메일을 찾지 못했습니다"); return; }
+          const next = { ...roleMap };
+          let added = 0;
+          for (const e of emails) { if (!(e in next)) added++; next[e] = bulkRole; }
+          saveRoles(next);
+          setBulkText("");
+          setMsg(`✓ ${emails.length}명 처리 (${added}명 신규) — ${ROLE_LABEL[bulkRole]}`);
+        };
+        const counts = { super: 0, power: 0, content: 0 } as Record<Role, number>;
+        for (const r of Object.values(roleMap)) counts[r]++;
+        const roleSelect = (val: Role, onChange: (r: Role) => void, disabled = false) => (
+          <select value={val} disabled={disabled} onChange={(ev) => onChange(ev.target.value as Role)} style={{ ...input, width: "auto", padding: "6px 8px", fontSize: 12.5, opacity: disabled ? 0.6 : 1 }}>
+            {ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+          </select>
+        );
+        return (
+          <div style={{ maxWidth: 640, display: "grid", gap: 18 }}>
+            <div>
+              <p style={{ fontSize: 13, color: C.muted, margin: "0 0 6px", lineHeight: 1.6 }}>
+                등록된 사용자만 <code>/admin</code>에 접근합니다. 역할: <b style={{ color: ROLE_COLOR.super }}>전체 관리자</b>(코어 설정·사용자 관리) · <b style={{ color: ROLE_COLOR.power }}>파워 콘텐츠 관리자</b>(즉시 수정·검수 승인) · <b style={{ color: ROLE_COLOR.content }}>콘텐츠 관리자</b>(수정은 교사 승인 — 곧 활성화).
+              </p>
+              <p style={{ fontSize: 12, fontWeight: 800, color: "#9b3d2d", margin: 0 }}>전체 {counts.super} · 파워 {counts.power} · 콘텐츠 {counts.content}</p>
+            </div>
 
-      {tab === "stats" && (() => {
+            {/* 이메일 일괄 등록 */}
+            <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, padding: 14, background: "#fff8ec" }}>
+              <h3 className="font-display" style={{ fontWeight: 900, fontSize: 15, margin: "0 0 4px" }}>이메일 일괄 등록</h3>
+              <p style={{ fontSize: 11.5, color: C.muted, margin: "0 0 10px", lineHeight: 1.5 }}>학생 이메일 주소를 한꺼번에 붙여넣으세요. 줄바꿈·쉼표·세미콜론·공백 모두 구분자로 인식하고 중복은 자동 제거됩니다.</p>
+              <textarea style={{ ...input, minHeight: 96, resize: "vertical", fontFamily: "var(--font-mono, monospace)", fontSize: 12.5 }} value={bulkText} onChange={(e) => setBulkText(e.target.value)} placeholder={"student1@dreamyedu.net, student2@dreamyedu.net\nstudent3@dreamyedu.net …"} />
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: C.muted }}>역할</label>
+                {roleSelect(bulkRole, setBulkRole)}
+                <span style={{ fontSize: 12, color: C.muted }}>인식된 이메일 {parseEmails(bulkText).length}개</span>
+                <button onClick={bulkAdd} disabled={saving} style={{ ...btn, marginLeft: "auto", opacity: saving ? 0.6 : 1 }}>{saving ? "등록 중…" : "일괄 등록"}</button>
+              </div>
+            </div>
+
+            {/* 한 명 추가 */}
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <input style={{ ...input, flex: 1, minWidth: 200 }} type="email" placeholder="한 명 추가 — 이메일" value={oneEmail} onChange={(e) => setOneEmail(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addOne(); }} />
+              {roleSelect(oneRole, setOneRole)}
+              <button disabled={saving || !oneEmail} onClick={addOne} style={{ ...btn, opacity: saving || !oneEmail ? 0.6 : 1 }}>추가</button>
+            </div>
+
+            {/* 사용자 목록 */}
+            <div style={{ display: "grid", gap: 8 }}>
+              {entries.length === 0 && <p style={{ fontSize: 13, color: C.muted }}>등록된 사용자가 없습니다.</p>}
+              {entries.map(([e, r]) => {
+                const self = e === myEmail;
+                return (
+                  <div key={e} style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${C.line}`, borderRadius: 11, padding: "8px 12px", background: "#fff8ec" }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 99, background: ROLE_COLOR[r], flex: "0 0 auto" }} />
+                    <span style={{ fontSize: 13.5, fontWeight: 700, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e}{self && <span style={{ color: C.muted, fontWeight: 600 }}> (나)</span>}</span>
+                    {self ? <span style={{ fontSize: 12.5, fontWeight: 800, color: ROLE_COLOR[r] }}>{ROLE_LABEL[r]}</span> : roleSelect(r, (nr) => setOne(e, nr), saving)}
+                    {!self && <button onClick={() => removeOne(e)} style={{ border: 0, background: "transparent", color: C.accent, fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>삭제</button>}
+                  </div>
+                );
+              })}
+            </div>
+            <p style={{ fontSize: 11.5, color: C.muted, margin: 0 }}>※ 등록된 사람은 본인 구글 계정(또는 이메일)으로 <code>/admin</code>에 로그인합니다. 본인 권한은 잠김 방지를 위해 항상 전체 관리자로 유지됩니다.</p>
+          </div>
+        );
+      })()}
+
+      {activeTab === "stats" && (() => {
         const daily = (settings["stats.daily"] && typeof settings["stats.daily"] === "object" ? settings["stats.daily"] : {}) as Record<string, number>;
         const today = new Date().toISOString().slice(0, 10);
         const dates = Object.keys(daily).sort().reverse();
@@ -706,7 +827,7 @@ export default function AdminPage() {
         );
       })()}
 
-      {tab === "review" && (() => {
+      {activeTab === "review" && (() => {
         const setKey = async (key: string, val: "approved" | "rejected" | null) => {
           const next = { ...review };
           if (val === null) delete next[key]; else next[key] = val;
@@ -799,7 +920,7 @@ export default function AdminPage() {
         );
       })()}
 
-      {tab === "devreq" && (() => {
+      {activeTab === "devreq" && (() => {
         const STATUS_COLOR: Record<string, string> = { pending: "#bf6b22", in_progress: "#1f6f8b", done: "#3f7f4b", question: "#9b3d2d" };
         const submit = async () => {
           if (!drTitle.trim() && !drPrompt.trim()) return;

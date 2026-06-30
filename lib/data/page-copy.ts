@@ -17,6 +17,38 @@ export const STORY_COPY: Record<string, string> = {
     "정답을 드리지 않겠습니다. 다만 묻습니다 — 당신은 어떤 삶을 아름답다고 부르겠습니까? 한 사람의 생애를 따라가 보고, 당신의 응답을 마음에 적어 보세요.",
 };
 
+// /story 영어 기본값(STORY_COPY와 같은 키). 영어 토글 시 사용, 비면 한국어로 폴백.
+export const STORY_COPY_EN: Record<string, string> = {
+  heroKicker: "Missionaries from Aunae",
+  heroQuestion: "What makes\na life beautiful?",
+  heroLead:
+    "Here are people who chose service over success — who made a distant land their home and willingly became a single grain of wheat. Walk alongside their lives, and one question remains: what kind of life will I call beautiful?",
+  m1Title: "The gospel — through missionaries, to me",
+  costTitle: "Not success, but service",
+  homeTitle: "Those who made Korea home",
+  m2Title: "The gospel — through me, to the world",
+  nextRunner: "I am the next runner.\nI am a missionary from Aunae.",
+  closeTitle: "Now, meet one of them",
+  closeLead:
+    "We will not hand you an answer. We only ask: what kind of life will you call beautiful? Follow one person's life to its end, and write your own response in your heart.",
+};
+
+// /story 몽골어(Cyrillic) 기본값. 1차 초안 — 원어민(연수 오는 몽골 선생님) 검수 권장.
+export const STORY_COPY_MN: Record<string, string> = {
+  heroKicker: "Missionaries from Aunae",
+  heroQuestion: "Сайхан амьдрал гэж\nюу вэ?",
+  heroLead:
+    "Энд амжилтаас илүү үйлчлэлийг сонгосон хүмүүс байна. Холын газрыг гэрээ болгож, нэг үр тариа болохыг сайн дураараа сонгосон хүмүүс. Тэдний амьдралыг дагаж явахад нэг асуулт үлддэг — би ямар амьдралыг сайхан гэж нэрлэх вэ?",
+  m1Title: "Сайн мэдээ — номлогчдоор дамжин надад",
+  costTitle: "Амжилт биш, үйлчлэл",
+  homeTitle: "Солонгосыг гэрээ болгосон хүмүүс",
+  m2Title: "Сайн мэдээ — надаар дамжин дэлхийд",
+  nextRunner: "Би бол дараагийн гүйгч.\nБи бол Аунайгаас гарсан номлогч.",
+  closeTitle: "Одоо нэг хүнтэй нь уулзаарай",
+  closeLead:
+    "Бид танд хариулт өгөхгүй. Зөвхөн асууя — та ямар амьдралыг сайхан гэж нэрлэх вэ? Нэг хүний амьдралыг эцэс хүртэл дагаад, өөрийн хариултаа зүрхэндээ бичээрэй.",
+};
+
 export const JOURNEY_COPY: Record<string, string> = {
   heroTitle: "함께 걸어온 길",
   heroLead:
