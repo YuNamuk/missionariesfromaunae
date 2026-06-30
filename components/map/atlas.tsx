@@ -1347,7 +1347,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   <p style={{ margin: "7px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.72)" }}>
                     {selPerson.life}{ageFromLife(selPerson.life) ? <span style={{ color: "#f0c98a", fontWeight: 700 }}> · 향년 {ageFromLife(selPerson.life)}세</span> : ""}
                   </p>
-                  <a href={`/people/${selPerson.id}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: "auto", padding: "3px 11px", borderRadius: 9, border: "1px solid rgba(255,248,236,.4)", background: "rgba(255,248,236,.16)", color: "#fff8ed", fontSize: 11.5, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" }}>
+                  {/* 신축 스페이서: 버튼을 컬럼 바닥(사진+원본/컬러 높이)에 맞추고, 위로 최소 간격 확보 */}
+                  <span aria-hidden style={{ flex: 1, minHeight: 14 }} />
+                  <a href={`/people/${selPerson.id}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 9, border: "1px solid rgba(255,248,236,.4)", background: "rgba(255,248,236,.16)", color: "#fff8ed", fontSize: 11.5, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" }}>
                     상세 프로필 바로가기 <span aria-hidden>→</span>
                   </a>
                 </div>
