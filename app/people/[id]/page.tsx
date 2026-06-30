@@ -71,7 +71,7 @@ export default async function PersonPage({
     }
     return [...m.entries()];
   })();
-  const sources = resourcesFor(person);
+  const sourcesRaw = resourcesFor(person);
   const ph = PHOTOS[person.id];
   const photo = ph?.photo ?? null;
   const photoSource = ph?.source ?? "";
@@ -79,9 +79,9 @@ export default async function PersonPage({
   // 공개는 검수에서 '채택(approved)'된 사진만. 스캔으로 모은 후보(pending)·숨김은 비공개.
   const gallery = galleryFor(person.id).filter((_, i) => review[`g:${person.id}:${i}`] === "approved");
   const defaultExtLinks = [
-    ph?.wiki ? { label: "위키백과", href: ph.wiki } : null,
+    ph?.wiki ? { label: T("위키백과", "Wikipedia (KO)", "Wikipedia (KO)"), href: ph.wiki } : null,
     ph?.wikiEn ? { label: "Wikipedia (EN)", href: ph.wikiEn } : null,
-    ph?.namu ? { label: "나무위키", href: ph.namu } : null,
+    ph?.namu ? { label: T("나무위키", "Namuwiki", "Namuwiki"), href: ph.namu } : null,
   ].filter((x): x is { label: string; href: string } => !!x && !!x.href);
   const profile = profileFor(person.id);
   const burialPlace = BURIAL[person.id] ? getPlace(BURIAL[person.id]) : null;
@@ -108,6 +108,9 @@ export default async function PersonPage({
     facts: ov(person.facts, tr?.facts as unknown as typeof person.facts),
     timeline: ov(person.timeline, tr?.timeline as unknown as typeof person.timeline),
   };
+  // 참고 출처·사료: 번역 오버레이(인덱스 정렬)로 제목·발행처를 덮되 url은 원본 유지.
+  const refs = (profile?.refs ?? []).map((r, i) => ({ ...r, title: tr?.refs?.[i]?.title || r.title, publisher: tr?.refs?.[i]?.publisher || r.publisher }));
+  const sources = sourcesRaw.map((s, i) => ({ ...s, t: tr?.sources?.[i]?.t || s.t, a: tr?.sources?.[i]?.a || s.a }));
   // 관련 영상: 관리자 오버레이(있으면 우선) ?? 코드 기본. 여러 개 가능.
   const videos = ovc?.videos ?? profile?.videos ?? [];
   // 외부 링크: 관리자 오버레이(있으면 우선) ?? PHOTOS 기본.
@@ -391,14 +394,14 @@ export default async function PersonPage({
       <GallerySection photos={gallery} />
 
       {/* 참고 출처 · 외부 링크 (2열) */}
-      {(extLinks.length > 0 || photoSource || sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (
+      {(extLinks.length > 0 || photoSource || sources.length > 0 || refs.length > 0) && (
         <div id="sources" className="mt-10 grid scroll-mt-28 grid-cols-1 gap-8 sm:grid-cols-2">
-          {(sources.length > 0 || (profile?.refs && profile.refs.length > 0)) && (
+          {(sources.length > 0 || refs.length > 0) && (
             <div>
               <h2 className="font-display text-lg font-extrabold text-ink-900">{T("참고 출처", "References", "Эх сурвалж")}</h2>
-              {profile?.refs && profile.refs.length > 0 && (
+              {refs.length > 0 && (
                 <ul className="mt-3 space-y-2">
-                  {profile.refs.map((r) => (
+                  {refs.map((r) => (
                     <li key={r.url}>
                       <a href={r.url} target="_blank" rel="noreferrer" className="block rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-sky-300">
                         <div className="text-[13px] font-bold text-sky-700">{r.title} ↗</div>

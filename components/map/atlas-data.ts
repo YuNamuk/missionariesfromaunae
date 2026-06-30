@@ -78,7 +78,7 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
       timeline: ov(p.timeline, t?.timeline as unknown as typeof p.timeline),
       video: p.video,
       photos: p.photos,
-      sources: resourcesFor(p).map((r) => ({ t: r.t, a: r.a })),
+      sources: resourcesFor(p).map((r, i) => ({ t: t?.sources?.[i]?.t || r.t, a: t?.sources?.[i]?.a || r.a })),
       featured: isFeaturedWith(overlay?.featured, p.id),
     };
   }).filter((p) => p.lat !== 0);

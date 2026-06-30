@@ -1454,13 +1454,13 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: selPerson.sources.length > 0 ? 8 : 0 }}>
                   {/* 검증된 링크만 표기 (잘못 매칭되는 자동 링크는 데이터에서 빈값 처리) */}
                   {selPerson.wiki && (
-                    <a href={selPerson.wiki} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#84321f", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>위키백과 ↗</a>
+                    <a href={selPerson.wiki} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#84321f", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>{T("위키백과", "Wikipedia (KO)", "Wikipedia (KO)")} ↗</a>
                   )}
                   {selPerson.wikiEn && (
                     <a href={selPerson.wikiEn} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#5f4d39", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Wikipedia ↗</a>
                   )}
                   {selPerson.namu && (
-                    <a href={selPerson.namu} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#3a7d44", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>나무위키 ↗</a>
+                    <a href={selPerson.namu} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#3a7d44", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>{T("나무위키", "Namuwiki", "Namuwiki")} ↗</a>
                   )}
                   {!selPerson.wiki && !selPerson.wikiEn && !selPerson.namu && (
                     <span style={{ fontSize: 11.5, color: C.muted }}>{T("검증된 외부 링크 없음", "No verified external links", "Баталгаажсан холбоос алга")}</span>

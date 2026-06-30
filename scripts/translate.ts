@@ -8,7 +8,7 @@
 // 필요한 env: ANTHROPIC_API_KEY (+ SUPABASE_*). 모델: ANALYSIS_MODEL || claude-sonnet-4-6.
 
 import { getServiceSupabase } from "../lib/db/supabase";
-import { PEOPLE, PLACES, type Person } from "../lib/data";
+import { PEOPLE, PLACES, resourcesFor, type Person } from "../lib/data";
 import { profileFor } from "../lib/data/profiles";
 import { JOURNEY_COPY } from "../lib/data/page-copy";
 import { STUDENT_VOICES } from "../lib/data/voices";
@@ -115,6 +115,11 @@ function personKo(p: Person, ov: Record<string, unknown> | undefined): Record<st
   if (quote?.text) b.quote = quote;
   if (p.facts?.length) b.facts = p.facts;
   if (p.timeline?.length) b.timeline = p.timeline;
+  // 참고 출처(제목·발행처) + 사료(제목·부제) — 고유명/간행물명은 그대로 두되 한글 설명은 번역.
+  const refs = (pr?.refs ?? []).map((r) => ({ title: r.title, ...(r.publisher ? { publisher: r.publisher } : {}) }));
+  if (refs.length) b.refs = refs;
+  const srcs = resourcesFor(p).map((r) => ({ t: r.t, a: r.a }));
+  if (srcs.length) b.sources = srcs;
   return b;
 }
 

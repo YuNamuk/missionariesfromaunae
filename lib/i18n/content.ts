@@ -23,6 +23,8 @@ export interface PersonI18n {
   quote?: { text: string; source: string };
   facts?: [string, string][];
   timeline?: [number, string][];
+  refs?: { title: string; publisher?: string }[];
+  sources?: { t: string; a: string }[];
 }
 
 export interface VoiceI18n {
