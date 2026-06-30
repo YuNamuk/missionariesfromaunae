@@ -1,20 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLocale } from "@/components/locale-mode";
 
 // 상세 페이지 상단의 '접근 탭' — 스크롤은 그대로 두고, 탭을 누르면 해당 섹션으로 부드럽게 이동.
 // 페이지에 실제로 존재하는 섹션(id)만 탭으로 노출하고, 스크롤 위치에 따라 현재 탭을 강조한다.
-const ALL = [
-  { id: "story", label: "이야기" },
-  { id: "timeline", label: "연표" },
-  { id: "relations", label: "관계" },
-  { id: "videos", label: "영상" },
-  { id: "gallery", label: "원본 사진" },
-  { id: "sources", label: "출처" },
+const ALL: { id: string; label: Record<string, string> }[] = [
+  { id: "story", label: { ko: "이야기", en: "Story", mn: "Түүх" } },
+  { id: "timeline", label: { ko: "연표", en: "Timeline", mn: "Он дараалал" } },
+  { id: "relations", label: { ko: "관계", en: "Relationships", mn: "Харилцаа" } },
+  { id: "videos", label: { ko: "영상", en: "Videos", mn: "Бичлэг" } },
+  { id: "gallery", label: { ko: "원본 사진", en: "Photos", mn: "Зургууд" } },
+  { id: "sources", label: { ko: "출처", en: "Sources", mn: "Эх сурвалж" } },
 ];
 
 export function SectionTabs() {
-  const [tabs, setTabs] = useState<{ id: string; label: string }[]>([]);
+  const { locale } = useLocale();
+  const [tabs, setTabs] = useState<{ id: string; label: Record<string, string> }[]>([]);
   const [active, setActive] = useState("");
 
   useEffect(() => {
@@ -54,7 +56,7 @@ export function SectionTabs() {
           className="flex-none rounded-full px-3.5 py-1.5 text-[12.5px] font-bold transition-colors"
           style={active === t.id ? { background: "#2f2419", color: "#fff8ed" } : { background: "transparent", color: "var(--ink-500)" }}
         >
-          {t.label}
+          {t.label[locale] ?? t.label.ko}
         </button>
       ))}
     </nav>

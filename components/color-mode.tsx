@@ -2,6 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { COLORIZED, colorSrc, bwSrc } from "@/lib/data/colorized";
+import { useLocale } from "@/components/locale-mode";
+
+const triT = (locale: string, ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
 
 // 사이트 전역 '컬러 복원본 보기' 선호 — localStorage에 저장하고, 한 번 켜면
 // 지도·흐름·상세 등 모든 초상이 함께 컬러로 바뀐다(설정·카드 어디서 켜든 동기화).
@@ -42,6 +45,7 @@ export function Portrait({
   controls?: boolean; badge?: boolean; block?: boolean;
 }) {
   const { color } = useColorMode();
+  const { locale } = useLocale();
   const [override, setOverride] = useState<boolean | null>(null);
   const cSrc = colorSrc(src) ?? (id && COLORIZED.has(id) ? `/portraits/${id}-color.jpg` : null);
   // 원본(흑백) 보기: 합성·테두리 원본이면 정돈된 흑백본(-bw)을 대신 표시.
@@ -56,15 +60,15 @@ export function Portrait({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={showColor ? (cSrc as string) : origSrc} alt={alt} className={className} style={style} />
         {badge && showColor && (
-          <span style={{ position: "absolute", left: 4, top: 4, padding: "1px 6px", borderRadius: 99, background: "rgba(40,26,14,.78)", color: "#ffe7c2", fontSize: 8.5, fontWeight: 800, letterSpacing: ".02em", pointerEvents: "none" }}>AI 복원</span>
+          <span style={{ position: "absolute", left: 4, top: 4, padding: "1px 6px", borderRadius: 99, background: "rgba(40,26,14,.78)", color: "#ffe7c2", fontSize: 8.5, fontWeight: 800, letterSpacing: ".02em", pointerEvents: "none" }}>{triT(locale, "AI 복원", "AI restored", "AI сэргээсэн")}</span>
         )}
       </span>
       {controls && cSrc && (
         <span style={{ display: "flex", marginTop: 4, borderRadius: 8, overflow: "hidden", border: "1px solid rgba(77,56,34,.22)", lineHeight: 1 }}>
-          {([["원본", false], ["컬러", true]] as const).map(([lbl, val]) => {
+          {([["원본", false, triT(locale, "원본", "Original", "Эх хувь")], ["컬러", true, triT(locale, "컬러", "Color", "Өнгөт")]] as const).map(([key, val, lbl]) => {
             const on = effective === val;
             return (
-              <button key={lbl} type="button"
+              <button key={key} type="button"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOverride(val); }}
                 style={{ flex: 1, padding: "3px 0", border: "none", cursor: "pointer", fontSize: 10, fontWeight: 800, background: on ? "#9b3d2d" : "rgba(255,255,255,.72)", color: on ? "#fff8ec" : "#6b5e4b" }}>
                 {lbl}
@@ -80,9 +84,10 @@ export function Portrait({
 /** 설정 등에서 쓰는 전역 컬러 토글 버튼(가로 폭 100%). */
 export function ColorToggle({ style }: { style?: React.CSSProperties }) {
   const { color, toggle } = useColorMode();
+  const { locale } = useLocale();
   return (
     <button onClick={toggle} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", border: "1px solid rgba(77,56,34,.18)", borderRadius: 10, padding: "9px 11px", background: color ? "#9b3d2d" : "rgba(255,255,255,.6)", color: color ? "#fff8ed" : "#5f4d39", fontSize: 12.5, fontWeight: 800, cursor: "pointer", ...style }}>
-      <span>🎨 초상 컬러 복원</span><span>{color ? "● 켜짐" : "○ 꺼짐"}</span>
+      <span>🎨 {triT(locale, "초상 컬러 복원", "Colorize portraits", "Хөрөг өнгөтгөх")}</span><span>{color ? triT(locale, "● 켜짐", "● On", "● Асаалттай") : triT(locale, "○ 꺼짐", "○ Off", "○ Унтраалттай")}</span>
     </button>
   );
 }

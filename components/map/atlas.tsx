@@ -26,11 +26,12 @@ const geoCache = new Map<number, unknown>();
 function nearestGeoYear(y: number) {
   return GEO_YEARS.reduce((b, c) => (Math.abs(c - y) < Math.abs(b - y) ? c : b), GEO_YEARS[0]);
 }
-function koreaEra(y: number) {
-  if (y < 1897) return "조선";
-  if (y < 1910) return "대한제국";
-  if (y < 1945) return "일제강점기 (조선)";
-  return "대한민국";
+function koreaEra(y: number, locale: string = "ko") {
+  const pick = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
+  if (y < 1897) return pick("조선", "Joseon", "Жусон");
+  if (y < 1910) return pick("대한제국", "Korean Empire", "Солонгосын эзэнт гүрэн");
+  if (y < 1945) return pick("일제강점기 (조선)", "Japanese Colonial Era", "Японы колоничлолын үе");
+  return pick("대한민국", "Republic of Korea", "БНСУ");
 }
 // 동아시아 bbox 안에 좌표가 하나라도 있으면 표시 대상
 function inEastAsia(geom: { coordinates?: unknown } | null): boolean {
@@ -949,11 +950,11 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                     if (!hm.length && !cm.length) return null;
                     return (
                       <>
-                        <div style={{ ...hdr, margin: "8px 6px 2px" }}>유적 · 묘역</div>
+                        <div style={{ ...hdr, margin: "8px 6px 2px" }}>{T("유적 · 묘역", "Heritage · Cemeteries", "Дурсгал · Оршуулга")}</div>
                         {cm.map((c) => (
                           <button key={c.id} onClick={() => setSelected({ kind: "place", id: c.id })} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", padding: "6px 7px", borderRadius: 10, border: 0, background: "transparent", cursor: "pointer", color: "#4a3a28" }}>
                             <span style={{ flex: "0 0 auto", width: 26, height: 26, borderRadius: 8, background: "#9b3d2d", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 13 }}>♰</span>
-                            <span style={{ fontSize: 12.5, fontWeight: 800 }}>{c.name} <span style={{ color: C.muted, fontWeight: 600 }}>· 묘역</span></span>
+                            <span style={{ fontSize: 12.5, fontWeight: 800 }}>{c.name} <span style={{ color: C.muted, fontWeight: 600 }}>· {T("묘역", "cemetery", "оршуулга")}</span></span>
                           </button>
                         ))}
                         {hm.map((h) => (
@@ -965,8 +966,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                       </>
                     );
                   })()}
-                  {pickList.length === 0 && !q && <span style={{ padding: "10px 8px", color: C.muted, fontSize: 12.5 }}>목록이 없습니다</span>}
-                  {q && pickList.length === 0 && HERITAGE.filter((h) => `${h.name} ${h.city}`.toLowerCase().includes(q)).length === 0 && cemeteries.filter((c) => c.name.toLowerCase().includes(q)).length === 0 && <span style={{ padding: "10px 8px", color: C.muted, fontSize: 12.5 }}>검색 결과가 없습니다</span>}
+                  {pickList.length === 0 && !q && <span style={{ padding: "10px 8px", color: C.muted, fontSize: 12.5 }}>{T("목록이 없습니다", "No items", "Жагсаалт алга")}</span>}
+                  {q && pickList.length === 0 && HERITAGE.filter((h) => `${h.name} ${h.city}`.toLowerCase().includes(q)).length === 0 && cemeteries.filter((c) => c.name.toLowerCase().includes(q)).length === 0 && <span style={{ padding: "10px 8px", color: C.muted, fontSize: 12.5 }}>{T("검색 결과가 없습니다", "No results", "Үр дүн алга")}</span>}
                 </div>
               </div>
             </div>
@@ -979,13 +980,13 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
       {/* ── LEFT: lens-specific list (연혁·묘역·관계망에서만) ── */}
       <aside style={{ gridColumn: 1, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, padding: 16, display: showLeft && leftOpen ? "flex" : "none", flexDirection: "column", gap: 14, minHeight: 0, position: "relative", backdropFilter: "blur(12px)", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
-        <button onClick={() => setLeftOpen(false)} title="접기" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#6b5e4b", cursor: "pointer", zIndex: 5 }}>
+        <button onClick={() => setLeftOpen(false)} title={T("접기", "Collapse", "Хураах")} style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#6b5e4b", cursor: "pointer", zIndex: 5 }}>
           <PanelLeftClose size={16} />
         </button>
 
         {lens === "history" && (
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingRight: 2 }}>
-            <div style={hdr}>선교 연혁</div>
+            <div style={hdr}>{T("선교 연혁", "Mission Timeline", "Номлолын он дараалал")}</div>
             <div style={{ position: "relative", paddingLeft: 14 }}>
               <div style={{ position: "absolute", left: 4, top: 6, bottom: 8, width: 2, background: "linear-gradient(#77624b,#1f6f8b,#bf6b22)", opacity: 0.35 }} />
               {data.events.map((ev, i) => {
@@ -1005,7 +1006,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
         {lens === "cemetery" && (
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingRight: 2 }}>
-            <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".1em", color: "#80603b", textTransform: "uppercase", marginBottom: 8 }}>선교묘역</div>
+            <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".1em", color: "#80603b", textTransform: "uppercase", marginBottom: 8 }}>{T("선교묘역", "Cemeteries", "Оршуулгын газар")}</div>
             <div style={{ display: "grid", gap: 8 }}>
               {cemeteries.map((c) => {
                 const on = selPlace?.id === c.id;
@@ -1013,11 +1014,11 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 return (
                   <button key={c.id} onClick={() => setSelected({ kind: "place", id: c.id })} style={{ border: `1px solid ${on ? "#9b3d2d" : C.line}`, borderRadius: 14, padding: "12px 13px", background: on ? "#2f2419" : "rgba(255,255,255,.55)", color: on ? "#fff8ed" : "#3f3022", cursor: "pointer", textAlign: "left" }}>
                     <span style={{ display: "block", fontSize: 14, fontWeight: 900 }}>🪦 {c.name}</span>
-                    <span style={{ display: "block", marginTop: 3, fontSize: 11.5, color: on ? "rgba(255,248,236,.7)" : C.muted }}>안장 인물 {n}명</span>
+                    <span style={{ display: "block", marginTop: 3, fontSize: 11.5, color: on ? "rgba(255,248,236,.7)" : C.muted }}>{T(`안장 인물 ${n}명`, `${n} buried`, `${n} оршуулсан`)}</span>
                   </button>
                 );
               })}
-              {!cemeteries.length && <p style={{ fontSize: 12.5, color: C.muted }}>기록된 묘역이 없습니다.</p>}
+              {!cemeteries.length && <p style={{ fontSize: 12.5, color: C.muted }}>{T("기록된 묘역이 없습니다.", "No cemeteries recorded.", "Бүртгэгдсэн оршуулга алга.")}</p>}
             </div>
           </div>
         )}
@@ -1149,15 +1150,15 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
         {/* 정세 토글 + 레이어 토글을 한 열로(너비 동일, stretch) */}
         <div style={{ position: "absolute", left: 24, top: 24, zIndex: 500, display: "flex", flexDirection: "column", alignItems: "stretch", gap: 6 }}>
-          <button onClick={() => setShowGeo((v) => !v)} title="시대별 정세(역사 국경) 표시" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 11, border: `1px solid ${showGeo ? "#9b3d2d" : "rgba(255,255,255,.2)"}`, background: showGeo ? "#9b3d2d" : "rgba(40,26,14,.78)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, whiteSpace: "nowrap" }}>
-            <span style={{ fontSize: 10, opacity: 0.85 }}>{showGeo ? "●" : "○"}</span> 🗺 정세 {showGeo ? "ON" : "OFF"}
+          <button onClick={() => setShowGeo((v) => !v)} title={T("시대별 정세(역사 국경) 표시", "Show historical borders", "Түүхэн хил хязгаар харуулах")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 11, border: `1px solid ${showGeo ? "#9b3d2d" : "rgba(255,255,255,.2)"}`, background: showGeo ? "#9b3d2d" : "rgba(40,26,14,.78)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, whiteSpace: "nowrap" }}>
+            <span style={{ fontSize: 10, opacity: 0.85 }}>{showGeo ? "●" : "○"}</span> 🗺 {T("정세", "Borders", "Хил")} {showGeo ? "ON" : "OFF"}
           </button>
           {(lens === "people" || lens === "era") && ([
-            { on: showPeople, set: setShowPeople, label: "👤 선교사", color: "#3f6f8f", title: "선교사(인물) 마커 표시" },
-            { on: showStations, set: setShowStations, label: "⚓ 주요 거점", color: "#bf6b22", title: "항구·선교부 등 주요 거점 마커 표시" },
-            { on: showCemeteries, set: setShowCemeteries, label: "♰ 선교 묘역", color: "#9b3d2d", title: "선교사 묘역 마커 표시" },
-            { on: showHeritage, set: setShowHeritage, label: "⛪ 선교 유적지", color: "#7a4a9e", title: "교회·학교·병원 등 선교 유적지 표시" },
-            { on: showNetwork, set: setShowNetwork, label: "🕸 관계망", color: "#5a3f72", title: "인물 간 관계선 표시" },
+            { on: showPeople, set: setShowPeople, label: `👤 ${T("선교사", "People", "Хүмүүс")}`, color: "#3f6f8f", title: T("선교사(인물) 마커 표시", "Show missionary markers", "Номлогчийн тэмдэг") },
+            { on: showStations, set: setShowStations, label: `⚓ ${T("주요 거점", "Stations", "Төвүүд")}`, color: "#bf6b22", title: T("항구·선교부 등 주요 거점 마커 표시", "Show ports/stations", "Боомт·төвийн тэмдэг") },
+            { on: showCemeteries, set: setShowCemeteries, label: `♰ ${T("선교 묘역", "Cemeteries", "Оршуулга")}`, color: "#9b3d2d", title: T("선교사 묘역 마커 표시", "Show cemetery markers", "Оршуулгын тэмдэг") },
+            { on: showHeritage, set: setShowHeritage, label: `⛪ ${T("선교 유적지", "Heritage", "Дурсгал")}`, color: "#7a4a9e", title: T("교회·학교·병원 등 선교 유적지 표시", "Show heritage sites", "Дурсгалт газрууд") },
+            { on: showNetwork, set: setShowNetwork, label: `🕸 ${T("관계망", "Network", "Сүлжээ")}`, color: "#5a3f72", title: T("인물 간 관계선 표시", "Show relationship lines", "Харилцааны шугам") },
           ] as const).map((t) => (
             <button key={t.label} onClick={() => t.set((v: boolean) => !v)} title={t.title}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 11px", borderRadius: 11, border: `1px solid ${t.on ? t.color : "rgba(255,255,255,.2)"}`, background: t.on ? t.color : "rgba(40,26,14,.7)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, opacity: t.on ? 1 : 0.62, whiteSpace: "nowrap" }}>
@@ -1169,15 +1170,15 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         {/* 정세 설명(연도·시대) — 지도 상단 중앙 */}
         {showGeo && (
           <div style={{ position: "absolute", top: 24, left: "50%", transform: "translateX(-50%)", zIndex: 500, display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.25, background: "rgba(40,26,14,.82)", color: "#fff8ec", padding: "7px 14px", borderRadius: 11, fontSize: 12.5, fontWeight: 800, textAlign: "center", pointerEvents: "none" }}>
-            <span>{snapshot ? `${year}년` : `${nearestGeoYear(year)}년경`} · {koreaEra(year)}</span>
-            <span style={{ fontSize: 9.5, fontWeight: 600, opacity: 0.7 }}>경계: historical-basemaps (ODbL)</span>
+            <span>{snapshot ? (locale === "ko" ? `${year}년` : `${year}`) : (locale === "ko" ? `${nearestGeoYear(year)}년경` : `c.${nearestGeoYear(year)}`)} · {koreaEra(year, locale)}</span>
+            <span style={{ fontSize: 9.5, fontWeight: 600, opacity: 0.7 }}>{T("경계", "Borders", "Хил")}: historical-basemaps (ODbL)</span>
           </div>
         )}
 
         {/* 관계 유형 범례 — 지도 안 작은 오버레이(관계망 켤 때) */}
         {netOn && (
           <div style={{ position: "absolute", right: 24, bottom: 24, zIndex: 500, background: "rgba(40,26,14,.82)", color: "#fff8ec", padding: "8px 11px", borderRadius: 11, maxWidth: 210, backdropFilter: "blur(4px)" }}>
-            <div style={{ fontSize: 9.5, fontWeight: 900, letterSpacing: ".1em", textTransform: "uppercase", opacity: 0.7, marginBottom: 6 }}>관계 유형</div>
+            <div style={{ fontSize: 9.5, fontWeight: 900, letterSpacing: ".1em", textTransform: "uppercase", opacity: 0.7, marginBottom: 6 }}>{T("관계 유형", "Relationship types", "Харилцааны төрөл")}</div>
             <div style={{ display: "grid", gap: 5 }}>
               {data.relTypes.map((l) => (
                 <div key={l.key} style={{ display: "flex", alignItems: "center", gap: 7 }}>
@@ -1191,18 +1192,18 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
         <div style={{ position: "absolute", left: 26, bottom: 26, right: 26, display: "flex", justifyContent: "space-between", alignItems: "flex-end", pointerEvents: "none", gap: 12 }}>
           <span style={{ fontSize: 11.5, color: "#fff8ec", background: "rgba(40,26,14,.7)", padding: "5px 10px", borderRadius: 999, fontWeight: 700 }}>
-            {lens === "cemetery" ? "묘역을 클릭하면 그곳에 안장된 선교사가 나타납니다" : lens === "network" ? "인물 간 관계가 지도 위에 모두 드러납니다" : lens === "era" ? "연도 슬라이더로 시대의 흐름을 따라가 보세요" : "인물을 클릭하면 연관된 선교사가 함께 밝아집니다"}
+            {lens === "cemetery" ? T("묘역을 클릭하면 그곳에 안장된 선교사가 나타납니다", "Click a cemetery to see who is buried there", "Оршуулга дээр дарж тэндхийн номлогчдыг үзнэ") : lens === "network" ? T("인물 간 관계가 지도 위에 모두 드러납니다", "All relationships appear on the map", "Бүх харилцаа газрын зураг дээр гарна") : lens === "era" ? T("연도 슬라이더로 시대의 흐름을 따라가 보세요", "Use the year slider to follow the eras", "Он жилийн гулсуураар үеүүдийг дагана уу") : T("인물을 클릭하면 연관된 선교사가 함께 밝아집니다", "Click a person to light up their connections", "Хүн дээр дарвал холбоотнууд нь гэрэлтэнэ")}
           </span>
         </div>
 
         {showLeft && !leftOpen && (
-          <button onClick={() => setLeftOpen(true)} title="목록 펼치기" style={{ position: "absolute", top: 24, left: 24, display: "flex", alignItems: "center", gap: 6, padding: "8px 11px", borderRadius: 12, border: "1px solid rgba(255,255,255,.2)", background: "rgba(40,26,14,.78)", color: "#fff8ec", cursor: "pointer", fontSize: 12.5, fontWeight: 800, zIndex: 500 }}>
-            <PanelLeftOpen size={16} /> {lens === "history" ? "연혁" : lens === "cemetery" ? "묘역" : "목록"}
+          <button onClick={() => setLeftOpen(true)} title={T("목록 펼치기", "Open list", "Жагсаалт нээх")} style={{ position: "absolute", top: 24, left: 24, display: "flex", alignItems: "center", gap: 6, padding: "8px 11px", borderRadius: 12, border: "1px solid rgba(255,255,255,.2)", background: "rgba(40,26,14,.78)", color: "#fff8ec", cursor: "pointer", fontSize: 12.5, fontWeight: 800, zIndex: 500 }}>
+            <PanelLeftOpen size={16} /> {lens === "history" ? T("연혁", "Timeline", "Он дараалал") : lens === "cemetery" ? T("묘역", "Cemeteries", "Оршуулга") : T("목록", "List", "Жагсаалт")}
           </button>
         )}
         {!rightOpen && (
-          <button onClick={() => setRightOpen(true)} title="상세 펼치기" style={{ position: "absolute", top: 24, right: 24, display: "flex", alignItems: "center", gap: 6, padding: "8px 11px", borderRadius: 12, border: "1px solid rgba(255,255,255,.2)", background: "rgba(40,26,14,.78)", color: "#fff8ec", cursor: "pointer", fontSize: 12.5, fontWeight: 800, zIndex: 500 }}>
-            상세 <PanelRightOpen size={16} />
+          <button onClick={() => setRightOpen(true)} title={T("상세 펼치기", "Open details", "Дэлгэрэнгүй нээх")} style={{ position: "absolute", top: 24, right: 24, display: "flex", alignItems: "center", gap: 6, padding: "8px 11px", borderRadius: 12, border: "1px solid rgba(255,255,255,.2)", background: "rgba(40,26,14,.78)", color: "#fff8ec", cursor: "pointer", fontSize: 12.5, fontWeight: 800, zIndex: 500 }}>
+            {T("상세", "Details", "Дэлгэрэнгүй")} <PanelRightOpen size={16} />
           </button>
         )}
       </section>
@@ -1210,13 +1211,13 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       {/* ── RIGHT: detail + relationships ── */}
       <article style={{ gridColumn: 3, minWidth: 0, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 24, overflow: "hidden", display: rightOpen ? "flex" : "none", flexDirection: "column", minHeight: 0, position: "relative", boxShadow: "0 18px 50px rgba(38,25,10,.12)" }}>
         {(selPerson || selPlace || selEvent || selHeritage || selBuried) && (
-          <button onClick={goBack} title="이전 선택으로" style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 120px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
-            <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> 뒤로
+          <button onClick={goBack} title={T("이전 선택으로", "Back", "Буцах")} style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6, width: "100%", padding: "8px 120px 8px 14px", borderBottom: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, textAlign: "left", position: "relative", zIndex: 11 }}>
+            <ArrowRight size={14} style={{ transform: "rotate(180deg)" }} /> {T("뒤로", "Back", "Буцах")}
           </button>
         )}
         {(selPerson || selPlace || selHeritage || selBuried) && (
-          <button onClick={doShare} title={shared ? "링크 복사됨" : "이 화면 링크 복사"} style={{ position: "absolute", top: 12, right: 48, height: 30, display: "flex", alignItems: "center", gap: 5, padding: "0 9px", borderRadius: 9, border: "1px solid rgba(255,255,255,.25)", background: shared ? "rgba(58,120,74,.92)" : "rgba(40,26,14,.45)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, zIndex: 12, transition: "background .2s" }}>
-            {shared ? <Check size={15} /> : <Share2 size={15} />}{shared ? "복사됨" : "공유"}
+          <button onClick={doShare} title={shared ? T("링크 복사됨", "Link copied", "Холбоос хуулсан") : T("이 화면 링크 복사", "Copy link to this view", "Энэ дэлгэцийн холбоос хуулах")} style={{ position: "absolute", top: 12, right: 48, height: 30, display: "flex", alignItems: "center", gap: 5, padding: "0 9px", borderRadius: 9, border: "1px solid rgba(255,255,255,.25)", background: shared ? "rgba(58,120,74,.92)" : "rgba(40,26,14,.45)", color: "#fff8ec", cursor: "pointer", fontSize: 11.5, fontWeight: 800, zIndex: 12, transition: "background .2s" }}>
+            {shared ? <Check size={15} /> : <Share2 size={15} />}{shared ? T("복사됨", "Copied", "Хуулсан") : T("공유", "Share", "Хуваалцах")}
           </button>
         )}
         <button onClick={() => setRightOpen(false)} title="상세 접기" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: "1px solid rgba(255,255,255,.25)", background: "rgba(40,26,14,.45)", color: "#fff8ec", cursor: "pointer", zIndex: 12 }}>
@@ -1226,7 +1227,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         {selEvent && (
           <>
             <div style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb", padding: "22px 22px 20px" }}>
-              <span style={pill("rgba(191,107,34,.85)")}>{selEvent.year}년 · 선교 연혁</span>
+              <span style={pill("rgba(191,107,34,.85)")}>{selEvent.year}{locale === "ko" ? "년 · " : " · "}{T("선교 연혁", "Mission timeline", "Номлолын он дараалал")}</span>
               <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 25, margin: "12px 0 4px", letterSpacing: "-.03em" }}>{selEvent.title}</h2>
               <button onClick={() => setSelected({ kind: "place", id: selEvent.placeId })} style={{ ...pill("rgba(255,255,255,.14)"), border: 0, cursor: "pointer", marginTop: 4 }}>⚓ {selEvent.placeName}</button>
             </div>
@@ -1236,7 +1237,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               </section>
               {selEvent.people.length > 0 && (
                 <section>
-                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>관련 인물</h3>
+                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>{T("관련 인물", "Related people", "Холбоотой хүмүүс")}</h3>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                     {selEvent.people.map((x) => {
                       const pp = data.people.find((p) => p.id === x.id);
@@ -1249,7 +1250,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   </div>
                 </section>
               )}
-              <p style={{ marginTop: 14, fontSize: 11.5, color: C.faint }}>연혁 목록에서 다른 사건을 선택하면 지도가 그 장소로 이동합니다.</p>
+              <p style={{ marginTop: 14, fontSize: 11.5, color: C.faint }}>{T("연혁 목록에서 다른 사건을 선택하면 지도가 그 장소로 이동합니다.", "Pick another event from the timeline list to move the map there.", "Он дарааллын жагсаалтаас өөр үйл явдал сонгоход газрын зураг тийш шилжинэ.")}</p>
             </div>
           </>
         )}
@@ -1259,7 +1260,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             <div style={{ background: "linear-gradient(145deg,#2e2218,#5f3928)", color: "#fff8eb", padding: "22px 22px 20px" }}>
               <span style={pill(`${CAT_COLOR[selPlace.cat]}`)}>{selPlace.catLabel}</span>
               <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26, margin: "14px 0 4px", letterSpacing: "-.03em" }}>{selPlace.name}</h2>
-              <p style={{ margin: 0, fontSize: 13, color: "rgba(255,248,235,.82)", lineHeight: 1.5 }}>{selPlace.year}년 · 지도 위 거점</p>
+              <p style={{ margin: 0, fontSize: 13, color: "rgba(255,248,235,.82)", lineHeight: 1.5 }}>{selPlace.year}{locale === "ko" ? "년 · " : " · "}{T("지도 위 거점", "Place on the map", "Газрын зураг дээрх цэг")}</p>
             </div>
             <div style={{ padding: "18px 20px 24px", overflowY: "auto" }}>
               <section style={{ padding: 15, background: "#fff9ee", border: `1px solid ${C.line}`, borderRadius: 18, marginBottom: 14 }}>
@@ -1267,7 +1268,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               </section>
               {selPlace.sub && (
                 <section>
-                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>이곳의 기관</h3>
+                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>{T("이곳의 기관", "Institutions here", "Энд байх байгууллагууд")}</h3>
                   <ul style={{ display: "grid", gap: 7, margin: 0, padding: 0, listStyle: "none" }}>
                     {selPlace.sub.map((s, i) => (
                       <li key={i} style={{ padding: "10px 12px", borderRadius: 13, background: "rgba(255,255,255,.5)", border: `1px solid ${C.line}` }}>
@@ -1287,12 +1288,12 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 const total = BURIED_TOTAL[selPlace.id];
                 const srcs = BURIED_SOURCE[selPlace.id] ?? [];
                 if (!isCem && list.length === 0) {
-                  return <section style={{ marginTop: 14 }}><p style={{ margin: 0, fontSize: 12.5, color: C.muted }}>기록된 인물이 없습니다.</p></section>;
+                  return <section style={{ marginTop: 14 }}><p style={{ margin: 0, fontSize: 12.5, color: C.muted }}>{T("기록된 인물이 없습니다.", "No people recorded.", "Бүртгэгдсэн хүн алга.")}</p></section>;
                 }
                 return (
                   <section style={{ marginTop: 14 }}>
                     <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 4px", color: "#3e2c1d" }}>
-                      {isCem ? `안장 선교사 ${buried.length + extra.length}명` : "이곳의 인물"}
+                      {isCem ? T(`안장 선교사 ${buried.length + extra.length}명`, `${buried.length + extra.length} buried here`, `Энд оршуулсан ${buried.length + extra.length}`) : T("이곳의 인물", "People here", "Эндхийн хүмүүс")}
                     </h3>
                     {total && <p style={{ margin: "0 0 10px", fontSize: 11.5, color: C.muted }}>{total}</p>}
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -1305,7 +1306,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                             : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: orgTint(p.org), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 15 }}>{p.glyph}</span>}
                           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
                             <span style={{ fontSize: 13.5, fontWeight: 800, color: "#3e2c1d" }}>{p.name}</span>
-                            <span style={{ fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.org, p.life ? `${p.life}${ageFromLife(p.life) ? ` (향년 ${ageFromLife(p.life)})` : ""}` : ""].filter(Boolean).join(" · ")}</span>
+                            <span style={{ fontSize: 11, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.org, p.life ? `${p.life}${ageFromLife(p.life) ? ` (${locale === "ko" ? "향년 " : ""}${ageFromLife(p.life)})` : ""}` : ""].filter(Boolean).join(" · ")}</span>
                           </span>
                         </button>
                       ))}
@@ -1318,13 +1319,13 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                             : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: "rgba(120,100,80,.18)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b5e4b", fontSize: 13, fontWeight: 800 }}>✝</span>}
                           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
                             <span style={{ fontSize: 13, fontWeight: 800, color: "#3e2c1d" }}>{b.nameKo || b.nameEn}{b.uncertain && <span style={{ color: C.faint, fontWeight: 600 }}> ?</span>}</span>
-                            <span style={{ fontSize: 10.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[b.nameKo && b.nameEn, b.life ? `${b.life}${ageFromLife(b.life) ? ` (향년 ${ageFromLife(b.life)})` : ""}` : "", b.role].filter(Boolean).join(" · ")}</span>
+                            <span style={{ fontSize: 10.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[b.nameKo && b.nameEn, b.life ? `${b.life}${ageFromLife(b.life) ? ` (${locale === "ko" ? "향년 " : ""}${ageFromLife(b.life)})` : ""}` : "", b.role].filter(Boolean).join(" · ")}</span>
                           </span>
                         </button>
                       ))}
                     </div>
                     {srcs.length > 0 && (
-                      <p style={{ margin: "8px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>안장자 명단 출처: {srcs.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" style={{ color: "#84321f" }}>[{i + 1}]</a>)}</p>
+                      <p style={{ margin: "8px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>{T("안장자 명단 출처", "Burial roster sources", "Оршуулгын жагсаалтын эх сурвалж")}: {srcs.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" style={{ color: "#84321f" }}>[{i + 1}]</a>)}</p>
                     )}
                   </section>
                 );
@@ -1367,7 +1368,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 <span style={pill("rgba(105,76,43,.1)", "#604a33")}>{selPerson.country}</span>
                 <button onClick={() => setSelected({ kind: "place", id: selPerson.place })} style={{ ...pill("rgba(155,61,45,.1)", "#9b3d2d"), border: 0, cursor: "pointer" }}>⚓ {selPerson.placeName}</button>
                 {selPerson.burial && (
-                  <span style={pill("rgba(74,58,40,.12)", "#4a3a28")}>🪦 안장 · {selPerson.burial}</span>
+                  <span style={pill("rgba(74,58,40,.12)", "#4a3a28")}>🪦 {T("안장", "Buried", "Оршуулга")} · {selPerson.burial}</span>
                 )}
               </div>
 
@@ -1409,7 +1410,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
               {selPerson.timeline.length > 0 && (
                 <section style={{ marginBottom: 14 }}>
-                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>연표</h3>
+                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>{T("연표", "Timeline", "Он дараалал")}</h3>
                   <div style={{ position: "relative", paddingLeft: 14 }}>
                     <div style={{ position: "absolute", left: 4, top: 4, bottom: 4, width: 2, background: "rgba(155,61,45,.25)" }} />
                     {selPerson.timeline.map(([yr, text], i) => (
@@ -1425,23 +1426,23 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
               {selPerson.interview && (
                 <section style={{ borderLeft: "3px solid #bf6b22", background: "rgba(191,107,34,.08)", padding: "12px 13px", borderRadius: 12, marginBottom: 14 }}>
-                  <span style={{ fontSize: 11, fontWeight: 900, color: "#a0641f", letterSpacing: ".04em" }}>인터뷰</span>
+                  <span style={{ fontSize: 11, fontWeight: 900, color: "#a0641f", letterSpacing: ".04em" }}>{T("인터뷰", "Interview", "Ярилцлага")}</span>
                   <p style={{ margin: "5px 0 0", fontSize: 13.5, color: "#664221", lineHeight: 1.6, fontWeight: 600 }}>“{selPerson.interview}”</p>
                 </section>
               )}
 
               {(selPerson.video || selPerson.photos.length > 0) && (
                 <section style={{ marginBottom: 14 }}>
-                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>자료</h3>
+                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>{T("자료", "Materials", "Материал")}</h3>
                   <div style={{ display: "grid", gap: 6, fontSize: 12.5 }}>
                     {selPerson.video && (
                       <div style={{ borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.5)", padding: "9px 11px" }}>
-                        <span style={{ fontWeight: 800, color: "#684a80" }}>영상 </span><span style={{ color: "#594935" }}>{selPerson.video}</span>
+                        <span style={{ fontWeight: 800, color: "#684a80" }}>{T("영상", "Video", "Бичлэг")} </span><span style={{ color: "#594935" }}>{selPerson.video}</span>
                       </div>
                     )}
                     {selPerson.photos.map((ph, i) => (
                       <div key={i} style={{ borderRadius: 12, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.5)", padding: "9px 11px" }}>
-                        <span style={{ fontWeight: 800, color: "#1f6f8b" }}>사진 </span><span style={{ color: "#594935" }}>{ph}</span>
+                        <span style={{ fontWeight: 800, color: "#1f6f8b" }}>{T("사진", "Photo", "Зураг")} </span><span style={{ color: "#594935" }}>{ph}</span>
                       </div>
                     ))}
                   </div>
@@ -1449,7 +1450,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               )}
 
               <section style={{ marginBottom: 14 }}>
-                <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>참고 출처</h3>
+                <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>{T("참고 출처", "References", "Эх сурвалж")}</h3>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: selPerson.sources.length > 0 ? 8 : 0 }}>
                   {/* 검증된 링크만 표기 (잘못 매칭되는 자동 링크는 데이터에서 빈값 처리) */}
                   {selPerson.wiki && (
@@ -1462,7 +1463,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                     <a href={selPerson.namu} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#3a7d44", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>나무위키 ↗</a>
                   )}
                   {!selPerson.wiki && !selPerson.wikiEn && !selPerson.namu && (
-                    <span style={{ fontSize: 11.5, color: C.muted }}>검증된 외부 링크 없음</span>
+                    <span style={{ fontSize: 11.5, color: C.muted }}>{T("검증된 외부 링크 없음", "No verified external links", "Баталгаажсан холбоос алга")}</span>
                   )}
                 </div>
                 {selPerson.sources.length > 0 && (
@@ -1478,7 +1479,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               </section>
 
               {selPerson.photo && (
-                <p style={{ margin: "10px 0 0", fontSize: 10.5, color: C.faint }}>사진 출처: {selPerson.photoSource} (CC/PD)</p>
+                <p style={{ margin: "10px 0 0", fontSize: 10.5, color: C.faint }}>{T("사진 출처", "Photo", "Зураг")}: {selPerson.photoSource} (CC/PD)</p>
               )}
             </div>
           </>
@@ -1487,9 +1488,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         {selHeritage && (
           <>
             <div style={{ background: `linear-gradient(145deg,#2e2218,${heritageStyle(selHeritage.type).color})`, color: "#fff8eb", padding: "22px 22px 20px" }}>
-              <span style={pill("rgba(255,255,255,.16)")}>{heritageStyle(selHeritage.type).glyph} 선교 유적지 · {selHeritage.type}</span>
+              <span style={pill("rgba(255,255,255,.16)")}>{heritageStyle(selHeritage.type).glyph} {T("선교 유적지", "Heritage", "Дурсгал")} · {tl(locale, "htype", selHeritage.type, selHeritage.type)}</span>
               <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 24, margin: "12px 0 4px", letterSpacing: "-.03em" }}>{selHeritage.name}</h2>
-              <p style={{ margin: 0, fontSize: 13, color: "rgba(255,248,235,.85)" }}>{selHeritage.city} · {selHeritage.region}{selHeritage.year ? ` · ${selHeritage.year}년` : ""}{selHeritage.coordUncertain ? " · 좌표 근사치" : ""}</p>
+              <p style={{ margin: 0, fontSize: 13, color: "rgba(255,248,235,.85)" }}>{selHeritage.city} · {selHeritage.region}{selHeritage.year ? ` · ${selHeritage.year}${locale === "ko" ? "년" : ""}` : ""}{selHeritage.coordUncertain ? ` · ${T("좌표 근사치", "approx. location", "ойролцоо байршил")}` : ""}</p>
             </div>
             <div style={{ padding: "18px 20px 24px", overflowY: "auto" }}>
               {selHeritage.photo && (
@@ -1503,7 +1504,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               </section>
               {selHeritage.unesco && (
                 <section style={{ marginBottom: 14, padding: "11px 13px", borderRadius: 14, background: "rgba(191,107,34,.1)", border: "1px solid rgba(191,107,34,.3)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 900, color: "#a0641f", marginBottom: 3 }}>🏛 유네스코 등재 추진</div>
+                  <div style={{ fontSize: 11, fontWeight: 900, color: "#a0641f", marginBottom: 3 }}>🏛 {T("유네스코 등재 추진", "UNESCO bid in progress", "ЮНЕСКО-д санал болгож буй")}</div>
                   <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.6, color: "#6b4a1f" }}>{selHeritage.unesco}</p>
                 </section>
               )}
@@ -1533,7 +1534,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 const km = (d: number) => (d < 1 ? `${Math.round(d * 1000)}m` : `${d.toFixed(1)}km`);
                 return (
                   <section style={{ marginBottom: 14 }}>
-                    <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>인근 거점·유적</h3>
+                    <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>{T("인근 거점·유적", "Nearby places", "Ойролцоох газрууд")}</h3>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {nearPlaces.map(({ p, d }) => (
                         <button key={`pl-${p.id}`} onClick={() => setSelected({ kind: "place", id: p.id })} style={{ ...pill("rgba(155,61,45,.1)", "#84321f"), border: `1px solid ${C.line}`, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}>
@@ -1551,7 +1552,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               })()}
               {selHeritage.source.length > 0 && (
                 <section>
-                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>참고 출처</h3>
+                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 8px", color: "#3e2c1d" }}>{T("참고 출처", "References", "Эх сурвалж")}</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     {selHeritage.source.map((u, i) => (
                       <a key={i} href={u} target="_blank" rel="noreferrer" style={{ fontSize: 12, fontWeight: 700, color: "#84321f", textDecoration: "none", border: `1px solid ${C.line}`, borderRadius: 10, padding: "7px 10px", background: "rgba(255,255,255,.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.replace(/^https?:\/\//, "").slice(0, 46)} ↗</a>
@@ -1571,10 +1572,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(selBuried.photo)} alt={selBuried.nameKo || selBuried.nameEn} style={{ width: 88, height: 112, flex: "0 0 auto", borderRadius: 16, objectFit: "cover", background: "#efe1c3", border: "2px solid rgba(255,248,236,.3)" }} />
                   : <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 88, height: 112, flex: "0 0 auto", borderRadius: 16, background: "rgba(255,248,236,.14)", fontSize: 40 }}>✝</span>}
                 <div style={{ minWidth: 0 }}>
-                  <span style={pill("rgba(255,255,255,.16)")}>✝ 안장 선교사{selBuried.uncertain ? " · 확인 필요" : ""}</span>
+                  <span style={pill("rgba(255,255,255,.16)")}>✝ {T("안장 선교사", "Buried missionary", "Оршуулсан номлогч")}{selBuried.uncertain ? ` · ${T("확인 필요", "needs check", "шалгах")}` : ""}</span>
                   <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "10px 0 2px", letterSpacing: "-.03em" }}>{selBuried.nameKo || selBuried.nameEn}</h2>
                   {selBuried.nameKo && selBuried.nameEn && <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.nameEn}</p>}
-                  {selBuried.life && <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.life}{ageFromLife(selBuried.life) ? ` · 향년 ${ageFromLife(selBuried.life)}세` : ""}</p>}
+                  {selBuried.life && <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.life}{ageFromLife(selBuried.life) ? ` · ${T(`향년 ${ageFromLife(selBuried.life)}세`, `aged ${ageFromLife(selBuried.life)}`, `${ageFromLife(selBuried.life)} насалсан`)}` : ""}</p>}
                 </div>
               </div>
             </div>
@@ -1584,14 +1585,14 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: "#594935" }}>{selBuried.role}</p>
                 </section>
               )}
-              <button onClick={() => setSelected({ kind: "place", id: selBuried.cemId })} style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 12px", background: "rgba(255,255,255,.5)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800, marginBottom: 12 }}>♰ {selBuried.cemName} <span style={{ marginLeft: "auto", color: "#9b3d2d" }}>묘역 보기 →</span></button>
+              <button onClick={() => setSelected({ kind: "place", id: selBuried.cemId })} style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 12px", background: "rgba(255,255,255,.5)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800, marginBottom: 12 }}>♰ {selBuried.cemName} <span style={{ marginLeft: "auto", color: "#9b3d2d" }}>{T("묘역 보기 →", "View cemetery →", "Оршуулга үзэх →")}</span></button>
               {selBuried.note && <p style={{ margin: "0 0 12px", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>※ {selBuried.note}</p>}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                 {selBuried.wiki && <a href={selBuried.wiki} target="_blank" rel="noreferrer" style={{ display: "inline-flex", padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#84321f", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>위키백과 ↗</a>}
                 {selBuried.nameEn && <a href={`https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(selBuried.nameEn)}`} target="_blank" rel="noreferrer" style={{ display: "inline-flex", padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#5f4d39", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Wikipedia ↗</a>}
               </div>
               {selBuried.srcs.length > 0 && (
-                <p style={{ margin: "6px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>묘역 명단 출처: {selBuried.srcs.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" style={{ color: "#84321f" }}>[{i + 1}]</a>)}{selBuried.photo && " · 사진: Wikimedia(CC/PD)"}</p>
+                <p style={{ margin: "6px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>{T("묘역 명단 출처", "Roster sources", "Жагсаалтын эх сурвалж")}: {selBuried.srcs.map((u, i) => <a key={i} href={u} target="_blank" rel="noreferrer" style={{ color: "#84321f" }}>[{i + 1}]</a>)}{selBuried.photo && ` · ${T("사진", "Photo", "Зураг")}: Wikimedia(CC/PD)`}</p>
               )}
             </div>
           </>
@@ -1600,10 +1601,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         {!selPerson && !selPlace && !selEvent && !selHeritage && !selBuried && filterActive && (
           <div style={{ padding: "20px 18px 24px", overflowY: "auto", height: "100%" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-              <span style={pill("rgba(155,61,45,.9)")}>필터 결과 · {visiblePeople.length}명</span>
-              <button onClick={clearFilters} style={{ border: 0, background: "transparent", color: "#9b3d2d", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>필터 해제</button>
+              <span style={pill("rgba(155,61,45,.9)")}>{T(`필터 결과 · ${visiblePeople.length}명`, `Results · ${visiblePeople.length}`, `Үр дүн · ${visiblePeople.length}`)}</span>
+              <button onClick={clearFilters} style={{ border: 0, background: "transparent", color: "#9b3d2d", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>{T("필터 해제", "Clear filters", "Шүүлт цэвэрлэх")}</button>
             </div>
-            <p style={{ margin: "8px 0 12px", fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>선택한 조건에 해당하는 선교사입니다. 카드를 누르면 상세로 가고, 뒤로가기로 이 목록으로 돌아옵니다.</p>
+            <p style={{ margin: "8px 0 12px", fontSize: 11.5, color: C.muted, lineHeight: 1.5 }}>{T("선택한 조건에 해당하는 선교사입니다. 카드를 누르면 상세로 가고, 뒤로가기로 이 목록으로 돌아옵니다.", "Missionaries matching your filters. Click a card for details; use back to return to this list.", "Таны шүүлтэд тохирох номлогчид. Карт дарж дэлгэрэнгүй үзэж, буцах товчоор энэ жагсаалтад эргэн ирнэ.")}</p>
             <div style={{ display: "grid", gap: 7 }}>
               {visiblePeople.map((p) => {
                 const span = p.active.map(([s, e]) => `${s}–${e}`).join(", ");
@@ -1615,26 +1616,30 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                     <span style={{ minWidth: 0, flex: 1 }}>
                       <span style={{ display: "block", fontSize: 14, fontWeight: 900, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}{p.en ? <span style={{ fontWeight: 600, fontSize: 11, color: C.muted }}> · {p.en}</span> : null}</span>
                       <span style={{ display: "block", marginTop: 1, fontSize: 11.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[p.role, p.org].filter(Boolean).join(" · ")}</span>
-                      <span style={{ display: "block", marginTop: 2, fontSize: 11.5, fontWeight: 800, color: "#a0641f" }}>🕰 활동 {span || "—"}{p.life ? `  · 생애 ${p.life}` : ""}</span>
+                      <span style={{ display: "block", marginTop: 2, fontSize: 11.5, fontWeight: 800, color: "#a0641f" }}>🕰 {T("활동", "Active", "Идэвхтэй")} {span || "—"}{p.life ? `  · ${T("생애", "Life", "Амьдрал")} ${p.life}` : ""}</span>
                     </span>
                     <ArrowRight size={15} style={{ flex: "0 0 auto", color: C.faint }} />
                   </button>
                 );
               })}
-              {!visiblePeople.length && <p style={{ fontSize: 12.5, color: C.muted }}>조건에 맞는 인물이 없습니다. 필터를 줄여 보세요.</p>}
+              {!visiblePeople.length && <p style={{ fontSize: 12.5, color: C.muted }}>{T("조건에 맞는 인물이 없습니다. 필터를 줄여 보세요.", "No one matches. Try fewer filters.", "Тохирох хүн алга. Шүүлтээ багасгана уу.")}</p>}
             </div>
           </div>
         )}
 
         {!selPerson && !selPlace && !selEvent && !selHeritage && !selBuried && !filterActive && (
           <div style={{ padding: "24px 22px 28px", overflowY: "auto", height: "100%" }}>
-            <span style={pill("rgba(191,107,34,.9)")}>조선 선교의 흐름</span>
-            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "12px 0 8px", letterSpacing: "-.03em", color: "#3e2c1d" }}>복음이 들어온 길</h2>
+            <span style={pill("rgba(191,107,34,.9)")}>{T("조선 선교의 흐름", "The Flow of Mission in Korea", "Солонгос дахь номлолын урсгал")}</span>
+            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "12px 0 8px", letterSpacing: "-.03em", color: "#3e2c1d" }}>{T("복음이 들어온 길", "How the gospel arrived", "Сайн мэдээ хэрхэн ирсэн нь")}</h2>
             <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.75, color: "#5f4d39" }}>
-              1882년 만주·일본에서 옮겨진 성경이 먼저 이 땅에 닿았고, 1884–85년 <b>제물포</b>를 통해 의료·교육 선교사들이 들어왔습니다. 서울·평양·호남·대구로 퍼져 간 선교의 거점과, 이 땅에 묻힌 이들의 <b>묘역</b>을 따라가 보세요.
+              {T(
+                "1882년 만주·일본에서 옮겨진 성경이 먼저 이 땅에 닿았고, 1884–85년 제물포를 통해 의료·교육 선교사들이 들어왔습니다. 서울·평양·호남·대구로 퍼져 간 선교의 거점과, 이 땅에 묻힌 이들의 묘역을 따라가 보세요.",
+                "In 1882 the Bible, translated in Manchuria and Japan, reached this land first; in 1884–85 medical and educational missionaries arrived through Jemulpo. Follow the mission stations that spread to Seoul, Pyongyang, Honam, and Daegu — and the cemeteries of those who were buried here.",
+                "1882 онд Манжуур, Японд орчуулагдсан Библи энэ нутагт түрүүлж ирж, 1884–85 онд анагаах, боловсролын номлогчид Жемүлпогоор дамжин ирсэн. Сөүл, Пхеньян, Хонам, Тэгу руу тархсан номлолын төвүүд болон энд оршуулагдсан хүмүүсийн оршуулгыг дагаарай.",
+              )}
             </p>
 
-            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>입국·거점 항구</h3>
+            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>{T("입국·거점 항구", "Ports of Entry", "Орох боомтууд")}</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {data.places.filter((p) => p.cat === "port").map((p) => (
                 <button key={p.id} onClick={() => setSelected({ kind: "place", id: p.id })} style={{ ...pill("#0d3b66"), border: 0, cursor: "pointer" }}>⚓ {p.name}</button>
@@ -1642,36 +1647,48 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             </div>
 
             {cemeteries.length > 0 && (<>
-              <h3 style={{ ...hdr, margin: "20px 0 8px" }}>선교 묘역</h3>
+              <h3 style={{ ...hdr, margin: "20px 0 8px" }}>{T("선교 묘역", "Cemeteries", "Оршуулгын газар")}</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                 {cemeteries.map((c) => (
                   <button key={c.id} onClick={() => setSelected({ kind: "place", id: c.id })} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 11, padding: "9px 12px", background: "rgba(255,255,255,.55)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800 }}>
-                    <span>♰ {c.name}</span><span style={{ color: C.muted, fontWeight: 600 }}>{buriedAt(c.name).length + (BURIED_EXTRA[c.id]?.length ?? 0)}명</span>
+                    <span>♰ {c.name}</span><span style={{ color: C.muted, fontWeight: 600 }}>{buriedAt(c.name).length + (BURIED_EXTRA[c.id]?.length ?? 0)}{T("명", "", "")}</span>
                   </button>
                 ))}
               </div>
             </>)}
 
-            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>시대의 흐름</h3>
+            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>{T("시대의 흐름", "Flow of Eras", "Үеүүдийн урсгал")}</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
               {ERAS.map((e) => (
                 <button key={e.key} onClick={() => setYearSnapshot(Math.round((e.from + e.to) / 2))} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", border: `1px solid ${C.line}`, borderRadius: 11, padding: "9px 12px", background: "rgba(255,255,255,.55)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800 }}>
-                  <span>{e.label}</span><span style={{ color: "#9b3d2d" }}>→</span>
+                  <span>{tl(locale, "era", e.key, e.label)}</span><span style={{ color: "#9b3d2d" }}>→</span>
                 </button>
               ))}
             </div>
 
-            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>선교 유적지 {HERITAGE.length}곳</h3>
-            <p style={{ margin: "0 0 8px", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>교회·학교·병원·선교부 등 전국 선교 유적을 지도 위에 모았습니다. 광주 양림동·대구 청라언덕·전주·순천 매산등 등은 <b>유네스코 세계유산 등재가 추진</b>되고 있습니다.</p>
+            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>{T(`선교 유적지 ${HERITAGE.length}곳`, `Heritage Sites · ${HERITAGE.length}`, `Дурсгалт газар · ${HERITAGE.length}`)}</h3>
+            <p style={{ margin: "0 0 8px", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>{T(
+              "교회·학교·병원·선교부 등 전국 선교 유적을 지도 위에 모았습니다. 광주 양림동·대구 청라언덕·전주·순천 매산등 등은 유네스코 세계유산 등재가 추진되고 있습니다.",
+              "Mission heritage across the country — churches, schools, hospitals, stations — gathered on the map. Gwangju Yangnim-dong, Daegu Cheongna Hill, Jeonju, and Suncheon Maesan are being proposed for UNESCO World Heritage listing.",
+              "Сүм, сургууль, эмнэлэг, төв зэрэг улс даяарх номлолын дурсгалыг газрын зураг дээр цуглуулсан. Кванжу Янримдон, Тэгу Чонра толгод, Жонжу, Сунчон Мэсан зэрэг нь ЮНЕСКО-гийн өвд бүртгүүлэхээр санал болгож байна.",
+            )}</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {["gwangju_wilson_house", "daegu_cheongna_houses", "jeonju_seomun_church", "suncheon_coit_house", "jeongdong_first_church"].map((id) => {
                 const h = HERITAGE.find((x) => x.id === id);
                 return h ? <button key={id} onClick={() => setSelected({ kind: "heritage", id })} style={{ ...pill(heritageStyle(h.type).color), border: 0, cursor: "pointer" }}>{heritageStyle(h.type).glyph} {h.city}</button> : null;
               })}
             </div>
-            <p style={{ margin: "8px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>유네스코 추진: (사)한국선교유적연구회(서만철)와 8개 지자체 ‘선교기지 세계유산 등재 지방정부협의회’(2025~). ※ 아직 등재·잠정목록 등재가 아닌 추진 단계입니다.</p>
+            <p style={{ margin: "8px 0 0", fontSize: 10.5, color: C.faint, lineHeight: 1.5 }}>{T(
+              "유네스코 추진: (사)한국선교유적연구회(서만철)와 8개 지자체 ‘선교기지 세계유산 등재 지방정부협의회’(2025~). ※ 아직 등재·잠정목록 등재가 아닌 추진 단계입니다.",
+              "UNESCO bid: the Korea Mission Heritage Research Society and a council of 8 local governments (2025–). Note: this is still a proposal stage, not yet listed or on the tentative list.",
+              "ЮНЕСКО-гийн санал: Солонгосын номлолын өвийн судалгааны нийгэмлэг ба 8 орон нутгийн зөвлөл (2025–). Тэмдэглэл: одоогоор бүртгэгдээгүй, зөвхөн санал болгох шатанд.",
+            )}</p>
 
-            <p style={{ margin: "20px 0 0", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>위 검색창·「필터」로 인물을 찾거나, 지도에서 거점을 눌러 흐름을 따라가세요. 상단 메뉴에서 선교 유적지·인물을 바로 고를 수도 있습니다.</p>
+            <p style={{ margin: "20px 0 0", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>{T(
+              "위 검색창·「필터」로 인물을 찾거나, 지도에서 거점을 눌러 흐름을 따라가세요. 상단 메뉴에서 선교 유적지·인물을 바로 고를 수도 있습니다.",
+              "Search or use 'Filter' above to find people, or click a station on the map to follow the flow. You can also pick heritage sites and people from the top menu.",
+              "Дээрх хайлт·'Шүүлт'-ээр хүн хайх, эсвэл газрын зураг дээр төв дарж урсгалыг дагана уу. Дээд цэснээс дурсгалт газар·хүмүүсийг шууд сонгож болно.",
+            )}</p>
           </div>
         )}
       </article>

@@ -39,7 +39,13 @@ const rel: LocMap = {
   mn: { influence: "Нөлөө", prepare: "Зам нээсэн", partner: "Хамтын ажиллагаа", mentor: "Багш–шавь", family: "Гэр бүл", succeed: "Залгамжлал" },
 };
 
-const GROUPS: Record<string, LocMap> = { era, region, denom, role, country, cat, rel };
+// 선교 유적지 유형
+const htype: LocMap = {
+  en: { "교회": "Church", "학교": "School", "병원": "Hospital", "선교부": "Mission Station", "사택·양관": "Residence", "기념관": "Memorial Hall", "마을·구역": "Village/District" },
+  mn: { "교회": "Сүм", "학교": "Сургууль", "병원": "Эмнэлэг", "선교부": "Номлолын төв", "사택·양관": "Орон сууц", "기념관": "Дурсгалын танхим", "마을·구역": "Тосгон/Бүс" },
+};
+
+const GROUPS: Record<string, LocMap> = { era, region, denom, role, country, cat, rel, htype };
 
 /** 라벨 번역. ko면 원본(ko)을 그대로, 그 외엔 사전값(없으면 ko 폴백). */
 export function tl(locale: Locale, type: keyof typeof GROUPS | string, key: string, ko: string): string {

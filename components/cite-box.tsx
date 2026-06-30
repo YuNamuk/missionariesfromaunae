@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/components/locale-mode";
 
 /** 인물 페이지 하단의 '이 페이지 인용하기' 블록.
  *  출처표기 원칙(아카이브로서 인용 가능)을 지면에서 실천한다. 열람일은 브라우저 기준. */
 export function CiteBox({ name, en, life, url }: { name: string; en?: string; life?: string; url: string }) {
+  const { locale } = useLocale();
+  const T = (ko: string, e: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? e : ko);
   const [copied, setCopied] = useState(false);
   const today = new Date();
   const ymd = `${today.getFullYear()}. ${today.getMonth() + 1}. ${today.getDate()}.`;
   const who = [name, en && `(${en}${life ? `, ${life}` : ""})`].filter(Boolean).join(" ");
-  const citation = `Missionaries from Aunae (Dreamy School). 「${who}」. ${url} (열람: ${ymd})`;
+  const citation = `Missionaries from Aunae (Dreamy School). 「${who}」. ${url} (${T("열람", "accessed", "үзсэн")}: ${ymd})`;
 
   const copy = async () => {
     try {
@@ -25,13 +28,13 @@ export function CiteBox({ name, en, life, url }: { name: string; en?: string; li
     <section className="mt-10 rounded-2xl border border-ink-200 bg-white p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-[13px] font-extrabold uppercase tracking-[0.16em] text-ink-400">
-          이 페이지 인용하기
+          {T("이 페이지 인용하기", "Cite this page", "Энэ хуудсыг иш татах")}
         </h2>
         <button
           onClick={copy}
           className="flex-none rounded-full border border-ink-200 px-3 py-1 text-[12px] font-bold text-ink-600 transition-colors hover:border-sky-300 hover:text-sky-700"
         >
-          {copied ? "복사됨 ✓" : "복사"}
+          {copied ? T("복사됨 ✓", "Copied ✓", "Хуулсан ✓") : T("복사", "Copy", "Хуулах")}
         </button>
       </div>
       <p className="mt-2 font-serif text-[13.5px] leading-relaxed text-ink-700">{citation}</p>
