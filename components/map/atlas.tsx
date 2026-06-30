@@ -14,6 +14,8 @@ import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PERSON_COORD } from "@/lib/data/person-coord";
 import { C, CAT_COLOR, orgTint, personLatLng, labelHtml, placeIcon, personIcon, arrowIcon, bearingDeg, distKm, clusterIcon } from "./atlas-icons";
 import { useColorMode, Portrait } from "@/components/color-mode";
+import { useLocale } from "@/components/locale-mode";
+import { tl } from "@/lib/i18n/labels";
 import { colorSrc, bwSrc } from "@/lib/data/colorized";
 import { useMapSettings } from "@/components/map-settings";
 
@@ -424,6 +426,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const [showPeople, setShowPeople] = useState(true); // 선교사(인물) 마커 레이어
   const [showNetwork, setShowNetwork] = useState(false); // 관계망(인물 간 관계선) 표시
   const { color: colorPhoto } = useColorMode(); // 초상 컬러 복원본 보기(전역)
+  const { locale } = useLocale();
+  const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
   // 컬러 모드일 때 인물 초상(마커·리스트·관련 인물·바로가기 아이콘)을 복원 컬러본으로 스왑.
   const cphoto = (s: string | null | undefined) => (colorPhoto ? colorSrc(s) : bwSrc(s)) || s || undefined;
   // 클러스터 스파이더리: 클릭한 클러스터의 인물들을 중심 주위로 부채꼴(많으면 나선) 펼침.
@@ -844,7 +848,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
       {/* ── FULL-WIDTH BAR: 연도(길게) · 검색 · 설정 ── */}
       <div style={{ flex: "0 0 auto", position: "relative", zIndex: 700, display: "flex", alignItems: "center", gap: 12, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, boxShadow: "0 6px 18px rgba(46,28,14,.1)", backdropFilter: "blur(8px)", padding: "9px 16px" }}>
-        <span style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 14, color: snapshot ? "#9b3d2d" : C.muted, whiteSpace: "nowrap", minWidth: 46, textAlign: "center" }}>{snapshot ? `${year}년` : "전체"}</span>
+        <span style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 14, color: snapshot ? "#9b3d2d" : C.muted, whiteSpace: "nowrap", minWidth: 46, textAlign: "center" }}>{snapshot ? (locale === "ko" ? `${year}년` : `${year}`) : T("전체", "All", "Бүгд")}</span>
         <div style={{ flex: 1, position: "relative", padding: "0 11px" }}>
           <input type="range" min={data.yearMin} max={data.yearMax} value={year} onChange={(e) => setYearSnapshot(Number(e.target.value))} style={{ width: "100%", display: "block" }} />
           <div style={{ position: "relative", height: 13 }}>
@@ -855,23 +859,23 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
             })}
           </div>
         </div>
-        {snapshot && <button onClick={() => setSnapshot(false)} style={{ border: `1px solid ${C.line}`, borderRadius: 99, padding: "4px 10px", background: "rgba(255,255,255,.7)", color: "#6b5e4b", cursor: "pointer", fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>전체</button>}
+        {snapshot && <button onClick={() => setSnapshot(false)} style={{ border: `1px solid ${C.line}`, borderRadius: 99, padding: "4px 10px", background: "rgba(255,255,255,.7)", color: "#6b5e4b", cursor: "pointer", fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>{T("전체", "All", "Бүгд")}</button>}
 
         {/* 대표만 / 전체 인물 토글 */}
-        <button onClick={() => setFeaturedOnly((v) => !v)} title="지도에 대표 선교사만 / 전체" style={{ flex: "0 0 auto", padding: "7px 11px", borderRadius: 10, border: `1px solid ${C.line}`, background: featuredOnly ? "#2f2419" : "rgba(255,255,255,.6)", color: featuredOnly ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>{featuredOnly ? "★ 대표만" : "전체"}</button>
+        <button onClick={() => setFeaturedOnly((v) => !v)} title={T("지도에 대표 선교사만 / 전체", "Featured only / all on map", "Зөвхөн төлөөлөл / бүгд")} style={{ flex: "0 0 auto", padding: "7px 11px", borderRadius: 10, border: `1px solid ${C.line}`, background: featuredOnly ? "#2f2419" : "rgba(255,255,255,.6)", color: featuredOnly ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>{featuredOnly ? T("★ 대표만", "★ Featured", "★ Төлөөлөл") : T("전체", "All", "Бүгд")}</button>
 
         {/* 유적지 레이어 토글은 지도 상단 레이어 묶음으로 이동(주요 거점·묘역·유적지) */}
 
         {/* 통합 필터(체크박스): 시대·교단·나라·사역·지역 + 관계망 집중 + 묘역 이동 */}
-        <MenuBtn id="filter" label="필터" count={facetCount} openMenu={openMenu} setOpenMenu={setOpenMenu} mega>
+        <MenuBtn id="filter" label={T("필터", "Filter", "Шүүлт")} count={facetCount} openMenu={openMenu} setOpenMenu={setOpenMenu} mega>
           {/* 카테고리를 여러 열로 한눈에 펼침 — 각 축이 하나의 열. */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))", gap: "4px 14px", alignItems: "start" }}>
           {([
-            ["시대", "era", ERAS.map((e) => ({ key: e.key, label: e.label }))],
-            ["파송 교단", "denom", DENOM_LIST],
-            ["파송 나라", "country", COUNTRIES.map((c) => ({ key: c, label: c }))],
-            ["사역 분야", "role", ROLE_LIST],
-            ["지역", "region", REGIONS],
+            [T("시대", "Era", "Үе"), "era", ERAS.map((e) => ({ key: e.key, label: e.label }))],
+            [T("파송 교단", "Denomination", "Урсгал"), "denom", DENOM_LIST],
+            [T("파송 나라", "Country", "Улс"), "country", COUNTRIES.map((c) => ({ key: c, label: c }))],
+            [T("사역 분야", "Ministry", "Үйлчлэл"), "role", ROLE_LIST],
+            [T("지역", "Region", "Бүс"), "region", REGIONS],
           ] as const).map(([title, axis, items]) => {
             const ax = axis as "era" | "denom" | "country" | "role" | "region";
             const isRadio = ax === "era"; // 시대는 단일 선택(라디오)
@@ -883,13 +887,13 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "2px 6px 3px", borderBottom: `1px solid ${C.line}`, paddingBottom: 3 }}>
                 <span style={hdr}>{title}</span>
                 {isRadio
-                  ? (anyOn && <button onClick={() => setFacet(ax, [])} style={{ border: 0, background: "transparent", color: "#9b3d2d", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>해제</button>)
-                  : <button onClick={() => setFacet(ax, allOn ? [] : allKeys)} style={{ border: 0, background: "transparent", color: allOn ? "#9b3d2d" : "#80603b", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{allOn ? "전체 해제" : "전체"}</button>}
+                  ? (anyOn && <button onClick={() => setFacet(ax, [])} style={{ border: 0, background: "transparent", color: "#9b3d2d", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{T("해제", "Clear", "Цэвэрлэх")}</button>)
+                  : <button onClick={() => setFacet(ax, allOn ? [] : allKeys)} style={{ border: 0, background: "transparent", color: allOn ? "#9b3d2d" : "#80603b", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{allOn ? T("전체 해제", "Clear all", "Бүгдийг цэвэрлэх") : T("전체", "All", "Бүгд")}</button>}
               </div>
               {items.map((it) => {
                 const on = filters[ax].includes(it.key);
                 return (
-                <FacetRow key={it.key} label={it.label} radio={isRadio} on={on}
+                <FacetRow key={it.key} label={tl(locale, ax, it.key, it.label)} radio={isRadio} on={on}
                   onClick={() => {
                     if (isRadio) {
                       setFacet(ax, on ? [] : [it.key]); // 같은 항목 재클릭 시 해제, 아니면 그것만 선택
@@ -903,7 +907,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           );})}
           {cemeteries.length > 0 && (
             <div style={{ marginBottom: 6, breakInside: "avoid" }}>
-              <div style={{ ...hdr, margin: "2px 6px 3px", borderBottom: `1px solid ${C.line}`, paddingBottom: 3 }}>선교 묘역 이동</div>
+              <div style={{ ...hdr, margin: "2px 6px 3px", borderBottom: `1px solid ${C.line}`, paddingBottom: 3 }}>{T("선교 묘역 이동", "Go to a cemetery", "Оршуулгын газар руу")}</div>
               {cemeteries.map((c) => (
                 <FacetRow key={c.id} label={c.name} on={selPlace?.id === c.id} onClick={() => { setSelected({ kind: "place", id: c.id }); setOpenMenu(null); }} />
               ))}
@@ -911,8 +915,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
           )}
           </div>
           <div style={{ borderTop: `1px solid ${C.line}`, marginTop: 4, paddingTop: 6, display: "flex", gap: 6 }}>
-            <button onClick={() => setNetFocus((v) => !v)} style={{ flex: 1, padding: "8px 6px", borderRadius: 9, border: `1px solid ${netFocus ? "#9b3d2d" : C.line}`, background: netFocus ? "#9b3d2d" : "rgba(255,255,255,.6)", color: netFocus ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>관계망 집중</button>
-            {facetCount > 0 && <button onClick={clearFilters} style={{ flex: "0 0 auto", padding: "8px 10px", borderRadius: 9, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#9b3d2d", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>해제</button>}
+            <button onClick={() => setNetFocus((v) => !v)} style={{ flex: 1, padding: "8px 6px", borderRadius: 9, border: `1px solid ${netFocus ? "#9b3d2d" : C.line}`, background: netFocus ? "#9b3d2d" : "rgba(255,255,255,.6)", color: netFocus ? "#fff8ed" : "#5f4d39", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>{T("관계망 집중", "Focus network", "Сүлжээнд төвлөрөх")}</button>
+            {facetCount > 0 && <button onClick={clearFilters} style={{ flex: "0 0 auto", padding: "8px 10px", borderRadius: 9, border: `1px solid ${C.line}`, background: "rgba(255,255,255,.6)", color: "#9b3d2d", cursor: "pointer", fontSize: 11.5, fontWeight: 800 }}>{T("해제", "Clear", "Цэвэрлэх")}</button>}
           </div>
         </MenuBtn>
 
@@ -920,21 +924,21 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         <div onMouseEnter={() => setPickerOpen(true)} onMouseLeave={() => setPickerOpen(false)} style={{ position: "relative", flex: "0 0 auto", display: "flex", alignItems: "center", gap: 6 }}>
           <div style={{ position: "relative", width: 184 }}>
             <Search size={14} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", opacity: 0.5 }} />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} onFocus={() => setPickerOpen(true)} placeholder="선교사·소속·장소 검색…" style={{ width: "100%", border: `1px solid ${C.line}`, borderRadius: 11, padding: "8px 10px 8px 32px", fontSize: 13, background: "#fff8ec", color: C.ink, outline: "none" }} />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} onFocus={() => setPickerOpen(true)} placeholder={T("선교사·소속·장소 검색…", "Search people, org, place…", "Хүн, байгууллага, газар хайх…")} style={{ width: "100%", border: `1px solid ${C.line}`, borderRadius: 11, padding: "8px 10px 8px 32px", fontSize: 13, background: "#fff8ec", color: C.ink, outline: "none" }} />
           </div>
-          <button onClick={() => setPickerOpen((v) => !v)} title="선교사 목록" style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px 6px 6px", borderRadius: 10, border: `1px solid ${pickerOpen ? "#9b3d2d" : C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>
+          <button onClick={() => setPickerOpen((v) => !v)} title={T("선교사 목록", "Missionary list", "Номлогчдын жагсаалт")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px 6px 6px", borderRadius: 10, border: `1px solid ${pickerOpen ? "#9b3d2d" : C.line}`, background: "rgba(255,255,255,.6)", color: "#5f4d39", cursor: "pointer", fontSize: 12.5, fontWeight: 800, whiteSpace: "nowrap" }}>
             {selPerson?.photo
               ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(selPerson.photo)} alt="" style={{ width: 22, height: 22, borderRadius: 99, objectFit: "cover" }} />
               : <span style={{ width: 22, height: 22, borderRadius: 99, background: selPerson ? orgTint(selPerson.org) : C.line, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 11 }}>{selPerson?.glyph ?? "≡"}</span>}
-            {selPerson ? selPerson.name : "선교사 목록"}<span style={{ fontSize: 9, opacity: 0.7 }}>▾</span>
+            {selPerson ? selPerson.name : T("선교사 목록", "Missionaries", "Номлогчид")}<span style={{ fontSize: 9, opacity: 0.7 }}>▾</span>
           </button>
           {pickerOpen && (
             // top을 버튼 바로 아래(틈 없이)로 두고, 위쪽 패딩으로 호버 브리지를 만들어 끊김 방지
             <div style={{ position: "absolute", top: "100%", right: 0, paddingTop: 8, width: 290, zIndex: 900 }}>
               <div style={{ background: "rgba(255,250,237,.99)", border: `1px solid ${C.line}`, borderRadius: 13, boxShadow: "0 14px 32px rgba(46,28,14,.24)", padding: 7 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "2px 6px 6px" }}>
-                  <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".08em", color: "#80603b" }}>{q ? `검색 ${pickList.length}` : `선교사 ${pickList.length}명`}{!q && <span style={{ fontWeight: 600, opacity: 0.7 }}> · 입국·활동 연도순</span>}</span>
-                  {!q && <button onClick={() => setListAll((v) => !v)} title="대표만 / 전체" style={{ padding: "3px 9px", borderRadius: 99, border: `1px solid ${C.line}`, background: listAll ? "rgba(255,255,255,.7)" : "#2f2419", color: listAll ? "#5f4d39" : "#fff8ed", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{listAll ? "전체" : "★ 대표"}</button>}
+                  <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: ".08em", color: "#80603b" }}>{q ? T(`검색 ${pickList.length}`, `Found ${pickList.length}`, `Олдсон ${pickList.length}`) : T(`선교사 ${pickList.length}명`, `${pickList.length} missionaries`, `${pickList.length} номлогч`)}{!q && <span style={{ fontWeight: 600, opacity: 0.7 }}> · {T("입국·활동 연도순", "by year", "оноор")}</span>}</span>
+                  {!q && <button onClick={() => setListAll((v) => !v)} title={T("대표만 / 전체", "Featured / all", "Төлөөлөл / бүгд")} style={{ padding: "3px 9px", borderRadius: 99, border: `1px solid ${C.line}`, background: listAll ? "rgba(255,255,255,.7)" : "#2f2419", color: listAll ? "#5f4d39" : "#fff8ed", cursor: "pointer", fontSize: 10.5, fontWeight: 800 }}>{listAll ? T("전체", "All", "Бүгд") : T("★ 대표", "★ Featured", "★ Төлөөлөл")}</button>}
                 </div>
                 <div style={{ maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
                   {pickList.map((p) => renderPerson(p, selPerson?.id === p.id))}
@@ -1341,16 +1345,16 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   <span style={{ fontFamily: "var(--font-display)", display: "flex", alignItems: "center", justifyContent: "center", width: 96, height: 138, flex: "0 0 auto", borderRadius: 16, background: orgTint(selPerson.org), fontSize: 48 }}>{selPerson.glyph}</span>
                 )}
                 <div style={{ minWidth: 0, paddingTop: 2, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                  <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}년 {selPerson.country === "조선" ? "활동" : "입국"}</span>
+                  <span style={pill("rgba(255,255,255,.14)")}>{selPerson.year}{locale === "ko" ? "년 " : " "}{selPerson.country === "조선" ? T("활동", "active", "идэвхтэй") : T("입국", "arrived", "ирсэн")}</span>
                   <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26, margin: "10px 0 0", letterSpacing: "-.03em" }}>{selPerson.name}</h2>
                   {selPerson.en && <p style={{ margin: "3px 0 0", fontSize: 13.5, fontWeight: 600, color: "rgba(255,248,235,.82)" }}>{selPerson.en}</p>}
                   <p style={{ margin: "7px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.72)" }}>
-                    {selPerson.life}{ageFromLife(selPerson.life) ? <span style={{ color: "#f0c98a", fontWeight: 700 }}> · 향년 {ageFromLife(selPerson.life)}세</span> : ""}
+                    {selPerson.life}{ageFromLife(selPerson.life) ? <span style={{ color: "#f0c98a", fontWeight: 700 }}> · {T(`향년 ${ageFromLife(selPerson.life)}세`, `aged ${ageFromLife(selPerson.life)}`, `${ageFromLife(selPerson.life)} насалсан`)}</span> : ""}
                   </p>
                   {/* 신축 스페이서: 버튼을 컬럼 바닥(사진+원본/컬러 높이)에 맞추고, 위로 최소 간격 확보 */}
                   <span aria-hidden style={{ flex: 1, minHeight: 14 }} />
                   <a href={`/people/${selPerson.id}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 12px", borderRadius: 9, border: "1px solid rgba(255,248,236,.4)", background: "rgba(255,248,236,.16)", color: "#fff8ed", fontSize: 11.5, fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap" }}>
-                    상세 프로필 바로가기 <span aria-hidden>→</span>
+                    {T("상세 프로필 바로가기", "Full profile", "Дэлгэрэнгүй намтар")} <span aria-hidden>→</span>
                   </a>
                 </div>
               </div>
@@ -1385,7 +1389,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               {/* relationships — the interconnection words */}
               {relations.length > 0 && (
                 <section style={{ marginBottom: 14 }}>
-                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>연관 관계</h3>
+                  <h3 style={{ fontSize: 13.5, fontWeight: 900, margin: "0 0 10px", color: "#3e2c1d" }}>{T("연관 관계", "Relationships", "Холбоо харилцаа")}</h3>
                   <ul style={{ display: "grid", gap: 8, margin: 0, padding: 0, listStyle: "none" }}>
                     {relations.map((r, i) => (
                       <li key={i}>

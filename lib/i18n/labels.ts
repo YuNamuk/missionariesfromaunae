@@ -28,7 +28,18 @@ const country: LocMap = {
   mn: { "미국": "АНУ", "영국": "Их Британи", "캐나다": "Канад", "호주": "Австрали", "한국": "Солонгос", "조선": "Солонгос", "뉴질랜드": "Шинэ Зеланд", "일본": "Япон", "독일": "Герман", "스웨덴": "Швед" },
 };
 
-const GROUPS: Record<string, LocMap> = { era, region, denom, role, country };
+// 장소 분류(CAT) 라벨
+const cat: LocMap = {
+  en: { port: "Main Port of Entry", origin: "Birthplace of the Gospel", site: "Mission Heritage Site", person: "Missionary" },
+  mn: { port: "Гол боомт", origin: "Сайн мэдээний эх газар", site: "Номлолын дурсгалт газар", person: "Номлогч" },
+};
+// 관계 유형(REL_TYPES) 라벨
+const rel: LocMap = {
+  en: { influence: "Influence", prepare: "Opened the way", partner: "Partnership", mentor: "Mentor–disciple", family: "Family", succeed: "Succession" },
+  mn: { influence: "Нөлөө", prepare: "Зам нээсэн", partner: "Хамтын ажиллагаа", mentor: "Багш–шавь", family: "Гэр бүл", succeed: "Залгамжлал" },
+};
+
+const GROUPS: Record<string, LocMap> = { era, region, denom, role, country, cat, rel };
 
 /** 라벨 번역. ko면 원본(ko)을 그대로, 그 외엔 사전값(없으면 ko 폴백). */
 export function tl(locale: Locale, type: keyof typeof GROUPS | string, key: string, ko: string): string {
