@@ -2,7 +2,7 @@
 // 원본 흑백/세피아는 보존하고, 컬러본은 /portraits/<id>-color.jpg 로 함께 호스팅한다.
 // 컬러본은 Gemini 이미지 모델의 '복원 추정'이므로 UI에서 'AI 복원'으로 명시한다.
 export const COLORIZED: ReadonlySet<string> = new Set([
-  "allen", "annie", "appenzeller", "avison", "baird", "davis", "gale", "gilseonju", "hardie", "heron", "hulbert", "junkin", "kimchangsik", "leegipung", "leesujeong", "lillias", "maclay", "mckenzie", "moffett", "mscranton", "reynolds", "rosetta", "ross", "schofield", "seo", "seogyeongjo", "shepping", "switzer", "underwood", "william", "wjhall", 
+  "allen", "annie", "anniebaird", "appenzeller", "avison", "baird", "davis", "gale", "gilseonju", "hardie", "heron", "hulbert", "jones", "junkin", "kimchangsik", "leegipung", "leesujeong", "lillias", "maclay", "mckenzie", "moffett", "mscranton", "reynolds", "rosetta", "ross", "schofield", "seo", "seogyeongjo", "shepping", "switzer", "underwood", "william", "wjhall",
 ]);
 
 /** 원본 초상 경로를 받아 컬러본 경로를 돌려준다(없으면 null).
