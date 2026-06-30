@@ -856,9 +856,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
       `}</style>
 
       {/* ── FULL-WIDTH BAR: 연도(길게) · 검색 · 설정 ── */}
-      <div style={{ flex: "0 0 auto", position: "relative", zIndex: 700, display: "flex", alignItems: "center", gap: 12, background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, boxShadow: "0 6px 18px rgba(46,28,14,.1)", backdropFilter: "blur(8px)", padding: "9px 16px" }}>
+      <div style={{ flex: "0 0 auto", position: "relative", zIndex: 700, display: "flex", alignItems: "center", gap: 12, rowGap: 8, flexWrap: "wrap", background: C.panel, border: `1px solid ${C.line}`, borderRadius: 16, boxShadow: "0 6px 18px rgba(46,28,14,.1)", backdropFilter: "blur(8px)", padding: "9px 16px" }}>
         <span style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 14, color: snapshot ? "#9b3d2d" : C.muted, whiteSpace: "nowrap", minWidth: 46, textAlign: "center" }}>{snapshot ? (locale === "ko" ? `${year}년` : `${year}`) : T("전체", "All", "Бүгд")}</span>
-        <div style={{ flex: 1, position: "relative", padding: "0 11px" }}>
+        <div style={{ flex: 1, minWidth: 180, position: "relative", padding: "0 11px" }}>
           <input type="range" min={data.yearMin} max={data.yearMax} value={year} onChange={(e) => setYearSnapshot(Number(e.target.value))} style={{ width: "100%", display: "block" }} />
           <div style={{ position: "relative", height: 13 }}>
             {[1885, 1895, 1905, 1915, 1925, 1935, 1948, 1960].filter((y) => y >= data.yearMin && y <= data.yearMax).map((y) => {
