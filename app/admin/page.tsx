@@ -1258,6 +1258,36 @@ export default function AdminPage() {
               </div>
             </section>
 
+            {/* Wikidata 수집 후보 — 발굴된 미수록 인물(검토용, 자동 반영 아님) */}
+            {(() => {
+              const cands = (Array.isArray(settings.wd_candidates) ? settings.wd_candidates : []) as { qid: string; en: string; ko: string; birth: string; death: string; img: string; enwiki: string; kowiki: string }[];
+              if (cands.length === 0) return null;
+              const dismiss = async (qid: string) => {
+                const next = cands.filter((c) => c.qid !== qid);
+                setSaving(true); await post({ kind: "settings", settings: { wd_candidates: next } }); setSaving(false); setMsg("✓ 후보에서 제외"); loadData();
+              };
+              return (
+                <section style={{ marginBottom: 22 }}>
+                  <h3 className="font-display" style={{ fontWeight: 900, fontSize: 16, margin: "0 0 4px" }}>Wikidata 수집 후보 <span style={{ fontSize: 12.5, color: C.muted }}>· {cands.length}</span></h3>
+                  <p style={{ margin: "0 0 10px", fontSize: 12, color: C.muted }}>위키데이터(양화진 안장자)에서 발굴한 <b>미수록 후보</b>입니다. 검토 후 정식 인물 추가 절차로 반영하세요(자동 반영 아님). 이미 있는 분/관련 없는 분은 ‘제외’.</p>
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {cands.map((c) => (
+                      <div key={c.qid} style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${C.line}`, borderRadius: 10, padding: "8px 11px", background: "#fff8ec" }}>
+                        {c.img ? <img src={`${c.img}?width=64`} alt="" loading="lazy" style={{ width: 34, height: 42, objectFit: "cover", borderRadius: 6, background: "#efe1c3", flex: "0 0 auto" }} /> : <span style={{ width: 34, height: 42, flex: "0 0 auto", borderRadius: 6, background: "#7a4a2e", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff8ec", fontSize: 14 }}>✝</span>}
+                        <span style={{ minWidth: 0, flex: 1 }}>
+                          <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: C.ink }}>{c.en}{c.ko ? <span style={{ fontWeight: 500, color: C.muted }}> · {c.ko}</span> : null}</span>
+                          <span style={{ display: "block", fontSize: 11, color: C.muted }}>{c.birth}–{c.death} · {c.qid}</span>
+                        </span>
+                        <a href={`https://www.wikidata.org/wiki/${c.qid}`} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, fontWeight: 700, color: "#1f6f8b", textDecoration: "none" }}>Wikidata↗</a>
+                        {c.enwiki && <a href={c.enwiki} target="_blank" rel="noreferrer" style={{ fontSize: 11.5, fontWeight: 700, color: "#1f6f8b", textDecoration: "none" }}>위키↗</a>}
+                        <button onClick={() => dismiss(c.qid)} style={{ border: 0, background: "transparent", color: C.accent, fontSize: 11.5, fontWeight: 800, cursor: "pointer" }}>제외</button>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })()}
+
             <p style={{ margin: "0 0 6px", fontSize: 13, lineHeight: 1.6, color: C.muted }}>
               Commons 자동 스캔으로 모은 <b>후보</b>입니다(동명이인·비초상 섞일 수 있음). 본인 사진이 맞으면 <b>✓ 채택</b>, 아니면 <b>제외</b>하세요. <b>채택한 사진만 공개</b>되고, 채택 후 자동으로 컬러 복원됩니다. (이미 채택된 항목은 목록에서 빠짐)
             </p>
