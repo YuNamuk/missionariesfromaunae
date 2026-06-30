@@ -13,6 +13,7 @@ import { profileFor } from "../lib/data/profiles";
 import { JOURNEY_COPY } from "../lib/data/page-copy";
 import { STUDENT_VOICES } from "../lib/data/voices";
 import { TOPICS } from "../lib/data/topics";
+import { BURIED_EXTRA, BURIED_TOTAL } from "../lib/data/cemetery";
 
 type Locale = "en" | "mn";
 const LOCALE_NAME: Record<Locale, string> = { en: "English", mn: "Mongolian (Khalkha, Cyrillic script)" };
@@ -21,7 +22,7 @@ function parseArgs() {
   const a = process.argv.slice(2);
   const get = (k: string) => { const i = a.indexOf(k); return i >= 0 ? a[i + 1] : undefined; };
   const locales = (get("--locale") ?? "en,mn").split(",").map((s) => s.trim()).filter(Boolean) as Locale[];
-  const kinds = (get("--kind") ?? "pages,places,topics,voices,people").split(",").map((s) => s.trim());
+  const kinds = (get("--kind") ?? "pages,places,placedetail,topics,voices,people").split(",").map((s) => s.trim());
   const id = get("--id");
   const limit = get("--limit") ? Number(get("--limit")) : undefined;
   const force = a.includes("--force");
@@ -166,6 +167,24 @@ async function run() {
         if (t.era) src.era = t.era;
         if (Object.keys(src).length === 0) { skipped++; continue; }
         try { await put(key, await translate(locale, src)); done++; console.log(`  ✓ ${key}`); }
+        catch (e) { failures.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
+        await SLEEP(400);
+      }
+    }
+    // 장소 상세(요약·기관 목록·묘역 안내문·추가 안장자 직함/설명) — 장소별 1콜.
+    if (kinds.includes("placedetail")) {
+      for (const pl of PLACES) {
+        const d: Record<string, unknown> = {};
+        if (pl.summary) d.summary = pl.summary;
+        if (pl.sub?.length) d.sub = pl.sub.map((s) => ({ name: s.name, note: s.note }));
+        if (BURIED_TOTAL[pl.id]) d.total = BURIED_TOTAL[pl.id];
+        const ex = BURIED_EXTRA[pl.id] ?? [];
+        if (ex.length) d.extra = ex.map((e) => ({ ...(e.role ? { role: e.role } : {}), ...(e.note ? { note: e.note } : {}) }));
+        if (Object.keys(d).length === 0) continue;
+        if (id && pl.id !== id) continue;
+        const key = `i18n.${locale}.placedetail.${pl.id}`;
+        if (!force && (await exists(key))) { skipped++; continue; }
+        try { await put(key, await translate(locale, d)); done++; console.log(`  ✓ ${key}`); }
         catch (e) { failures.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
         await SLEEP(400);
       }

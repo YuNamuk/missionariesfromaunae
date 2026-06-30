@@ -16,7 +16,7 @@ import { PHOTOS } from "@/lib/data/photos";
 import { isFeaturedWith } from "@/lib/data/meta";
 import { EVENTS } from "@/lib/data/events";
 import { fetchOverlay } from "@/lib/db/content";
-import { fetchAllPersonI18n, fetchPlacesI18n, ov } from "@/lib/i18n/content";
+import { fetchAllPersonI18n, fetchPlacesI18n, fetchPlaceDetailI18n, ov } from "@/lib/i18n/content";
 import { tl } from "@/lib/i18n/labels";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locale";
 
@@ -27,10 +27,12 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
   const overlay = await fetchOverlay();
   const i18n = await fetchAllPersonI18n(locale);
   const placesL = await fetchPlacesI18n(locale);
+  const pd = await fetchPlaceDetailI18n(locale);
   const placeName = (id: string) => placesL[id] ?? PLACES.find((p) => p.id === id)?.name ?? id;
 
   const places: MapPlace[] = PLACES.map((p) => {
     const ll = GEO[p.id];
+    const d = pd[p.id];
     return {
       id: p.id,
       name: placesL[p.id] ?? p.name,
@@ -41,8 +43,8 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
       lat: ll?.[0] ?? 0,
       lng: ll?.[1] ?? 0,
       year: p.year,
-      summary: p.summary,
-      sub: p.sub,
+      summary: ov(p.summary, d?.summary),
+      sub: p.sub?.map((s, i) => ({ name: d?.sub?.[i]?.name || s.name, note: d?.sub?.[i]?.note || s.note })) ?? p.sub,
     };
   }).filter((p) => p.lat !== 0);
 
@@ -116,6 +118,12 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
     };
   });
 
+  // 묘역 안내문·추가 안장자 직함/설명 번역(클라이언트가 BURIED_TOTAL/BURIED_EXTRA 위에 덮음).
+  const placeDetail: Record<string, { total?: string; extra?: { role?: string; note?: string }[] }> = {};
+  for (const [id, d] of Object.entries(pd)) {
+    if (d.total || d.extra) placeDetail[id] = { ...(d.total ? { total: d.total } : {}), ...(d.extra ? { extra: d.extra } : {}) };
+  }
+
   return {
     places,
     people,
@@ -125,5 +133,6 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
     terms: overlay?.terms ?? {},
     yearMin: overlay?.yearMin ?? YEAR_MIN,
     yearMax: overlay?.yearMax ?? YEAR_MAX,
+    placeDetail,
   };
 }

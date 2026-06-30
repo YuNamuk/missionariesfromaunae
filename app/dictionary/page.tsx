@@ -9,7 +9,7 @@ import { isFeaturedWith } from "@/lib/data/meta";
 import { fetchOverlay } from "@/lib/db/content";
 import { DictionaryRoster, type RosterPerson } from "@/components/dictionary-roster";
 import { getLocale } from "@/lib/i18n/server";
-import { fetchAllPersonI18n, fetchPlacesI18n, ov } from "@/lib/i18n/content";
+import { fetchAllPersonI18n, fetchPlacesI18n, fetchPlaceDetailI18n, ov } from "@/lib/i18n/content";
 
 export const metadata: Metadata = { title: "인명사전" };
 export const dynamic = "force-dynamic"; // 로케일 쿠키 + 오버레이 반영
@@ -19,6 +19,7 @@ export default async function DictionaryPage() {
   const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
   const i18n = await fetchAllPersonI18n(locale);
   const placesL = await fetchPlacesI18n(locale);
+  const pdetail = await fetchPlaceDetailI18n(locale);
   const plName = (id: string, ko: string) => placesL[id] ?? ko;
 
   const Badge = ({ verified }: { verified: boolean }) => (
@@ -77,7 +78,8 @@ export default async function DictionaryPage() {
         const roster = peopleBuriedAt(id);
         const extra = BURIED_EXTRA[id] ?? [];
         const total = roster.length + extra.length;
-        const totalNote = BURIED_TOTAL[id];
+        const pdx = pdetail[id];
+        const totalNote = pdx?.total ?? BURIED_TOTAL[id];
         const srcs = BURIED_SOURCE[id] ?? [];
         return (
           <section key={id} className="mt-12">
@@ -134,10 +136,10 @@ export default async function DictionaryPage() {
                         ? <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: "rgba(120,100,80,.12)", color: "#7a6a52" }}>{T("확인 필요", "Needs check", "Шалгах шаардлагатай")}</span>
                         : <Badge verified />}
                     </span>
-                    <span className="block text-[12.5px] text-ink-500">{[e.nameKo && e.nameEn, e.life, e.role].filter(Boolean).join(" · ")}</span>
-                    {e.note && <span className="block text-[12px] text-ink-400">※ {e.note}</span>}
+                    <span className="block text-[12.5px] text-ink-500">{[locale === "ko" ? (e.nameKo && e.nameEn) : "", e.life, (pdx?.extra?.[i]?.role || e.role)].filter(Boolean).join(" · ")}</span>
+                    {(pdx?.extra?.[i]?.note || e.note) && <span className="block text-[12px] text-ink-400">※ {pdx?.extra?.[i]?.note || e.note}</span>}
                   </span>
-                  {e.wiki && <a href={e.wiki} target="_blank" rel="noreferrer" className="flex-none text-[12px] font-bold text-ink-500 underline">위키 ↗</a>}
+                  {e.wiki && <a href={e.wiki} target="_blank" rel="noreferrer" className="flex-none text-[12px] font-bold text-ink-500 underline">{T("위키", "Wiki", "Вики")} ↗</a>}
                 </li>
               ))}
             </ul>

@@ -81,4 +81,6 @@ export interface AtlasData {
   terms: Record<string, string>;
   yearMin: number;
   yearMax: number;
+  /** 묘역 안내문·추가 안장자(BURIED_*) 번역 오버레이(로케일). 클라이언트가 원본 위에 덮음. */
+  placeDetail?: Record<string, { total?: string; extra?: { role?: string; note?: string }[] }>;
 }

@@ -583,7 +583,9 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     const b = BURIED_EXTRA[cemId]?.[Number(idxs)];
     if (!b) return null;
     const cem = data.places.find((p) => p.id === cemId);
-    return { ...b, cemId, cemName: cem?.name ?? cemId, cemLat: cem?.lat ?? 0, cemLng: cem?.lng ?? 0, srcs: BURIED_SOURCE[cemId] ?? [] };
+    // 직함·설명은 로케일 번역(없으면 원본).
+    const tx = data.placeDetail?.[cemId]?.extra?.[Number(idxs)];
+    return { ...b, role: tx?.role || b.role, note: tx?.note || b.note, cemId, cemName: cem?.name ?? cemId, cemLat: cem?.lat ?? 0, cemLng: cem?.lng ?? 0, srcs: BURIED_SOURCE[cemId] ?? [] };
   })();
   const eventHi = useMemo(() => new Set(selEvent ? selEvent.people.map((x) => x.id) : []), [selEvent]);
 
@@ -1283,9 +1285,10 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                 // 묘역 여부는 lens 가 아니라 '안장 데이터'로 판단 → 헤더 드롭다운으로 와도 안장자 표시
                 const buried = buriedAt(selPlace.name);
                 const extra = BURIED_EXTRA[selPlace.id] ?? [];
+                const pdx = data.placeDetail?.[selPlace.id];
                 const isCem = buried.length > 0 || extra.length > 0;
                 const list = isCem ? buried : data.people.filter((p) => p.place === selPlace.id);
-                const total = BURIED_TOTAL[selPlace.id];
+                const total = pdx?.total ?? BURIED_TOTAL[selPlace.id];
                 const srcs = BURIED_SOURCE[selPlace.id] ?? [];
                 if (!isCem && list.length === 0) {
                   return <section style={{ marginTop: 14 }}><p style={{ margin: 0, fontSize: 12.5, color: C.muted }}>{T("기록된 인물이 없습니다.", "No people recorded.", "Бүртгэгдсэн хүн алга.")}</p></section>;
@@ -1318,8 +1321,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                             ? <img loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} src={cphoto(b.photo)} alt="" style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, objectFit: "cover" }} />
                             : <span style={{ flex: "0 0 auto", width: 34, height: 34, borderRadius: 99, background: "rgba(120,100,80,.18)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b5e4b", fontSize: 13, fontWeight: 800 }}>✝</span>}
                           <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.3, minWidth: 0 }}>
-                            <span style={{ fontSize: 13, fontWeight: 800, color: "#3e2c1d" }}>{b.nameKo || b.nameEn}{b.uncertain && <span style={{ color: C.faint, fontWeight: 600 }}> ?</span>}</span>
-                            <span style={{ fontSize: 10.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[b.nameKo && b.nameEn, b.life ? `${b.life}${ageFromLife(b.life) ? ` (${locale === "ko" ? "향년 " : ""}${ageFromLife(b.life)})` : ""}` : "", b.role].filter(Boolean).join(" · ")}</span>
+                            <span style={{ fontSize: 13, fontWeight: 800, color: "#3e2c1d" }}>{(locale === "ko" ? (b.nameKo || b.nameEn) : (b.nameEn || b.nameKo))}{b.uncertain && <span style={{ color: C.faint, fontWeight: 600 }}> ?</span>}</span>
+                            <span style={{ fontSize: 10.5, color: C.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{[locale === "ko" ? (b.nameKo && b.nameEn) : "", b.life ? `${b.life}${ageFromLife(b.life) ? ` (${locale === "ko" ? "향년 " : ""}${ageFromLife(b.life)})` : ""}` : "", (pdx?.extra?.[i]?.role || b.role)].filter(Boolean).join(" · ")}</span>
                           </span>
                         </button>
                       ))}
@@ -1573,8 +1576,8 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
                   : <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 88, height: 112, flex: "0 0 auto", borderRadius: 16, background: "rgba(255,248,236,.14)", fontSize: 40 }}>✝</span>}
                 <div style={{ minWidth: 0 }}>
                   <span style={pill("rgba(255,255,255,.16)")}>✝ {T("안장 선교사", "Buried missionary", "Оршуулсан номлогч")}{selBuried.uncertain ? ` · ${T("확인 필요", "needs check", "шалгах")}` : ""}</span>
-                  <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "10px 0 2px", letterSpacing: "-.03em" }}>{selBuried.nameKo || selBuried.nameEn}</h2>
-                  {selBuried.nameKo && selBuried.nameEn && <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.nameEn}</p>}
+                  <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "10px 0 2px", letterSpacing: "-.03em" }}>{locale === "ko" ? (selBuried.nameKo || selBuried.nameEn) : (selBuried.nameEn || selBuried.nameKo)}</h2>
+                  {selBuried.nameKo && selBuried.nameEn && <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{locale === "ko" ? selBuried.nameEn : selBuried.nameKo}</p>}
                   {selBuried.life && <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "rgba(255,248,235,.8)" }}>{selBuried.life}{ageFromLife(selBuried.life) ? ` · ${T(`향년 ${ageFromLife(selBuried.life)}세`, `aged ${ageFromLife(selBuried.life)}`, `${ageFromLife(selBuried.life)} насалсан`)}` : ""}</p>}
                 </div>
               </div>
@@ -1588,7 +1591,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
               <button onClick={() => setSelected({ kind: "place", id: selBuried.cemId })} style={{ display: "flex", alignItems: "center", gap: 6, width: "100%", border: `1px solid ${C.line}`, borderRadius: 12, padding: "10px 12px", background: "rgba(255,255,255,.5)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800, marginBottom: 12 }}>♰ {selBuried.cemName} <span style={{ marginLeft: "auto", color: "#9b3d2d" }}>{T("묘역 보기 →", "View cemetery →", "Оршуулга үзэх →")}</span></button>
               {selBuried.note && <p style={{ margin: "0 0 12px", fontSize: 11.5, color: C.muted, lineHeight: 1.6 }}>※ {selBuried.note}</p>}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-                {selBuried.wiki && <a href={selBuried.wiki} target="_blank" rel="noreferrer" style={{ display: "inline-flex", padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#84321f", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>위키백과 ↗</a>}
+                {selBuried.wiki && <a href={selBuried.wiki} target="_blank" rel="noreferrer" style={{ display: "inline-flex", padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#84321f", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>{T("위키백과", "Wikipedia (KO)", "Wikipedia (KO)")} ↗</a>}
                 {selBuried.nameEn && <a href={`https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(selBuried.nameEn)}`} target="_blank" rel="noreferrer" style={{ display: "inline-flex", padding: "6px 11px", borderRadius: 99, border: `1px solid ${C.line}`, background: "#fff8ec", color: "#5f4d39", fontSize: 12, fontWeight: 800, textDecoration: "none" }}>Wikipedia ↗</a>}
               </div>
               {selBuried.srcs.length > 0 && (
