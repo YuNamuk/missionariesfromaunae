@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { columnById, type ImgKind } from "@/lib/data/columns";
+import { fetchColumn } from "@/lib/db/columns";
 import { getPerson } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 import { Portrait } from "@/components/color-mode";
+import { ColumnEditor } from "@/components/column-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +42,7 @@ function Figure({ src, alt, caption, credit, kind }: { src: string; alt: string;
 
 export default async function ResearchColumnPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const col = columnById(id);
+  const col = (await fetchColumn(id)) ?? columnById(id);
   if (!col) notFound();
   const person = getPerson(col.personId);
   const photo = PHOTOS[col.personId]?.photo ?? null;
@@ -134,6 +136,9 @@ export default async function ResearchColumnPage({ params }: { params: Promise<{
         <Link href="/research" className="rounded-full border border-ink-200 px-4 py-2 text-[13px] font-bold text-ink-700 hover:bg-ink-50">← 주제연구로</Link>
         {person && <Link href={`/people/${col.personId}`} className="rounded-full bg-[#2f2419] px-4 py-2 text-[13px] font-bold text-[#fff8ed]">인물 상세 →</Link>}
       </div>
+
+      {/* 관리자·콘텐츠 관리자 인페이지 편집기 */}
+      <ColumnEditor id={id} initial={col} />
     </article>
   );
 }

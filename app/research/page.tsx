@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TOPICS } from "@/lib/data/topics";
 import { fetchAllTopics } from "@/lib/db/topics";
-import { RESEARCH_COLUMNS } from "@/lib/data/columns";
+import { fetchAllColumns } from "@/lib/db/columns";
 import { getPerson } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 import { getLocale } from "@/lib/i18n/server";
@@ -19,6 +19,7 @@ export default async function ResearchIndex() {
   const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
   const ti18n = await fetchAllTopicI18n(locale);
   const topics = await fetchAllTopics(TOPICS);
+  const columns = await fetchAllColumns();
   return (
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-12 sm:px-7">
       <p className="text-[12px] font-extrabold uppercase tracking-[0.18em] text-sky-600">Topic Research</p>
@@ -32,11 +33,11 @@ export default async function ResearchIndex() {
       </p>
 
       {/* 심화 이야기(학생 탐구 기반 컬럼) */}
-      {RESEARCH_COLUMNS.length > 0 && (
+      {columns.length > 0 && (
         <section className="mt-9">
           <h2 className="font-display text-sm font-extrabold uppercase tracking-wide text-ink-400">{T("심화 이야기 · 학생 탐구", "Deep Dive · Student Research", "Гүнзгий · Сурагчийн судалгаа")}</h2>
           <div className="mt-3 grid grid-cols-1 gap-5">
-            {RESEARCH_COLUMNS.map((c) => (
+            {columns.map((c) => (
               <Link key={c.id} href={`/research/story/${c.id}`} className="group grid grid-cols-1 overflow-hidden rounded-3xl border border-ink-200 bg-white transition-colors hover:border-sky-300 sm:grid-cols-[240px_1fr]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={c.hero.src} alt="" className="h-40 w-full object-cover sm:h-full" style={{ background: "var(--ink-100)" }} />

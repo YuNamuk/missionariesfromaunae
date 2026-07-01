@@ -30,5 +30,5 @@ export const PROPOSAL_STATUS_LABEL: Record<ProposalStatus, string> = {
 
 /** 콘텐츠 관리자가 제안할 수 있는 app_settings 키인지(콘텐츠·번역·주제·대표만 허용). */
 export function isProposableSettingKey(k: string): boolean {
-  return k.startsWith("content.") || k.startsWith("i18n.") || k.startsWith("topic.") || k === "meta.featured";
+  return k.startsWith("content.") || k.startsWith("i18n.") || k.startsWith("topic.") || k.startsWith("column.") || k === "meta.featured";
 }
