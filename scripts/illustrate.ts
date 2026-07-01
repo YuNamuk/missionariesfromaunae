@@ -14,10 +14,10 @@ const DIR = path.join(process.cwd(), "public", "research-img");
 const STYLE =
   "Create a SOFT WATERCOLOR-AND-GOUACHE HISTORICAL ILLUSTRATION (clearly a hand-painted artwork, NOT a photograph): " +
   "muted earthy palette, gentle washes, visible paper texture, painterly edges, warm archival tone. " +
-  "Setting: late-19th / early-20th century KOREA (Joseon, 1890s–1920s), Jeolla/Honam region. " +
-  "Architecture must be AUTHENTIC: Korean hanok with tiled or thatched roofs, low stone walls, harbor with wooden boats, pine-covered hills. " +
-  "Any Korean people wear white hanbok and (men) a black horsehair 'gat'. Any Western missionary figure must be SMALL, DISTANT, or seen from BEHIND — do NOT render a recognizable individual face (this is illustrative, not a portrait of a real person). " +
-  "No text, no captions, no lettering, no modern objects (cars, power lines, plastic). Quiet, reverent, documentary mood. Wide establishing composition. ";
+  "Period: late-19th / early-20th century (1870s–1920s). Render the place described in the SCENE AUTHENTICALLY and period-accurately. " +
+  "When the scene is in KOREA (Joseon): Korean hanok with tiled or thatched roofs, low stone walls, wooden harbor boats, pine hills; Korean people in white hanbok, men in a black horsehair 'gat'. " +
+  "ALL human figures must be SMALL, DISTANT, or seen from BEHIND — do NOT render a recognizable individual face (this is illustrative, not a portrait of any real person). " +
+  "No text, no captions, no lettering, no modern objects (cars, power lines, plastic, modern clothing). Quiet, reverent, documentary mood. Wide establishing composition. ";
 
 async function main() {
   const [outName, scene] = process.argv.slice(2);

@@ -108,9 +108,7 @@ export default async function ResearchColumnPage({ params }: { params: Promise<{
       {/* 가상 인터뷰 */}
       <section className="mt-14 rounded-2xl border-l-4 border-[#bf6b22] bg-[rgba(191,107,34,.06)] p-5 sm:p-6">
         <h3 className="font-display text-[22px] font-black tracking-tight text-ink-900">가상 인터뷰</h3>
-        <p className="mt-1 text-[12.5px] font-semibold leading-relaxed text-[#a0641f]">
-          ※ 학생이 선교 편지·사료를 바탕으로 <b>재구성한 창작 인터뷰</b>입니다. 유진 벨의 실제 발언 기록이 아닙니다.
-        </p>
+        <p className="mt-1 text-[12.5px] font-semibold leading-relaxed text-[#a0641f]">※ {col.interviewNote}</p>
         <dl className="mt-4 space-y-5">
           {col.interview.map((qa, i) => (
             <div key={i}>
