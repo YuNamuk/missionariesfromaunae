@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { TOPICS } from "@/lib/data/topics";
 import { fetchAllTopics } from "@/lib/db/topics";
+import { RESEARCH_COLUMNS } from "@/lib/data/columns";
 import { getPerson } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 import { getLocale } from "@/lib/i18n/server";
@@ -30,7 +31,29 @@ export default async function ResearchIndex() {
         )}
       </p>
 
-      <div className="mt-8 grid grid-cols-1 gap-5">
+      {/* 심화 이야기(학생 탐구 기반 컬럼) */}
+      {RESEARCH_COLUMNS.length > 0 && (
+        <section className="mt-9">
+          <h2 className="font-display text-sm font-extrabold uppercase tracking-wide text-ink-400">{T("심화 이야기 · 학생 탐구", "Deep Dive · Student Research", "Гүнзгий · Сурагчийн судалгаа")}</h2>
+          <div className="mt-3 grid grid-cols-1 gap-5">
+            {RESEARCH_COLUMNS.map((c) => (
+              <Link key={c.id} href={`/research/story/${c.id}`} className="group grid grid-cols-1 overflow-hidden rounded-3xl border border-ink-200 bg-white transition-colors hover:border-sky-300 sm:grid-cols-[240px_1fr]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={c.hero.src} alt="" className="h-40 w-full object-cover sm:h-full" style={{ background: "var(--ink-100)" }} />
+                <div className="p-6">
+                  <span className="rounded-full bg-[rgba(191,107,34,.14)] px-2.5 py-1 text-[11px] font-bold text-[#a0641f]">{T("심화 컬럼", "Column", "Булан")}</span>
+                  <h3 className="font-serif mt-2 text-2xl font-bold text-ink-900">{c.title}</h3>
+                  <p className="font-serif mt-2 line-clamp-2 text-[14.5px] leading-relaxed text-ink-600">{c.dek}</p>
+                  <p className="mt-3 text-[12.5px] font-bold text-sky-600">{c.author} · {T("읽어보기 →", "read →", "унших →")}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <h2 className="mt-10 font-display text-sm font-extrabold uppercase tracking-wide text-ink-400">{T("주제별 통합 리포트", "Thematic Reports", "Сэдэвчилсэн тайлан")}</h2>
+      <div className="mt-3 grid grid-cols-1 gap-5">
         {topics.map((t) => {
           const ppl = t.people.map((id) => getPerson(id)).filter(Boolean);
           return (

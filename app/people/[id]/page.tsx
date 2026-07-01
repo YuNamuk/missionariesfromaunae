@@ -15,6 +15,7 @@ import {
 } from "@/lib/data";
 import { PHOTOS } from "@/lib/data/photos";
 import { profileFor } from "@/lib/data/profiles";
+import { columnForPerson } from "@/lib/data/columns";
 import { fetchPersonContent, fetchReview } from "@/lib/db/editable";
 import { getLocale } from "@/lib/i18n/server";
 import { fetchPersonI18n, fetchAllPersonI18n, fetchPlacesI18n, fetchRelationsI18n, ov } from "@/lib/i18n/content";
@@ -308,6 +309,23 @@ export default async function PersonPage({
           </div>
         ))}
       </div>
+
+      {/* 심화 연구(학생 탐구) 컬럼으로 잇기 */}
+      {(() => {
+        const col = columnForPerson(person.id);
+        if (!col) return null;
+        return (
+          <Link href={`/research/story/${col.id}`} className="mt-9 flex items-center gap-4 overflow-hidden rounded-3xl border border-[#e4c9a3] p-4 transition-colors hover:border-[#bf6b22]" style={{ background: "rgba(191,107,34,.06)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={col.hero.src} alt="" className="h-20 w-28 flex-none rounded-xl object-cover" style={{ background: "var(--ink-100)" }} />
+            <span className="min-w-0">
+              <span className="text-[11px] font-extrabold uppercase tracking-wide text-[#a0641f]">{T("심화 연구 · 학생 탐구", "Deep Dive · Student Research", "Гүнзгий судалгаа")}</span>
+              <span className="mt-0.5 block font-serif text-[17px] font-bold leading-snug text-ink-900">{col.title}</span>
+              <span className="mt-0.5 block text-[12.5px] font-bold text-sky-600">{T("이야기 읽기 →", "read the story →", "унших →")}</span>
+            </span>
+          </Link>
+        );
+      })()}
 
       {/* 연표 · 관계 — 좌우 두 열 */}
       <div className="mt-9 grid grid-cols-1 gap-8 lg:grid-cols-2">
