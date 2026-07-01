@@ -9,11 +9,15 @@ import { resolveRole, type Role } from "@/lib/data/roles";
 export async function authRole(
   db: SupabaseClient,
   token: string | undefined,
-): Promise<{ email: string | null; role: Role | null }> {
-  if (!token) return { email: null, role: null };
+): Promise<{ email: string | null; role: Role | null; name: string | null }> {
+  if (!token) return { email: null, role: null, name: null };
   const { data, error } = await db.auth.getUser(token);
   const email = data?.user?.email?.toLowerCase() ?? null;
-  if (error || !email) return { email: null, role: null };
+  if (error || !email) return { email: null, role: null, name: null };
+  // Google OAuth 로그인 시 프로필 이름이 user_metadata에 담긴다(full_name → name).
+  const meta = (data?.user?.user_metadata ?? {}) as Record<string, unknown>;
+  const nm = meta.full_name ?? meta.name;
+  const name = typeof nm === "string" && nm.trim() ? nm.trim() : null;
 
   const { data: rows } = await db
     .from("app_settings")
@@ -25,5 +29,5 @@ export async function authRole(
     if (r.key === "roles" && r.value && typeof r.value === "object") roles = r.value as Record<string, string>;
     if (r.key === "admins" && Array.isArray(r.value)) admins = r.value as string[];
   }
-  return { email, role: resolveRole(email, roles, admins, process.env.ADMIN_EMAIL) };
+  return { email, role: resolveRole(email, roles, admins, process.env.ADMIN_EMAIL), name };
 }

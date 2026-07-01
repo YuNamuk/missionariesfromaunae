@@ -1079,6 +1079,8 @@ export default function AdminPage() {
         if (myEmail && !(myEmail in displayMap)) displayMap[myEmail] = "super";
         const RANK: Record<Role, number> = { super: 0, power: 1, content: 2 };
         const entries = Object.entries(displayMap).sort((a, b) => (RANK[a[1]] - RANK[b[1]]) || a[0].localeCompare(b[0]));
+        // 로그인 때 수집된 이름(app_settings.role_names) — 없으면 이메일만.
+        const nameMap = (settings.role_names && typeof settings.role_names === "object" ? settings.role_names : {}) as Record<string, string>;
         const setOne = (e: string, r: Role) => saveRoles({ ...roleMap, [e.toLowerCase()]: r });
         const removeOne = (e: string) => { const n = { ...roleMap }; delete n[e.toLowerCase()]; saveRoles(n); };
         const addOne = () => { const e = oneEmail.trim().toLowerCase(); if (!isEmail(e)) { setMsg("저장 실패: 올바른 이메일이 아닙니다"); return; } saveRoles({ ...roleMap, [e]: oneRole }); setOneEmail(""); };
@@ -1136,14 +1138,17 @@ export default function AdminPage() {
                 return (
                   <div key={e} style={{ display: "flex", alignItems: "center", gap: 10, border: `1px solid ${C.line}`, borderRadius: 11, padding: "8px 12px", background: "#fff8ec" }}>
                     <span style={{ width: 8, height: 8, borderRadius: 99, background: ROLE_COLOR[r], flex: "0 0 auto" }} />
-                    <span style={{ fontSize: 13.5, fontWeight: 700, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e}{self && <span style={{ color: C.muted, fontWeight: 600 }}> (나)</span>}</span>
+                    <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
+                      {nameMap[e] && <span style={{ fontSize: 13.5, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nameMap[e]}{self && <span style={{ color: C.muted, fontWeight: 600 }}> (나)</span>}</span>}
+                      <span style={{ fontSize: nameMap[e] ? 11.5 : 13.5, fontWeight: nameMap[e] ? 600 : 700, color: nameMap[e] ? C.muted : "inherit", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e}{!nameMap[e] && self && <span style={{ color: C.muted, fontWeight: 600 }}> (나)</span>}</span>
+                    </span>
                     {self ? <span style={{ fontSize: 12.5, fontWeight: 800, color: ROLE_COLOR[r] }}>{ROLE_LABEL[r]}</span> : roleSelect(r, (nr) => setOne(e, nr), saving)}
                     {!self && <button onClick={() => removeOne(e)} style={{ border: 0, background: "transparent", color: C.accent, fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>삭제</button>}
                   </div>
                 );
               })}
             </div>
-            <p style={{ fontSize: 11.5, color: C.muted, margin: 0 }}>※ 등록된 사람은 본인 구글 계정(또는 이메일)으로 <code>/admin</code>에 로그인합니다. 본인 권한은 잠김 방지를 위해 항상 전체 관리자로 유지됩니다.</p>
+            <p style={{ fontSize: 11.5, color: C.muted, margin: 0 }}>※ 등록된 사람은 본인 구글 계정으로 <code>/admin</code>에 로그인합니다. <b>이름은 각자 처음 로그인할 때 구글 프로필에서 자동으로 채워집니다</b>(그 전엔 이메일만 표시). 본인 권한은 잠김 방지를 위해 항상 전체 관리자로 유지됩니다.</p>
           </div>
         );
       })()}
