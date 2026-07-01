@@ -5,6 +5,9 @@
 //  · 삽화는 AI 생성 일러스트(회화체)로, 실제 사진(초상·기록사진)과 명확히 구분해 표기한다.
 // [[research-column-pipeline]] · [[person-add-pipeline]] · [[portrait-colorize]]
 
+// 워크플로로 집필된 학생별 컬럼(scripts/assemble-columns.ts가 생성). eugenebell 뒤에 병합.
+import generatedColumns from "./columns.generated.json";
+
 export type ImgKind = "portrait" | "archive" | "ai";
 
 export interface ColumnImage {
@@ -314,7 +317,7 @@ const eugenebell: ResearchColumn = {
   ],
 };
 
-export const RESEARCH_COLUMNS: ResearchColumn[] = [eugenebell];
+export const RESEARCH_COLUMNS: ResearchColumn[] = [eugenebell, ...(generatedColumns as unknown as ResearchColumn[])];
 
 export function columnById(id: string): ResearchColumn | undefined {
   return RESEARCH_COLUMNS.find((c) => c.id === id);

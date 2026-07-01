@@ -40,3 +40,8 @@ export async function fetchAllColumns(): Promise<ResearchColumn[]> {
   for (const [id, c] of Object.entries(over)) if (!merged.some((m) => m.id === id)) merged.push(c);
   return merged;
 }
+
+/** 특정 인물의 심화 컬럼(코드+DB 병합). 인물 상세 페이지 콜아웃용. */
+export async function fetchColumnForPerson(personId: string): Promise<ResearchColumn | undefined> {
+  return (await fetchAllColumns()).find((c) => c.personId === personId);
+}
