@@ -32,7 +32,7 @@ async function one(id: string, scene: string): Promise<string> {
   const img = (data?.candidates?.[0]?.content?.parts ?? []).find((p: { inlineData?: { data?: string } }) => p?.inlineData?.data);
   if (!img) { console.log(`✗ ${id}: 이미지 없음`); return "fail"; }
   await writeFile(out, Buffer.from(img.inlineData.data, "base64"));
-  try { execFileSync("sips", ["-Z", "980", "-s", "formatOptions", "68", out], { stdio: "ignore" }); } catch {}
+  try { execFileSync("sips", ["-Z", "980", "-s", "format", "jpeg", "-s", "formatOptions", "66", out, "--out", out], { stdio: "ignore" }); } catch {}
   console.log(`✓ ${id}`);
   return "ok";
 }
