@@ -107,19 +107,17 @@ export default async function ResearchColumnPage({ params }: { params: Promise<{
         </section>
       ))}
 
-      {/* 가상 인터뷰 */}
-      <section className="mt-14 rounded-2xl border-l-4 border-[#bf6b22] bg-[rgba(191,107,34,.06)] p-5 sm:p-6">
-        <h3 className="font-display text-[22px] font-black tracking-tight text-ink-900">가상 인터뷰</h3>
-        <p className="mt-1 text-[12.5px] font-semibold leading-relaxed text-[#a0641f]">※ {col.interviewNote}</p>
-        <dl className="mt-4 space-y-5">
-          {col.interview.map((qa, i) => (
-            <div key={i}>
-              <dt className="text-[15.5px] font-extrabold text-ink-900">Q. {qa.q}</dt>
-              <dd className="mt-1.5 text-[15.5px] leading-[1.85] text-ink-700">{qa.a}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      {/* 가상 인터뷰 — 별도 메뉴로 이동 */}
+      {col.interview.length > 0 && (
+        <Link href={`/interviews/${col.personId}`} className="mt-14 flex items-center gap-4 rounded-2xl border-l-4 border-[#bf6b22] bg-[rgba(191,107,34,.06)] p-5 transition-colors hover:bg-[rgba(191,107,34,.11)] sm:p-6">
+          <span className="text-3xl">🎬</span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-[19px] font-black tracking-tight text-ink-900">가상 인터뷰</span>
+            <span className="mt-0.5 block text-[13px] leading-relaxed text-ink-600">AI로 재현한 인터뷰 영상과 문답을 ‘가상 인터뷰’에서 만나보세요.</span>
+          </span>
+          <span className="flex-none text-[13px] font-bold text-[#a0641f]">보러가기 →</span>
+        </Link>
+      )}
 
       {/* 출처 */}
       <section className="mt-10 rounded-xl border border-ink-200 bg-white p-4">

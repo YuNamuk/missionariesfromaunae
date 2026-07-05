@@ -14,6 +14,7 @@ const KO: Dict = {
   "nav.flow": "선교의 흐름",
   "nav.span": "활동 연표",
   "nav.research": "주제연구",
+  "nav.interviews": "가상 인터뷰",
   "nav.browse": "둘러보기",
   // 둘러보기 패널 카드 제목
   "browse.eras": "선교 연혁",
@@ -36,6 +37,7 @@ const EN: Dict = {
   "nav.flow": "Flow of Mission",
   "nav.span": "Activity Timeline",
   "nav.research": "Research",
+  "nav.interviews": "Interviews",
   "nav.browse": "Browse",
   "browse.eras": "Eras",
   "browse.cemeteries": "Cemeteries",
@@ -57,6 +59,7 @@ const MN: Dict = {
   "nav.flow": "Номлолын урсгал",
   "nav.span": "Он дараалал",
   "nav.research": "Судалгаа",
+  "nav.interviews": "Ярилцлага",
   "nav.browse": "Үзэх",
   "browse.eras": "Түүхэн үеүүд",
   "browse.cemeteries": "Оршуулгын газар",

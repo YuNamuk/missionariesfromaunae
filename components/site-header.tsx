@@ -178,6 +178,7 @@ const PAGES = [
   { href: "/flow", key: "nav.flow" },
   { href: "/span", key: "nav.span" },
   { href: "/research", key: "nav.research" },
+  { href: "/interviews", key: "nav.interviews" },
 ];
 
 export function SiteHeader() {
