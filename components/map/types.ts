@@ -25,6 +25,9 @@ export interface MapPerson {
   country: string;
   org: string;
   role: string;
+  /** 언어무관 필터 키 — 원본(한국어) org/role로 빌드 시 분류(번역돼도 필터가 정확). */
+  denom: string;
+  roleTags: string[];
   life: string;
   summary: string;
   interview: string;

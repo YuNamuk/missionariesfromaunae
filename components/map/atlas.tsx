@@ -8,7 +8,7 @@ import L from "leaflet";
 import { useSearchParams } from "next/navigation";
 import { Search, X, ArrowRight, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Share2, Check } from "lucide-react";
 import type { AtlasData, MapPerson, MapPlace } from "./types";
-import { regionOf, REGIONS, ERAS, erasOf, denomOf, DENOM_LIST, roleTagsOf, ROLE_LIST, peakYear } from "@/lib/data/meta";
+import { regionOf, REGIONS, ERAS, erasOf, DENOM_LIST, ROLE_LIST, peakYear } from "@/lib/data/meta";
 import { HERITAGE, type HeritageSite } from "@/lib/data/heritage";
 import { BURIED_EXTRA, BURIED_SOURCE, BURIED_TOTAL } from "@/lib/data/cemetery";
 import { PERSON_COORD } from "@/lib/data/person-coord";
@@ -552,15 +552,15 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
   const q = query.trim().toLowerCase();
   const matchPerson = (p: MapPerson) =>
-    !q || [p.name, p.en, p.org, p.role, p.summary, p.placeName].join(" ").toLowerCase().includes(q);
+    !q || [p.name, p.en, p.org, p.role, p.summary, p.placeName, ...p.roleTags, p.denom].join(" ").toLowerCase().includes(q);
   const matchPlace = (p: MapPlace) =>
     !q || [p.name, p.catLabel, p.summary].join(" ").toLowerCase().includes(q);
   // 교단·지역·시대·역할 필터(각 축은 OR, 축 간에는 AND). 빈 축은 통과.
   const facetMatch = (p: MapPerson) =>
-    (!filters.denom.length || filters.denom.includes(denomOf(p.org))) &&
+    (!filters.denom.length || filters.denom.includes(p.denom)) &&
     (!filters.region.length || filters.region.includes(regionOf(p.place))) &&
     (!filters.era.length || erasOf(p.active).some((e) => filters.era.includes(e))) &&
-    (!filters.role.length || roleTagsOf(p.role).some((r) => filters.role.includes(r))) &&
+    (!filters.role.length || p.roleTags.some((r) => filters.role.includes(r))) &&
     (!filters.country.length || filters.country.includes(p.country));
 
   const visiblePeople = useMemo(

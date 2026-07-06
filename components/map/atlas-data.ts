@@ -13,7 +13,7 @@ import {
 } from "@/lib/data";
 import type { AtlasData, MapPlace, MapPerson, MapEdge, RelLegend, MapEvent } from "./types";
 import { PHOTOS } from "@/lib/data/photos";
-import { isFeaturedWith } from "@/lib/data/meta";
+import { isFeaturedWith, denomOf, roleTagsOf } from "@/lib/data/meta";
 import { EVENTS } from "@/lib/data/events";
 import { fetchOverlay } from "@/lib/db/content";
 import { fetchAllPersonI18n, fetchPlacesI18n, fetchPlaceDetailI18n, fetchRelationsI18n, fetchAllHeritageI18n, ov } from "@/lib/i18n/content";
@@ -66,6 +66,9 @@ export async function buildAtlasData(locale: Locale = DEFAULT_LOCALE): Promise<A
       country: p.country,
       org: ov(o?.org ?? p.org, t?.org),
       role: ov(o?.role ?? p.role, t?.role),
+      // 필터 분류는 번역 전 원본(한국어) 문자열로 — 언어 무관하게 정확.
+      denom: denomOf(o?.org ?? p.org),
+      roleTags: roleTagsOf(o?.role ?? p.role),
       life: o?.life ?? p.life,
       summary: ov(o?.summary ?? p.summary, t?.summary),
       interview: p.interview,
