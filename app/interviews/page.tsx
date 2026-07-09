@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function InterviewsIndex() {
   const locale = await getLocale();
   const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
-  const list = await fetchInterviews();
+  const list = await fetchInterviews(locale);
 
   return (
     <div className="mx-auto max-w-4xl px-5 pb-24 pt-12 sm:px-7">

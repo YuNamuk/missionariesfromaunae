@@ -4,18 +4,23 @@ import Link from "next/link";
 import { fetchInterview, fetchInterviewVideos, youtubeEmbed } from "@/lib/db/interviews";
 import { PHOTOS } from "@/lib/data/photos";
 import { InterviewVideoEditor } from "@/components/interview-video-editor";
+import { getLocale } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const e = await fetchInterview(id);
-  return e ? { title: `${e.personName} — 가상 인터뷰` } : { title: "가상 인터뷰" };
+  const locale = await getLocale();
+  const e = await fetchInterview(id, locale);
+  const label = locale === "mn" ? "Виртуал ярилцлага" : locale === "en" ? "Virtual Interview" : "가상 인터뷰";
+  return e ? { title: `${e.personName} — ${label}` } : { title: label };
 }
 
 export default async function InterviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const e = await fetchInterview(id);
+  const locale = await getLocale();
+  const T = (ko: string, en: string, mn: string) => (locale === "mn" ? mn : locale === "en" ? en : ko);
+  const e = await fetchInterview(id, locale);
   if (!e) notFound();
   const videos = await fetchInterviewVideos();
   const embed = youtubeEmbed(e.video.youtube);
@@ -35,8 +40,8 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
                 <img src={e.hero.src} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center">
                   <span className="text-4xl">🎬</span>
-                  <span className="text-[15px] font-bold text-white/90">AI 재현 인터뷰 영상 준비 중</span>
-                  <span className="text-[12px] text-white/55">관리자가 유튜브 영상을 등록하면 이곳에 재생됩니다.</span>
+                  <span className="text-[15px] font-bold text-white/90">{T("AI 재현 인터뷰 영상 준비 중", "AI-reconstructed interview film coming soon", "AI сэргээсэн ярилцлагын бичлэг удахгүй")}</span>
+                  <span className="text-[12px] text-white/55">{T("관리자가 유튜브 영상을 등록하면 이곳에 재생됩니다.", "Plays here once an admin adds a YouTube video.", "Админ YouTube бичлэг нэмбэл энд тоглоно.")}</span>
                 </div>
               </>
             )}
@@ -45,10 +50,10 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={portrait} alt="" className="h-12 w-12 flex-none rounded-full object-cover" style={{ background: "#efe1c3" }} />
             <div className="min-w-0 flex-1">
-              <h1 className="font-serif text-2xl font-bold text-[#fff8ec]">{e.personName} <span className="text-[15px] font-semibold text-white/60">· 가상 인터뷰</span></h1>
+              <h1 className="font-serif text-2xl font-bold text-[#fff8ec]">{e.personName} <span className="text-[15px] font-semibold text-white/60">· {T("가상 인터뷰", "Virtual Interview", "Виртуал ярилцлага")}</span></h1>
               <p className="truncate text-[12.5px] text-white/55">{e.author}</p>
             </div>
-            <Link href={`/research/story/${e.columnId}`} className="flex-none rounded-full border border-white/25 px-3 py-1.5 text-[12.5px] font-bold text-white/90 hover:bg-white/10">심화 이야기 →</Link>
+            <Link href={`/research/story/${e.columnId}`} className="flex-none rounded-full border border-white/25 px-3 py-1.5 text-[12.5px] font-bold text-white/90 hover:bg-white/10">{T("심화 이야기", "Deep dive", "Гүнзгий")} →</Link>
           </div>
         </div>
       </div>
@@ -66,8 +71,8 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
         </dl>
 
         <div className="mt-10 flex flex-wrap gap-3">
-          <Link href="/interviews" className="rounded-full border border-ink-200 px-4 py-2 text-[13px] font-bold text-ink-700 hover:bg-ink-50">← 가상 인터뷰 목록</Link>
-          <Link href={`/people/${e.personId}`} className="rounded-full bg-[#2f2419] px-4 py-2 text-[13px] font-bold text-[#fff8ed]">인물 상세 →</Link>
+          <Link href="/interviews" className="rounded-full border border-ink-200 px-4 py-2 text-[13px] font-bold text-ink-700 hover:bg-ink-50">← {T("가상 인터뷰 목록", "All interviews", "Ярилцлагын жагсаалт")}</Link>
+          <Link href={`/people/${e.personId}`} className="rounded-full bg-[#2f2419] px-4 py-2 text-[13px] font-bold text-[#fff8ed]">{T("인물 상세", "Profile", "Намтар")} →</Link>
         </div>
       </article>
 

@@ -33,6 +33,11 @@ export interface VoiceI18n {
   context?: string;
 }
 
+export interface InterviewI18n {
+  note?: string;
+  qa?: { q: string; a: string }[];
+}
+
 async function readSetting<T>(key: string): Promise<T | null> {
   const db = getSupabase();
   if (!db) return null;
@@ -49,6 +54,12 @@ async function readSetting<T>(key: string): Promise<T | null> {
 export async function fetchPersonI18n(id: string, locale: Locale): Promise<PersonI18n | null> {
   if (locale === "ko") return null;
   return readSetting<PersonI18n>(`i18n.${locale}.person.${id}`);
+}
+
+/** 가상 인터뷰 번역 오버레이(문답·안내문). ko면 null. */
+export async function fetchInterviewI18n(personId: string, locale: Locale): Promise<InterviewI18n | null> {
+  if (locale === "ko") return null;
+  return readSetting<InterviewI18n>(`i18n.${locale}.interview.${personId}`);
 }
 
 /** 모든 인물 번역 오버레이(목록·사전 등 정적 생성 시 N+1 방지). */
