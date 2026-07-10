@@ -360,6 +360,8 @@ function defaultYear(data: AtlasData) {
 // 개척기(시초) 기본 연도 — 지도 첫 진입 시 한국 선교의 시초 인물(알렌·언더우드·
 // 아펜젤러·스크랜튼·로스·헐버트)이 먼저 보이도록 이 시점 스냅샷으로 연다.
 const PIONEER_YEAR = 1887;
+// 한국 선교의 시초 인물 — 지도 인트로에서 가장 먼저 '나열'해 보여준다(성경 선구자→첫 입국→개척 1세대).
+const PIONEER_IDS = ["leesujeong", "ross", "allen", "underwood", "appenzeller", "mscranton", "gale", "moffett"];
 
 export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens }) {
   const peak = useMemo(() => defaultYear(data), [data]);
@@ -1663,15 +1665,31 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
 
         {!selPerson && !selPlace && !selEvent && !selHeritage && !selBuried && !filterActive && (
           <div style={{ padding: "24px 22px 28px", overflowY: "auto", height: "100%" }}>
-            <span style={pill("rgba(191,107,34,.9)")}>{T("조선 선교의 흐름", "The Flow of Mission in Korea", "Солонгос дахь номлолын урсгал")}</span>
-            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "12px 0 8px", letterSpacing: "-.03em", color: "#3e2c1d" }}>{T("복음이 들어온 길", "How the gospel arrived", "Сайн мэдээ хэрхэн ирсэн нь")}</h2>
+            <span style={pill("rgba(191,107,34,.9)")}>{T("한국 선교의 시초", "The first missionaries in Korea", "Солонгос дахь анхны номлогчид")}</span>
+            <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 23, margin: "12px 0 8px", letterSpacing: "-.03em", color: "#3e2c1d" }}>{T("복음의 첫 길을 연 사람들", "Those who opened the first road", "Анхны замыг нээсэн хүмүүс")}</h2>
             <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.75, color: "#5f4d39" }}>
               {T(
-                "1882년 만주·일본에서 옮겨진 성경이 먼저 이 땅에 닿았고, 1884–85년 제물포를 통해 의료·교육 선교사들이 들어왔습니다. 서울·평양·호남·대구로 퍼져 간 선교의 거점과, 이 땅에 묻힌 이들의 묘역을 따라가 보세요.",
-                "In 1882 the Bible, translated in Manchuria and Japan, reached this land first; in 1884–85 medical and educational missionaries arrived through Jemulpo. Follow the mission stations that spread to Seoul, Pyongyang, Honam, and Daegu — and the cemeteries of those who were buried here.",
-                "1882 онд Манжуур, Японд орчуулагдсан Библи энэ нутагт түрүүлж ирж, 1884–85 онд анагаах, боловсролын номлогчид Жемүлпогоор дамжин ирсэн. Сөүл, Пхеньян, Хонам, Тэгу руу тархсан номлолын төвүүд болон энд оршуулагдсан хүмүүсийн оршуулгыг дагаарай.",
+                "조선의 문이 아직 닫혀 있던 때, 만주·일본에서 옮겨진 성경이 먼저 닿았고, 1884–85년 제물포를 통해 알렌·언더우드·아펜젤러·스크랜튼이 들어와 의료와 교육으로 첫 길을 냈습니다. 이 시초의 사람들부터 만나 보세요.",
+                "While Korea's door was still closed, the Bible translated in Manchuria and Japan arrived first; in 1884–85 Allen, Underwood, Appenzeller, and Scranton came through Jemulpo and opened the first road through medicine and education. Begin with these first missionaries.",
+                "Солонгосын хаалга хаалттай байх үед Манжуур, Японд орчуулагдсан Библи түрүүлж ирж, 1884–85 онд Аллен, Андервүд, Аппензеллер, Скрантон нар Жемүлпогоор ирж, анагаах, боловсролоор анхны замыг нээсэн. Эдгээр анхны номлогчдоос эхэлнэ үү.",
               )}
             </p>
+
+            <h3 style={{ ...hdr, margin: "20px 0 8px" }}>{T("시초가 된 사람들", "The founders", "Анхдагчид")}</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              {PIONEER_IDS.map((id) => {
+                const p = data.people.find((x) => x.id === id);
+                if (!p) return null;
+                return (
+                  <button key={id} onClick={() => setSelected({ kind: "person", id })} style={{ display: "flex", alignItems: "center", gap: 9, border: `1px solid ${C.line}`, borderRadius: 11, padding: "7px 11px", background: "rgba(255,255,255,.6)", cursor: "pointer", color: "#3e2c1d", fontSize: 12.5, fontWeight: 800, textAlign: "left" }}>
+                    <span style={{ fontFamily: "var(--font-display)", fontSize: 15, flex: "0 0 auto", width: 20, textAlign: "center" }}>{p.glyph}</span>
+                    <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
+                    <span style={{ color: C.muted, fontWeight: 700, flex: "0 0 auto" }}>{p.year}</span>
+                    <ArrowRight size={14} style={{ flex: "0 0 auto", color: C.faint }} />
+                  </button>
+                );
+              })}
+            </div>
 
             <h3 style={{ ...hdr, margin: "20px 0 8px" }}>{T("입국·거점 항구", "Ports of Entry", "Орох боомтууд")}</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
