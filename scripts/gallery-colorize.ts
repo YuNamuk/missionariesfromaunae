@@ -32,7 +32,13 @@ const SCENE_PROMPT =
   "Do NOT reconstruct, repaint or hallucinate missing/blurry areas — if a region is damaged or indistinct, leave its shapes as-is and simply add plausible color. You may gently reduce obvious scratches, dust spots and stray blotches, but never alter the actual content. " +
   "Add realistic, natural, period-appropriate color to EVERYTHING — every face, all skin, hair, clothing, objects and the whole background. The OUTPUT MUST BE IN FULL NATURAL COLOR applied UNIFORMLY across the entire image; no region may stay grey/sepia/uncolored. " +
   "Preserve every person's exact identity, ethnicity, face, pose, expression and clothing (a Western/Caucasian face stays Western; Korean stays Korean). If someone wears traditional Korean dress (gat hat / hanbok), keep those exact garments — do not modernize them and do not add a hat or dress to anyone who is not already wearing one. " +
+  "NEVER add anything to anyone's mouth or hands: no pipe, cigarette, cigar, tobacco, smoke, glasses, or any object that is not clearly present in the original. Keep mouths, beards and hands exactly as they are. " +
   "Output the SAME image — same framing, same content, same borders — only with color added.";
+
+// 개별 사진 보강 힌트(재작업 사유와 함께 프롬프트에 덧붙임). 반복 환각 방지용.
+const HINTS: Record<string, string> = {
+  "seogyeongjo:0": " CRITICAL FOR THIS IMAGE: the elderly man has NOTHING in his mouth. Do NOT add or draw any pipe, cigarette, cigar, tobacco or smoke near his mouth or long white beard — that area must stay exactly as in the original. Add no objects at all.",
+};
 
 type Entry = GalleryPhoto & { srcColor?: string };
 
@@ -65,7 +71,7 @@ async function colorizeEntry(id: string, e: Entry, n: number): Promise<boolean> 
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: SCENE_PROMPT + (REWORK[`g:${id}:${n}`] ? ` ADDITIONAL FIX REQUESTED BY REVIEWER (address this specifically): ${REWORK[`g:${id}:${n}`]}` : "") }, { inline_data: { mime_type: mime, data: buf.toString("base64") } }] }],
+      contents: [{ parts: [{ text: SCENE_PROMPT + (HINTS[`${id}:${n}`] ?? "") + (REWORK[`g:${id}:${n}`] ? ` ADDITIONAL FIX REQUESTED BY REVIEWER (address this specifically): ${REWORK[`g:${id}:${n}`]}` : "") }, { inline_data: { mime_type: mime, data: buf.toString("base64") } }] }],
       generationConfig: { responseModalities: ["IMAGE"] },
     }),
   });
