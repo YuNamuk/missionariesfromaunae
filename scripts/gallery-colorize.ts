@@ -37,7 +37,7 @@ const SCENE_PROMPT =
 
 // 개별 사진 보강 힌트(재작업 사유와 함께 프롬프트에 덧붙임). 반복 환각 방지용.
 const HINTS: Record<string, string> = {
-  "seogyeongjo:0": " CRITICAL FOR THIS IMAGE: the elderly man has NOTHING in his mouth. Do NOT add or draw any pipe, cigarette, cigar, tobacco or smoke near his mouth or long white beard — that area must stay exactly as in the original. Add no objects at all.",
+  "seogyeongjo:0": " CRITICAL FOR THIS IMAGE: the elderly man has NOTHING in his mouth. Do NOT add or draw any pipe, cigarette, cigar, tobacco or smoke near his mouth or long white beard — that area must stay exactly as in the original. Add no objects at all. His robe (durumagi/hanbok) must be WHITE / ivory — NOT blue or indigo; color the garment white. Keep the gat hat black.",
 };
 
 type Entry = GalleryPhoto & { srcColor?: string };
