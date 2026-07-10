@@ -353,14 +353,18 @@ function heritageIcon(h: HeritageSite, sel: boolean, dim: boolean) {
 }
 export type Lens = "people" | "era" | "cemetery" | "network" | "history";
 
-// 인물들이 가장 활발하던 시점 — 첫 진입 기본 연도(캐시 없을 때)
+// 인물들이 가장 활발하던 시점 — '시대 흐름(era)' 렌즈의 기본 연도
 function defaultYear(data: AtlasData) {
   return peakYear(data.people.map((p) => p.active), data.yearMin, data.yearMax);
 }
+// 개척기(시초) 기본 연도 — 지도 첫 진입 시 한국 선교의 시초 인물(알렌·언더우드·
+// 아펜젤러·스크랜튼·로스·헐버트)이 먼저 보이도록 이 시점 스냅샷으로 연다.
+const PIONEER_YEAR = 1887;
 
 export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens }) {
   const peak = useMemo(() => defaultYear(data), [data]);
-  const [year, setYear] = useState(lens === "era" ? peak : data.yearMax);
+  const pioneerYear = useMemo(() => Math.max(data.yearMin, Math.min(data.yearMax, PIONEER_YEAR)), [data]);
+  const [year, setYear] = useState(lens === "era" ? peak : pioneerYear);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Selected>(() => {
     if (lens === "history") return { kind: "event", id: "0" };
@@ -483,7 +487,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   const COUNTRIES = useMemo(() => [...new Set(data.people.map((p) => p.country).filter(Boolean))], [data.people]);
 
   // false = 전체 보기; true = 특정 연도 시점 스냅샷(생존·활동 중인 인물만)
-  const [snapshot, setSnapshot] = useState(lens === "era");
+  const [snapshot, setSnapshot] = useState(lens === "era" || lens === "people");
 
   // ── 연도/스냅샷은 localStorage 캐시, 필터/대표만은 URL 파라미터로(헤더 메뉴 연동) ──
   const restored = useRef(false);
@@ -491,13 +495,13 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
     if (restored.current) return;
     restored.current = true;
     try {
-      const raw = window.localStorage.getItem("atlas-view");
+      const raw = window.localStorage.getItem("atlas-view2");
       if (raw) {
         const v = JSON.parse(raw);
         if (typeof v.year === "number") setYear(v.year);
         if (typeof v.snapshot === "boolean") setSnapshot(v.snapshot);
       } else if (lens !== "era") {
-        setYear(peak); // 캐시 없는 첫 진입 → 선교사들이 가장 많던 시점
+        setYear(pioneerYear); // 캐시 없는 첫 진입 → 개척기(시초 인물) 스냅샷
         setSnapshot(true);
       }
     } catch {}
@@ -505,7 +509,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
   }, []);
   useEffect(() => {
     if (!restored.current) return;
-    try { window.localStorage.setItem("atlas-view", JSON.stringify({ year, snapshot })); } catch {}
+    try { window.localStorage.setItem("atlas-view2", JSON.stringify({ year, snapshot })); } catch {}
   }, [year, snapshot]);
 
   // 헤더 메뉴 = 내비게이션(인물·묘역·연도)만 URL로 전달. 필터는 아래 패널의
