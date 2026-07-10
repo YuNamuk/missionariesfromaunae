@@ -26,14 +26,13 @@ const MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
 const DIR = path.join(process.cwd(), "public", "portraits", "gallery");
 
 const SCENE_PROMPT =
-  "Colorize this historical black-and-white or sepia photograph (late 19th / early 20th century Korea). " +
-  "THIS IS COLORIZATION ONLY — it is NOT reconstruction. You MUST keep the original composition and content byte-for-byte faithful: " +
-  "do NOT add, remove, move, duplicate or invent ANY person, face, object, building, wall, furniture or background element; do NOT crop, reframe, zoom or change the aspect ratio; KEEP the photo's borders/margins/vignette exactly as they are. " +
-  "Do NOT reconstruct, repaint or hallucinate missing/blurry areas — if a region is damaged or indistinct, leave its shapes as-is and simply add plausible color. You may gently reduce obvious scratches, dust spots and stray blotches, but never alter the actual content. " +
-  "Add realistic, natural, period-appropriate color to EVERYTHING — every face, all skin, hair, clothing, objects and the whole background. The OUTPUT MUST BE IN FULL NATURAL COLOR applied UNIFORMLY across the entire image; no region may stay grey/sepia/uncolored. " +
+  "RESTORE and COLORIZE this damaged historical black-and-white or sepia photograph (late 19th / early 20th century Korea). " +
+  "Repair the damage: remove scratches, dust, spots, stains, tears, creases, foxing and blotches; reduce heavy grain, noise and blur; recover faded or degraded tonal areas — produce a CLEAN, SHARP, naturally restored photograph as if freshly printed today. " +
+  "Add realistic, natural, period-appropriate color to EVERYTHING — every face, all skin, hair, clothing, objects and the whole background — applied UNIFORMLY; no region may stay grey/sepia/uncolored. " +
+  "CRITICAL — restore the QUALITY but stay 100% faithful to the real CONTENT and IDENTITY: do NOT add, remove, move, duplicate or invent ANY person, face, object, building, wall, furniture or background element; do NOT crop, reframe, zoom or change the aspect ratio (a clean restored border is fine). " +
   "Preserve every person's exact identity, ethnicity, face, pose, expression and clothing (a Western/Caucasian face stays Western; Korean stays Korean). If someone wears traditional Korean dress (gat hat / hanbok), keep those exact garments — do not modernize them and do not add a hat or dress to anyone who is not already wearing one. " +
-  "NEVER add anything to anyone's mouth or hands: no pipe, cigarette, cigar, tobacco, smoke, glasses, or any object that is not clearly present in the original. Keep mouths, beards and hands exactly as they are. " +
-  "Output the SAME image — same framing, same content, same borders — only with color added.";
+  "NEVER add anything to anyone's mouth or hands: no pipe, cigarette, cigar, tobacco, smoke, glasses, or any object not clearly present in the original. Keep mouths, beards and hands as they are. " +
+  "Only where the photo is genuinely damaged or missing, reconstruct plausibly and consistently with the surrounding real content. Output the SAME scene and framing — restored, repaired and in full natural color.";
 
 // 개별 사진 보강 힌트(재작업 사유와 함께 프롬프트에 덧붙임). 반복 환각 방지용.
 const HINTS: Record<string, string> = {
