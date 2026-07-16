@@ -785,6 +785,10 @@ export default function AdminPage() {
             </div>
 
             <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, background: "#fff8ec", padding: 16, display: "grid", gap: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.line}`, paddingBottom: 12 }}>
+                <b className="font-display" style={{ fontSize: 15, fontWeight: 900 }}>{nm} · 가상 인터뷰</b>
+                <button onClick={saveIv} disabled={saving} style={{ ...btn, marginLeft: "auto", opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "저장"}</button>
+              </div>
               <div>
                 <label style={label}>AI 재현 인터뷰 영상 (YouTube 주소 또는 영상 ID)</label>
                 <input style={input} value={youtube} placeholder="https://youtu.be/XXXXXXXXXXX · https://www.youtube.com/watch?v=XXXXXXXXXXX" onChange={(e) => setVideo(e.target.value)} />
