@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { browserSupabase } from "@/lib/db/browser";
-import { PEOPLE, getRelationships } from "@/lib/data";
+import { PEOPLE, getRelationships, getPerson } from "@/lib/data";
+import { RESEARCH_COLUMNS } from "@/lib/data/columns";
 import { HERITAGE } from "@/lib/data/heritage";
 import { STUDENT_VOICES } from "@/lib/data/voices";
 import { PHOTOS } from "@/lib/data/photos";
@@ -42,7 +43,7 @@ export default function AdminPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState("");
 
-  const [tab, setTab] = useState<"people" | "featured" | "research" | "pages" | "settings" | "users" | "stats" | "review" | "devreq" | "i18n">("people");
+  const [tab, setTab] = useState<"people" | "featured" | "research" | "interviews" | "pages" | "settings" | "users" | "stats" | "review" | "devreq" | "i18n">("people");
   // 번역 검수 탭: 언어·카테고리·편집 드래프트
   const [trLang, setTrLang] = useState<"en" | "mn">("en");
   const [trCat, setTrCat] = useState<"person" | "heritage" | "relations" | "voices" | "ui" | "label" | "pages" | "topics">("person");
@@ -55,6 +56,7 @@ export default function AdminPage() {
   const [bulkText, setBulkText] = useState("");
   const [bulkRole, setBulkRole] = useState<Role>("content");
   const [oneEmail, setOneEmail] = useState("");
+  const [ivSel, setIvSel] = useState("");
   const [oneRole, setOneRole] = useState<Role>("content");
   // 대표(featured) 토글 — 코드 FEATURED 위에 덮어쓸 오버라이드(app_settings 'meta.featured').
   const [feat, setFeat] = useState<Record<string, boolean>>({});
@@ -401,19 +403,19 @@ export default function AdminPage() {
   }
 
   // 역할별 노출 탭. 콘텐츠 편집은 파워 이상, 코어 설정·사용자 관리는 전체 관리자만.
-  const TAB_LABEL: Record<string, string> = { people: "선교사 정보", featured: "대표 표기", research: "주제연구", pages: "페이지 글", i18n: "번역 관리", settings: "연도·용어 설정", users: "사용자 관리", stats: "방문 통계", review: "검수", devreq: "개발 요청" };
+  const TAB_LABEL: Record<string, string> = { people: "선교사 정보", featured: "대표 표기", research: "주제연구", interviews: "가상 인터뷰", pages: "페이지 글", i18n: "번역 관리", settings: "연도·용어 설정", users: "사용자 관리", stats: "방문 통계", review: "검수", devreq: "개발 요청" };
   const TABS_BY_ROLE: Record<Role, string[]> = {
-    super: ["people", "featured", "research", "pages", "i18n", "settings", "users", "stats", "review", "devreq"],
-    power: ["people", "featured", "research", "pages", "i18n", "stats", "review", "devreq"],
-    content: ["people", "i18n", "stats"],
+    super: ["people", "featured", "research", "interviews", "pages", "i18n", "settings", "users", "stats", "review", "devreq"],
+    power: ["people", "featured", "research", "interviews", "pages", "i18n", "stats", "review", "devreq"],
+    content: ["people", "interviews", "i18n", "stats"],
   };
   const visibleTabs = TABS_BY_ROLE[myRole];
   const activeTab = visibleTabs.includes(tab) ? tab : visibleTabs[0];
   // 좌측 네비 — 기능을 그룹으로 묶어 직관적으로.
-  const TAB_ICON: Record<string, string> = { people: "👤", featured: "★", research: "📚", pages: "📄", i18n: "🌐", settings: "⚙", users: "👥", stats: "📊", review: "✅", devreq: "🛠" };
-  const TAB_DESC: Record<string, string> = { people: "인물 정보·카드 글·사진", featured: "지도·사전 대표(★) 표기", research: "주제별 통합 리포트", pages: "들어가며·여정 페이지 글", i18n: "콘텐츠·메뉴 번역 검수", settings: "연도 범위·역할 용어", users: "콘텐츠 관리자 권한", stats: "방문자 통계", review: "수정 제안·사진 검수", devreq: "기능 개선 요청" };
+  const TAB_ICON: Record<string, string> = { people: "👤", featured: "★", research: "📚", interviews: "🎬", pages: "📄", i18n: "🌐", settings: "⚙", users: "👥", stats: "📊", review: "✅", devreq: "🛠" };
+  const TAB_DESC: Record<string, string> = { people: "인물 정보·카드 글·사진", featured: "지도·사전 대표(★) 표기", research: "주제별 통합 리포트", interviews: "인터뷰 영상 링크·문답 수정", pages: "들어가며·여정 페이지 글", i18n: "콘텐츠·메뉴 번역 검수", settings: "연도 범위·역할 용어", users: "콘텐츠 관리자 권한", stats: "방문자 통계", review: "수정 제안·사진 검수", devreq: "기능 개선 요청" };
   const NAV_GROUPS: { title: string; tabs: string[] }[] = [
-    { title: "콘텐츠", tabs: ["people", "featured", "research", "pages"] },
+    { title: "콘텐츠", tabs: ["people", "featured", "research", "interviews", "pages"] },
     { title: "번역", tabs: ["i18n"] },
     { title: "검수", tabs: ["review"] },
     { title: "운영", tabs: ["users", "settings", "stats", "devreq"] },
@@ -750,6 +752,79 @@ export default function AdminPage() {
           <button onClick={saveTopic} disabled={saving} style={{ ...btn, marginTop: 14 }}>{saving ? "저장 중…" : "주제 저장"}</button>
         </div>
       )}
+
+      {activeTab === "interviews" && (() => {
+        const cols = RESEARCH_COLUMNS.filter((c) => Array.isArray(c.interview) && c.interview.length > 0);
+        if (!cols.length) return <p style={{ fontSize: 13.5, color: C.muted }}>인터뷰가 있는 심화 컬럼이 없습니다.</p>;
+        const pid = ivSel || cols[0].personId;
+        const col = cols.find((c) => c.personId === pid) ?? cols[0];
+        const videos = (settings["interview.videos"] && typeof settings["interview.videos"] === "object" ? settings["interview.videos"] : {}) as Record<string, { youtube?: string }>;
+        const override = (settings[`interview.content.${pid}`] && typeof settings[`interview.content.${pid}`] === "object" ? settings[`interview.content.${pid}`] : null) as { note?: string; qa?: { q: string; a: string }[] } | null;
+        const note = override?.note ?? col.interviewNote;
+        const qa = (override?.qa ?? col.interview).map((x) => ({ q: x.q, a: x.a }));
+        const youtube = videos[pid]?.youtube ?? "";
+        const nm = getPerson(pid)?.name ?? pid;
+        const setContent = (next: { note: string; qa: { q: string; a: string }[] }) => set(`interview.content.${pid}`, next);
+        const setVideo = (v: string) => set("interview.videos", { ...videos, [pid]: { ...(videos[pid] ?? {}), youtube: v } });
+        const saveIv = async () => {
+          setSaving(true); setMsg("");
+          const body = { kind: "settings", settings: { "interview.videos": settings["interview.videos"] ?? {}, [`interview.content.${pid}`]: { note, qa } }, label: `가상 인터뷰 — ${nm}` };
+          const err = await post(body);
+          setSaving(false);
+          setMsg(err ? "저장 실패: " + err : myRole === "content" ? "✓ 제안 등록됨 — 교사 승인 후 반영됩니다" : "✓ 저장됨 (인터뷰 페이지에 곧 반영)");
+        };
+        return (
+          <div style={{ display: "grid", gap: 16 }}>
+            <p style={{ margin: 0, fontSize: 12.5, color: C.muted, lineHeight: 1.6 }}>인터뷰 영상(YouTube)과 문답을 수정합니다. 문답은 <b>/interviews</b> 페이지에 반영되며, 심화 컬럼의 원본 대신 여기서 저장한 내용이 우선합니다. {myRole === "content" && <b style={{ color: "#a0641f" }}>저장 시 교사 승인 대기 제안으로 등록됩니다.</b>}</p>
+            {/* 인물 선택 */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {cols.map((c) => {
+                const on = c.personId === pid;
+                return <button key={c.personId} onClick={() => setIvSel(c.personId)} style={{ borderRadius: 99, border: `1px solid ${on ? "#9b3d2d" : C.line}`, background: on ? "#9b3d2d" : "rgba(255,255,255,.6)", color: on ? "#fff8ed" : "#5f4d39", fontSize: 12.5, fontWeight: 800, padding: "6px 12px", cursor: "pointer" }}>{getPerson(c.personId)?.name ?? c.personId}</button>;
+              })}
+            </div>
+
+            <div style={{ border: `1px solid ${C.line}`, borderRadius: 14, background: "#fff8ec", padding: 16, display: "grid", gap: 14 }}>
+              <div>
+                <label style={label}>AI 재현 인터뷰 영상 (YouTube 주소 또는 영상 ID)</label>
+                <input style={input} value={youtube} placeholder="https://youtu.be/XXXXXXXXXXX · https://www.youtube.com/watch?v=XXXXXXXXXXX" onChange={(e) => setVideo(e.target.value)} />
+                {youtube && <p style={{ margin: "6px 0 0", fontSize: 11.5, color: C.muted }}>미리보기: <a href={youtube} target="_blank" rel="noreferrer" style={{ color: "#1f6f8b", fontWeight: 700 }}>{youtube}</a> · 링크를 비우면 ‘영상 준비 중’으로 표시됩니다.</p>}
+              </div>
+
+              <div>
+                <label style={label}>인터뷰 안내 문구</label>
+                <textarea style={{ ...input, minHeight: 54 }} value={note} onChange={(e) => setContent({ note: e.target.value, qa })} />
+              </div>
+
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <label style={{ ...label, margin: 0 }}>문답 ({qa.length})</label>
+                  <button onClick={() => setContent({ note, qa: [...qa, { q: "", a: "" }] })} style={{ ...btn, background: "#7a6a52", padding: "5px 11px", fontSize: 12 }}>+ 문답 추가</button>
+                  {override && <button onClick={() => set(`interview.content.${pid}`, undefined)} style={{ border: `1px solid ${C.line}`, background: "transparent", color: "#9b3d2d", borderRadius: 8, padding: "5px 10px", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>원본으로 되돌리기</button>}
+                </div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  {qa.map((x, i) => (
+                    <div key={i} style={{ border: `1px solid ${C.line}`, borderRadius: 10, padding: 10, background: "#fff" }}>
+                      <div style={{ display: "flex", gap: 6, marginBottom: 5 }}>
+                        <span style={{ fontWeight: 900, color: "#9b3d2d", fontSize: 13, flex: "0 0 auto", paddingTop: 8 }}>Q{i + 1}</span>
+                        <input style={{ ...input, fontWeight: 700 }} placeholder="질문" value={x.q} onChange={(e) => setContent({ note, qa: qa.map((y, j) => (j === i ? { ...y, q: e.target.value } : y)) })} />
+                        <button onClick={() => setContent({ note, qa: qa.filter((_, j) => j !== i) })} style={{ border: `1px solid ${C.line}`, background: "transparent", color: "#9b3d2d", borderRadius: 8, padding: "0 10px", fontSize: 12, fontWeight: 800, cursor: "pointer", flex: "0 0 auto" }}>✕</button>
+                      </div>
+                      <textarea style={{ ...input, minHeight: 76 }} placeholder="답변" value={x.a} onChange={(e) => setContent({ note, qa: qa.map((y, j) => (j === i ? { ...y, a: e.target.value } : y)) })} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <button onClick={saveIv} disabled={saving} style={{ ...btn, opacity: saving ? 0.6 : 1 }}>{saving ? "저장 중…" : "저장"}</button>
+                <a href={`/interviews/${pid}`} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, fontWeight: 800, color: "#1f6f8b" }}>인터뷰 페이지 열기 ↗</a>
+                <span style={{ fontSize: 11.5, color: C.muted }}>※ 문답을 수정하면 기존 번역(영·몽)은 새로 맞춰야 할 수 있습니다.</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {activeTab === "pages" && (
         <div style={{ display: "grid", gap: 28 }}>

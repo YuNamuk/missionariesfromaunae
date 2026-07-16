@@ -41,6 +41,16 @@ export async function fetchInterviewVideos(): Promise<Record<string, InterviewVi
   } catch { return {}; }
 }
 
+/** 관리자가 /admin에서 편집한 인터뷰 문답 오버레이(한국어). 있으면 컬럼 원본보다 우선. */
+async function fetchContentOverride(personId: string): Promise<{ note?: string; qa?: ColumnInterview[] } | null> {
+  const db = getSupabase();
+  if (!db) return null;
+  try {
+    const { data } = await db.from("app_settings").select("value").eq("key", `interview.content.${personId}`).maybeSingle();
+    return (data?.value && typeof data.value === "object" ? data.value : null) as { note?: string; qa?: ColumnInterview[] } | null;
+  } catch { return null; }
+}
+
 export async function fetchInterviews(locale: Locale = "ko"): Promise<InterviewEntry[]> {
   const [cols, vids, names] = await Promise.all([fetchAllColumns(), fetchInterviewVideos(), fetchAllPersonI18n(locale)]);
   return cols
@@ -59,16 +69,22 @@ export async function fetchInterviews(locale: Locale = "ko"): Promise<InterviewE
     }));
 }
 
-/** 단일 인터뷰 — 문답·안내문까지 로케일 번역 오버레이 적용. */
+/** 단일 인터뷰 — 관리자 문답 오버레이(ko) 우선 적용 후, 로케일 번역까지 덮는다. */
 export async function fetchInterview(personId: string, locale: Locale = "ko"): Promise<InterviewEntry | undefined> {
   const base = (await fetchInterviews(locale)).find((e) => e.personId === personId);
   if (!base) return undefined;
+  // 1) 관리자 편집(한국어) 오버레이가 있으면 컬럼 원본 대신 사용.
+  const ov = await fetchContentOverride(personId);
+  let note = base.note, qa = base.qa;
+  if (ov) {
+    if (typeof ov.note === "string" && ov.note.trim()) note = ov.note;
+    if (Array.isArray(ov.qa) && ov.qa.length) qa = ov.qa.map((x) => ({ q: x.q, a: x.a }));
+  }
+  // 2) 로케일 번역 오버레이(문항 수가 같을 때만 문항별로 덮음).
   const tr = await fetchInterviewI18n(personId, locale);
-  if (!tr) return base;
-  return {
-    ...base,
-    note: tr.note || base.note,
-    // 번역 문답이 원본과 같은 개수면 문항별로 덮고, 아니면 원본 유지(정렬 어긋남 방지).
-    qa: tr.qa && tr.qa.length === base.qa.length ? base.qa.map((x, i) => ({ q: tr.qa![i]?.q || x.q, a: tr.qa![i]?.a || x.a })) : base.qa,
-  };
+  if (tr) {
+    if (typeof tr.note === "string" && tr.note.trim()) note = tr.note;
+    if (tr.qa && tr.qa.length === qa.length) qa = qa.map((x, i) => ({ q: tr.qa![i]?.q || x.q, a: tr.qa![i]?.a || x.a }));
+  }
+  return { ...base, note, qa };
 }
