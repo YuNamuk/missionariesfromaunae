@@ -40,6 +40,14 @@ export function youtubeEmbed(v?: string, locale?: Locale): string | null {
   return `https://www.youtube.com/embed/${m[1]}?${params.join("&")}`;
 }
 
+/** YouTube URL 또는 11자 ID → 영상 ID(없으면 null). IFrame Player API용. */
+export function youtubeId(v?: string): string | null {
+  if (!v) return null;
+  const s = v.trim();
+  const m = s.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/) || s.match(/^([A-Za-z0-9_-]{11})$/);
+  return m ? m[1] : null;
+}
+
 export async function fetchInterviewVideos(): Promise<Record<string, InterviewVideo>> {
   const db = getSupabase();
   if (!db) return {};

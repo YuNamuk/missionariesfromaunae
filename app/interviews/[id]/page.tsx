@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { fetchInterview, fetchInterviewVideos, youtubeEmbed } from "@/lib/db/interviews";
+import { fetchInterview, fetchInterviewVideos, youtubeId } from "@/lib/db/interviews";
 import { PHOTOS } from "@/lib/data/photos";
 import { InterviewVideoEditor } from "@/components/interview-video-editor";
+import { YouTubePlayer } from "@/components/youtube-player";
 import { getLocale } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
   const e = await fetchInterview(id, locale);
   if (!e) notFound();
   const videos = await fetchInterviewVideos();
-  const embed = youtubeEmbed(e.video.youtube, locale);
+  const vid = youtubeId(e.video.youtube);
   const portrait = PHOTOS[e.personId]?.photo ?? e.hero.src;
 
   return (
@@ -32,8 +33,8 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
       <div className="w-full" style={{ background: "#140d07" }}>
         <div className="mx-auto max-w-5xl px-4 pt-8">
           <div className="relative aspect-video w-full overflow-hidden rounded-2xl" style={{ background: "#000", boxShadow: "0 20px 60px rgba(0,0,0,.5)" }}>
-            {embed ? (
-              <iframe src={embed} title={`${e.personName} 가상 인터뷰`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="absolute inset-0 h-full w-full" />
+            {vid ? (
+              <YouTubePlayer videoId={vid} lang={locale} title={`${e.personName} 가상 인터뷰`} />
             ) : (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
