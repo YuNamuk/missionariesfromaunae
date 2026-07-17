@@ -52,6 +52,11 @@ export function YouTubePlayer({ videoId, lang, title }: { videoId: string; lang:
       } catch { /* 자막 없음 등 — 무시 */ }
     };
 
+    // 여러 시점에 자막을 재적용(트랙 목록이 늦게 로드되거나, 전체화면 전환 시 초기화되는 경우 대비).
+    const reapply = (delays: number[]) => delays.forEach((d) => setTimeout(() => { if (!cancelled && player) applyCaptions(player); }, d));
+    // 모바일 전체화면 진입/이탈 시 유튜브가 자막 모듈을 리셋 → 전환 후 다시 켠다.
+    const onFs = () => reapply([300, 900, 1800]);
+
     loadApi().then(() => {
       if (cancelled || !holder.current) return;
       const el = document.createElement("div");
@@ -62,15 +67,22 @@ export function YouTubePlayer({ videoId, lang, title }: { videoId: string; lang:
         videoId,
         playerVars: { rel: 0, cc_load_policy: 1, cc_lang_pref: lang, hl: lang, modestbranding: 1 },
         events: {
-          onReady: (e: any) => applyCaptions(e.target),
-          // 자막 모듈은 재생 직전/직후 로드되므로, 그 시점에 한 번 더 강제.
+          onReady: (e: any) => { applyCaptions(e.target); reapply([600, 1500]); },
+          // 자막 모듈은 재생 직전/직후·전체화면 전환 시 로드되므로 그 시점에 다시 강제.
           onApiChange: (e: any) => applyCaptions(e.target),
           onStateChange: (e: any) => { if (e.data === 1) applyCaptions(e.target); }, // playing
         },
       });
+      document.addEventListener("fullscreenchange", onFs);
+      document.addEventListener("webkitfullscreenchange", onFs as EventListener);
     });
 
-    return () => { cancelled = true; try { player?.destroy?.(); } catch { /* noop */ } };
+    return () => {
+      cancelled = true;
+      document.removeEventListener("fullscreenchange", onFs);
+      document.removeEventListener("webkitfullscreenchange", onFs as EventListener);
+      try { player?.destroy?.(); } catch { /* noop */ }
+    };
   }, [videoId, lang]);
 
   return <div ref={holder} title={title} className="absolute inset-0 h-full w-full" />;
