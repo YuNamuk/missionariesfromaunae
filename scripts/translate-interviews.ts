@@ -57,15 +57,28 @@ Rules:
 
 async function run() {
   const { locales, id, force } = parseArgs();
-  const cols = RESEARCH_COLUMNS.filter((c) => Array.isArray(c.interview) && c.interview.length > 0 && (!id || c.personId === id));
-  console.log(`인터뷰 번역 — locales=${locales.join(",")} 대상=${cols.length}편${force ? " (force)" : ""}`);
+  // 출처: 심화 컬럼의 interview + 관리자/시드 오버레이(interview.content.*). 오버레이가 우선.
+  type Item = { personId: string; note: string; qa: { q: string; a: string }[] };
+  const items: Item[] = RESEARCH_COLUMNS
+    .filter((c) => Array.isArray(c.interview) && c.interview.length > 0)
+    .map((c) => ({ personId: c.personId, note: c.interviewNote, qa: c.interview.map((x) => ({ q: x.q, a: x.a })) }));
+  const { data: ovr } = await db.from("app_settings").select("key,value").like("key", "interview.content.%");
+  for (const r of (ovr ?? []) as { key: string; value: unknown }[]) {
+    const pid = r.key.replace("interview.content.", "");
+    const v = r.value as { note?: string; qa?: { q: string; a: string }[] } | null;
+    if (!v || typeof v !== "object" || !Array.isArray(v.qa) || !v.qa.length) continue;
+    const entry: Item = { personId: pid, note: v.note ?? "", qa: v.qa.map((x) => ({ q: x.q, a: x.a })) };
+    const i = items.findIndex((x) => x.personId === pid);
+    if (i >= 0) items[i] = entry; else items.push(entry);
+  }
+  const targets = items.filter((x) => !id || x.personId === id);
+  console.log(`인터뷰 번역 — locales=${locales.join(",")} 대상=${targets.length}편${force ? " (force)" : ""}`);
   let done = 0, skipped = 0; const fails: string[] = [];
   for (const locale of locales) {
-    for (const c of cols) {
-      const key = `i18n.${locale}.interview.${c.personId}`;
+    for (const it of targets) {
+      const key = `i18n.${locale}.interview.${it.personId}`;
       if (!force && (await exists(key))) { skipped++; continue; }
-      const src = { note: c.interviewNote, qa: c.interview.map((x) => ({ q: x.q, a: x.a })) };
-      try { await put(key, await translate(locale, src)); done++; console.log(`  ✓ ${key} (${c.interview.length}문답)`); }
+      try { await put(key, await translate(locale, { note: it.note, qa: it.qa })); done++; console.log(`  ✓ ${key} (${it.qa.length}문답)`); }
       catch (e) { fails.push(`${key}: ${(e as Error).message}`); console.log(`  ✗ ${key} — ${(e as Error).message}`); }
       await SLEEP(400);
     }

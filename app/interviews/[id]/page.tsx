@@ -53,7 +53,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
               <h1 className="font-serif text-2xl font-bold text-[#fff8ec]">{e.personName} <span className="text-[15px] font-semibold text-white/60">· {T("가상 인터뷰", "Virtual Interview", "Виртуал ярилцлага")}</span></h1>
               <p className="truncate text-[12.5px] text-white/55">{e.author}</p>
             </div>
-            <Link href={`/research/story/${e.columnId}`} className="flex-none rounded-full border border-white/25 px-3 py-1.5 text-[12.5px] font-bold text-white/90 hover:bg-white/10">{T("심화 이야기", "Deep dive", "Гүнзгий")} →</Link>
+            {e.columnId && <Link href={`/research/story/${e.columnId}`} className="flex-none rounded-full border border-white/25 px-3 py-1.5 text-[12.5px] font-bold text-white/90 hover:bg-white/10">{T("심화 이야기", "Deep dive", "Гүнзгий")} →</Link>}
           </div>
         </div>
       </div>

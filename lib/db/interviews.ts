@@ -2,6 +2,7 @@ import "server-only";
 import { getSupabase } from "./supabase";
 import { fetchAllColumns } from "./columns";
 import { getPerson } from "@/lib/data";
+import { PHOTOS } from "@/lib/data/photos";
 import type { ColumnInterview, ColumnImage } from "@/lib/data/columns";
 import type { Locale } from "@/lib/i18n/locale";
 import { fetchAllPersonI18n, fetchInterviewI18n, ov } from "@/lib/i18n/content";
@@ -11,6 +12,8 @@ import { fetchAllPersonI18n, fetchInterviewI18n, ov } from "@/lib/i18n/content";
 // [[research-column-pipeline]]
 
 export interface InterviewVideo { youtube?: string; poster?: string }
+/** 관리자 편집/시드 인터뷰 오버레이(한국어). 컬럼이 없는 인물도 이것만으로 인터뷰가 생긴다. */
+export interface InterviewContent { note?: string; qa?: ColumnInterview[]; hero?: ColumnImage; author?: string }
 export interface InterviewEntry {
   id: string;            // = personId
   personId: string;
@@ -42,31 +45,56 @@ export async function fetchInterviewVideos(): Promise<Record<string, InterviewVi
 }
 
 /** 관리자가 /admin에서 편집한 인터뷰 문답 오버레이(한국어). 있으면 컬럼 원본보다 우선. */
-async function fetchContentOverride(personId: string): Promise<{ note?: string; qa?: ColumnInterview[] } | null> {
+async function fetchContentOverride(personId: string): Promise<InterviewContent | null> {
   const db = getSupabase();
   if (!db) return null;
   try {
     const { data } = await db.from("app_settings").select("value").eq("key", `interview.content.${personId}`).maybeSingle();
-    return (data?.value && typeof data.value === "object" ? data.value : null) as { note?: string; qa?: ColumnInterview[] } | null;
+    return (data?.value && typeof data.value === "object" ? data.value : null) as InterviewContent | null;
   } catch { return null; }
 }
 
+/** 모든 인터뷰 문답 오버레이(personId → 내용). 컬럼 없는 인물 인터뷰 포함용. */
+export async function fetchAllContentOverrides(): Promise<Record<string, InterviewContent>> {
+  const db = getSupabase();
+  if (!db) return {};
+  try {
+    const { data } = await db.from("app_settings").select("key,value").like("key", "interview.content.%");
+    const out: Record<string, InterviewContent> = {};
+    for (const r of (data ?? []) as { key: string; value: unknown }[]) {
+      if (r.value && typeof r.value === "object") out[r.key.replace("interview.content.", "")] = r.value as InterviewContent;
+    }
+    return out;
+  } catch { return {}; }
+}
+
 export async function fetchInterviews(locale: Locale = "ko"): Promise<InterviewEntry[]> {
-  const [cols, vids, names] = await Promise.all([fetchAllColumns(), fetchInterviewVideos(), fetchAllPersonI18n(locale)]);
-  return cols
-    .filter((c) => Array.isArray(c.interview) && c.interview.length > 0)
-    .map((c) => ({
-      id: c.personId,
-      personId: c.personId,
+  const [cols, vids, names, overrides] = await Promise.all([fetchAllColumns(), fetchInterviewVideos(), fetchAllPersonI18n(locale), fetchAllContentOverrides()]);
+  const map = new Map<string, InterviewEntry>();
+  // 1) 심화 컬럼에서 파생한 인터뷰
+  for (const c of cols) {
+    if (!Array.isArray(c.interview) || !c.interview.length) continue;
+    map.set(c.personId, {
+      id: c.personId, personId: c.personId,
       personName: ov(getPerson(c.personId)?.name ?? c.personId, names[c.personId]?.name),
-      columnId: c.id,
-      columnTitle: c.title,
-      author: c.author,
-      note: c.interviewNote,
-      hero: c.hero,
-      qa: c.interview,
-      video: vids[c.personId] ?? {},
-    }));
+      columnId: c.id, columnTitle: c.title, author: c.author,
+      note: c.interviewNote, hero: c.hero, qa: c.interview, video: vids[c.personId] ?? {},
+    });
+  }
+  // 2) 컬럼 없이 오버레이만으로 등록된 인터뷰(예: 헤론·레이놀즈)
+  for (const [pid, ovr] of Object.entries(overrides)) {
+    if (map.has(pid) || !Array.isArray(ovr.qa) || !ovr.qa.length) continue;
+    const p = getPerson(pid);
+    if (!p) continue;
+    const hero = ovr.hero ?? { src: PHOTOS[pid]?.photo ?? "", alt: "", caption: "", credit: "", kind: "portrait" as const };
+    map.set(pid, {
+      id: pid, personId: pid,
+      personName: ov(p.name, names[pid]?.name),
+      columnId: "", columnTitle: "", author: ovr.author ?? "드리미학교 · 학생 탐구",
+      note: ovr.note ?? "", hero, qa: ovr.qa.map((x) => ({ q: x.q, a: x.a })), video: vids[pid] ?? {},
+    });
+  }
+  return [...map.values()];
 }
 
 /** 단일 인터뷰 — 관리자 문답 오버레이(ko) 우선 적용 후, 로케일 번역까지 덮는다. */

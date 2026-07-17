@@ -754,21 +754,24 @@ export default function AdminPage() {
       )}
 
       {activeTab === "interviews" && (() => {
-        const cols = RESEARCH_COLUMNS.filter((c) => Array.isArray(c.interview) && c.interview.length > 0);
-        if (!cols.length) return <p style={{ fontSize: 13.5, color: C.muted }}>인터뷰가 있는 심화 컬럼이 없습니다.</p>;
-        const pid = ivSel || cols[0].personId;
-        const col = cols.find((c) => c.personId === pid) ?? cols[0];
+        const colMap: Record<string, (typeof RESEARCH_COLUMNS)[number]> = {};
+        for (const c of RESEARCH_COLUMNS) if (Array.isArray(c.interview) && c.interview.length > 0) colMap[c.personId] = c;
+        const ovrPids = Object.keys(settings).filter((k) => k.startsWith("interview.content.") && settings[k] && typeof settings[k] === "object").map((k) => k.slice("interview.content.".length));
+        const pids = [...new Set([...Object.keys(colMap), ...ovrPids])];
+        if (!pids.length) return <p style={{ fontSize: 13.5, color: C.muted }}>인터뷰가 있는 심화 컬럼이 없습니다.</p>;
+        const pid = pids.includes(ivSel) ? ivSel : pids[0];
+        const col = colMap[pid];
         const videos = (settings["interview.videos"] && typeof settings["interview.videos"] === "object" ? settings["interview.videos"] : {}) as Record<string, { youtube?: string }>;
         const override = (settings[`interview.content.${pid}`] && typeof settings[`interview.content.${pid}`] === "object" ? settings[`interview.content.${pid}`] : null) as { note?: string; qa?: { q: string; a: string }[] } | null;
-        const note = override?.note ?? col.interviewNote;
-        const qa = (override?.qa ?? col.interview).map((x) => ({ q: x.q, a: x.a }));
+        const note = override?.note ?? col?.interviewNote ?? "";
+        const qa = (override?.qa ?? col?.interview ?? []).map((x) => ({ q: x.q, a: x.a }));
         const youtube = videos[pid]?.youtube ?? "";
         const nm = getPerson(pid)?.name ?? pid;
-        const setContent = (next: { note: string; qa: { q: string; a: string }[] }) => set(`interview.content.${pid}`, next);
+        const setContent = (next: { note: string; qa: { q: string; a: string }[] }) => set(`interview.content.${pid}`, { ...(override ?? {}), ...next });
         const setVideo = (v: string) => set("interview.videos", { ...videos, [pid]: { ...(videos[pid] ?? {}), youtube: v } });
         const saveIv = async () => {
           setSaving(true); setMsg("");
-          const body = { kind: "settings", settings: { "interview.videos": settings["interview.videos"] ?? {}, [`interview.content.${pid}`]: { note, qa } }, label: `가상 인터뷰 — ${nm}` };
+          const body = { kind: "settings", settings: { "interview.videos": settings["interview.videos"] ?? {}, [`interview.content.${pid}`]: { ...(override ?? {}), note, qa } }, label: `가상 인터뷰 — ${nm}` };
           const err = await post(body);
           setSaving(false);
           setMsg(err ? "저장 실패: " + err : myRole === "content" ? "✓ 제안 등록됨 — 교사 승인 후 반영됩니다" : "✓ 저장됨 (인터뷰 페이지에 곧 반영)");
@@ -778,9 +781,9 @@ export default function AdminPage() {
             <p style={{ margin: 0, fontSize: 12.5, color: C.muted, lineHeight: 1.6 }}>인터뷰 영상(YouTube)과 문답을 수정합니다. 문답은 <b>/interviews</b> 페이지에 반영되며, 심화 컬럼의 원본 대신 여기서 저장한 내용이 우선합니다. {myRole === "content" && <b style={{ color: "#a0641f" }}>저장 시 교사 승인 대기 제안으로 등록됩니다.</b>}</p>
             {/* 인물 선택 */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {cols.map((c) => {
-                const on = c.personId === pid;
-                return <button key={c.personId} onClick={() => setIvSel(c.personId)} style={{ borderRadius: 99, border: `1px solid ${on ? "#9b3d2d" : C.line}`, background: on ? "#9b3d2d" : "rgba(255,255,255,.6)", color: on ? "#fff8ed" : "#5f4d39", fontSize: 12.5, fontWeight: 800, padding: "6px 12px", cursor: "pointer" }}>{getPerson(c.personId)?.name ?? c.personId}</button>;
+              {pids.map((cpid) => {
+                const on = cpid === pid;
+                return <button key={cpid} onClick={() => setIvSel(cpid)} style={{ borderRadius: 99, border: `1px solid ${on ? "#9b3d2d" : C.line}`, background: on ? "#9b3d2d" : "rgba(255,255,255,.6)", color: on ? "#fff8ed" : "#5f4d39", fontSize: 12.5, fontWeight: 800, padding: "6px 12px", cursor: "pointer" }}>{getPerson(cpid)?.name ?? cpid}{!colMap[cpid] && " 🎬"}</button>;
               })}
             </div>
 
@@ -804,7 +807,7 @@ export default function AdminPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                   <label style={{ ...label, margin: 0 }}>문답 ({qa.length})</label>
                   <button onClick={() => setContent({ note, qa: [...qa, { q: "", a: "" }] })} style={{ ...btn, background: "#7a6a52", padding: "5px 11px", fontSize: 12 }}>+ 문답 추가</button>
-                  {override && <button onClick={() => set(`interview.content.${pid}`, undefined)} style={{ border: `1px solid ${C.line}`, background: "transparent", color: "#9b3d2d", borderRadius: 8, padding: "5px 10px", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>원본으로 되돌리기</button>}
+                  {override && col && <button onClick={() => set(`interview.content.${pid}`, undefined)} style={{ border: `1px solid ${C.line}`, background: "transparent", color: "#9b3d2d", borderRadius: 8, padding: "5px 10px", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>원본으로 되돌리기</button>}
                 </div>
                 <div style={{ display: "grid", gap: 10 }}>
                   {qa.map((x, i) => (
