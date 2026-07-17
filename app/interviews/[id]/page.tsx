@@ -23,7 +23,7 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
   const e = await fetchInterview(id, locale);
   if (!e) notFound();
   const videos = await fetchInterviewVideos();
-  const embed = youtubeEmbed(e.video.youtube);
+  const embed = youtubeEmbed(e.video.youtube, locale);
   const portrait = PHOTOS[e.personId]?.photo ?? e.hero.src;
 
   return (

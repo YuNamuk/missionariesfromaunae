@@ -27,12 +27,17 @@ export interface InterviewEntry {
   video: InterviewVideo;
 }
 
-/** YouTube URL 또는 11자 ID → 임베드 URL(없으면 null). */
-export function youtubeEmbed(v?: string): string | null {
+/** YouTube URL 또는 11자 ID → 임베드 URL(없으면 null).
+ *  locale을 주면 그 언어 자막을 자동으로 켜고 플레이어 UI 언어도 맞춘다
+ *  (cc_load_policy=1 · cc_lang_pref=<lang> · hl=<lang>). 자동번역 자막도 선택된다. */
+export function youtubeEmbed(v?: string, locale?: Locale): string | null {
   if (!v) return null;
   const s = v.trim();
   const m = s.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/) || s.match(/^([A-Za-z0-9_-]{11})$/);
-  return m ? `https://www.youtube.com/embed/${m[1]}?rel=0` : null;
+  if (!m) return null;
+  const params = ["rel=0"];
+  if (locale) params.push("cc_load_policy=1", `cc_lang_pref=${locale}`, `hl=${locale}`);
+  return `https://www.youtube.com/embed/${m[1]}?${params.join("&")}`;
 }
 
 export async function fetchInterviewVideos(): Promise<Record<string, InterviewVideo>> {
