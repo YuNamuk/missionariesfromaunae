@@ -8,7 +8,8 @@ const AI = "AI 생성 일러스트(회화체 재구성)";
 
 const WILLIAMS = {
   note: "학생(이한결)이 우리암(F.E.C. Williams) 선교사의 생애와 사료를 바탕으로 재구성한 가상 인터뷰입니다. 실제 발언 기록이 아닙니다.",
-  author: "드리미학교 ‘Missionaries from Aunae’ · 이한결 · AI 재현 인터뷰",
+  author: "드리미학교 ‘Missionaries from Aunae’ · AI 재현 인터뷰",
+  scenarioBy: "이한결", scenarioCohort: "7",
   hero: { src: "/research-img/williams-hero.jpg", alt: "공주 영명학교 마당에서 학생들과 함께한 장면", caption: "공주 영명학교 — 우리암이 30여 년을 바친 배움의 터.", credit: AI, kind: "ai" },
   qa: [
     { q: "선교사님, 먼저 소개를 부탁드립니다.", a: "안녕하십니까. 저는 미국 콜로라도에서 태어난 미감리회 선교사 프랭크 윌리엄스입니다. 조선에서는 ‘우리암’이라는 이름으로 불렸습니다. 1906년에 조선에 들어와 이듬해 충청 내륙의 공주에 자리를 잡았고, 그곳 영명학교에서 30여 년을 지냈습니다." },

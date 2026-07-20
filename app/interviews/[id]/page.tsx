@@ -56,6 +56,20 @@ export default async function InterviewPage({ params }: { params: Promise<{ id: 
             </div>
             {e.columnId && <Link href={`/research/story/${e.columnId}`} className="flex-none rounded-full border border-white/25 px-3 py-1.5 text-[12.5px] font-bold text-white/90 hover:bg-white/10">{T("심화 이야기", "Deep dive", "Гүнзгий")} →</Link>}
           </div>
+          {(() => {
+            const school = (c?: string) => (c ? " · " + T(`드리미학교 ${c}기`, `Drimi School · Cohort ${c}`, `Дриеми сургууль · ${c}-р анги`) : "");
+            const items: { label: string; name: string; cohort?: string }[] = [];
+            if (e.scenarioBy) items.push({ label: T("시나리오", "Scenario", "Сценар"), name: e.scenarioBy, cohort: e.scenarioCohort });
+            if (e.videoBy) items.push({ label: T("영상제작", "Video", "Видео"), name: e.videoBy, cohort: e.videoCohort });
+            if (!items.length) return null;
+            return (
+              <div className="flex flex-wrap gap-x-5 gap-y-1.5 border-t border-white/10 pb-5 pt-3 text-[12.5px] text-white/70">
+                {items.map((it, i) => (
+                  <span key={i}><span className="font-bold text-white/50">{it.label}</span>  {it.name}<span className="text-white/45">{school(it.cohort)}</span></span>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
 

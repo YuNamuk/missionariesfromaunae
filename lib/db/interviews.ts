@@ -12,9 +12,11 @@ import { fetchAllPersonI18n, fetchInterviewI18n, ov } from "@/lib/i18n/content";
 // [[research-column-pipeline]]
 
 export interface InterviewVideo { youtube?: string; poster?: string }
+/** 제작 크레딧 — 시나리오/영상제작 담당 학생과 기수(드리미학교 N기). 이름만 있으면 표시된다. */
+export interface InterviewCredits { scenarioBy?: string; scenarioCohort?: string; videoBy?: string; videoCohort?: string }
 /** 관리자 편집/시드 인터뷰 오버레이(한국어). 컬럼이 없는 인물도 이것만으로 인터뷰가 생긴다. */
-export interface InterviewContent { note?: string; qa?: ColumnInterview[]; hero?: ColumnImage; author?: string }
-export interface InterviewEntry {
+export interface InterviewContent extends InterviewCredits { note?: string; qa?: ColumnInterview[]; hero?: ColumnImage; author?: string }
+export interface InterviewEntry extends InterviewCredits {
   id: string;            // = personId
   personId: string;
   personName: string;
@@ -25,6 +27,17 @@ export interface InterviewEntry {
   hero: ColumnImage;
   qa: ColumnInterview[];
   video: InterviewVideo;
+}
+
+/** InterviewContent에서 크레딧 4필드만 추려낸다(빈 문자열은 무시). */
+function pickCredits(c?: InterviewCredits | null): InterviewCredits {
+  const out: InterviewCredits = {};
+  if (!c) return out;
+  for (const k of ["scenarioBy", "scenarioCohort", "videoBy", "videoCohort"] as const) {
+    const v = c[k];
+    if (typeof v === "string" && v.trim()) out[k] = v.trim();
+  }
+  return out;
 }
 
 /** YouTube URL 또는 11자 ID → 임베드 URL(없으면 null).
@@ -107,6 +120,8 @@ export async function fetchInterviews(locale: Locale = "ko"): Promise<InterviewE
       note: ovr.note ?? "", hero, qa: ovr.qa.map((x) => ({ q: x.q, a: x.a })), video: vids[pid] ?? {},
     });
   }
+  // 3) 제작 크레딧(시나리오·영상제작) — 컬럼/오버레이 모두 오버레이에서 읽어 덮는다.
+  for (const [pid, entry] of map) Object.assign(entry, pickCredits(overrides[pid]));
   return [...map.values()];
 }
 

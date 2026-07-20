@@ -762,12 +762,13 @@ export default function AdminPage() {
         const pid = pids.includes(ivSel) ? ivSel : pids[0];
         const col = colMap[pid];
         const videos = (settings["interview.videos"] && typeof settings["interview.videos"] === "object" ? settings["interview.videos"] : {}) as Record<string, { youtube?: string }>;
-        const override = (settings[`interview.content.${pid}`] && typeof settings[`interview.content.${pid}`] === "object" ? settings[`interview.content.${pid}`] : null) as { note?: string; qa?: { q: string; a: string }[] } | null;
+        const override = (settings[`interview.content.${pid}`] && typeof settings[`interview.content.${pid}`] === "object" ? settings[`interview.content.${pid}`] : null) as { note?: string; qa?: { q: string; a: string }[]; scenarioBy?: string; scenarioCohort?: string; videoBy?: string; videoCohort?: string } | null;
         const note = override?.note ?? col?.interviewNote ?? "";
         const qa = (override?.qa ?? col?.interview ?? []).map((x) => ({ q: x.q, a: x.a }));
         const youtube = videos[pid]?.youtube ?? "";
         const nm = getPerson(pid)?.name ?? pid;
         const setContent = (next: { note: string; qa: { q: string; a: string }[] }) => set(`interview.content.${pid}`, { ...(override ?? {}), ...next });
+        const setCredit = (patch: Record<string, string>) => set(`interview.content.${pid}`, { ...(override ?? {}), note, qa, ...patch });
         const setVideo = (v: string) => set("interview.videos", { ...videos, [pid]: { ...(videos[pid] ?? {}), youtube: v } });
         const saveIv = async () => {
           setSaving(true); setMsg("");
@@ -796,6 +797,17 @@ export default function AdminPage() {
                 <label style={label}>AI 재현 인터뷰 영상 (YouTube 주소 또는 영상 ID)</label>
                 <input style={input} value={youtube} placeholder="https://youtu.be/XXXXXXXXXXX · https://www.youtube.com/watch?v=XXXXXXXXXXX" onChange={(e) => setVideo(e.target.value)} />
                 {youtube && <p style={{ margin: "6px 0 0", fontSize: 11.5, color: C.muted }}>미리보기: <a href={youtube} target="_blank" rel="noreferrer" style={{ color: "#1f6f8b", fontWeight: 700 }}>{youtube}</a> · 링크를 비우면 ‘영상 준비 중’으로 표시됩니다.</p>}
+              </div>
+
+              <div>
+                <label style={label}>제작 크레딧 (영상 아래 표시 · 이름만 넣어도 됨)</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 90px 1fr 90px", gap: 8 }}>
+                  <input style={input} placeholder="시나리오 이름" value={override?.scenarioBy ?? ""} onChange={(e) => setCredit({ scenarioBy: e.target.value })} />
+                  <input style={input} placeholder="기수" value={override?.scenarioCohort ?? ""} onChange={(e) => setCredit({ scenarioCohort: e.target.value })} />
+                  <input style={input} placeholder="영상제작 이름" value={override?.videoBy ?? ""} onChange={(e) => setCredit({ videoBy: e.target.value })} />
+                  <input style={input} placeholder="기수" value={override?.videoCohort ?? ""} onChange={(e) => setCredit({ videoCohort: e.target.value })} />
+                </div>
+                <p style={{ margin: "5px 0 0", fontSize: 11, color: C.muted }}>기수는 숫자만(예: 7) — ‘드리미학교 7기’로 표기됩니다. 한 사람이 둘 다 했으면 두 칸에 같은 이름을 넣으세요.</p>
               </div>
 
               <div>
