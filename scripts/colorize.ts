@@ -46,6 +46,7 @@ const HINTS: Record<string, string> = {
   shepping: " IMPORTANT IDENTITY: the subject is a WOMAN — Elisabeth Shepping (서서평), a female missionary nurse with round eyeglasses and center-parted hair, wearing a dark high-collar dress. She is female; render her as a woman and never as a man.",
   seogyeongjo: " IMPORTANT: this is an elderly Korean man (서경조) in traditional late-Joseon dress — white hanbok and a black horsehair gat. He has NOTHING in his mouth — do not add a pipe or cigarette. Keep the clothing authentically traditional (not modern).",
   gilseonju: " IMPORTANT: Korean pastor 길선주 wears a WHITE traditional Korean hanbok/durumagi (off-white/ivory), NOT blue. Color the garment white.",
+  sharp: " IMPORTANT IDENTITY: the subject is an ELDERLY WOMAN — Alice Hammond Sharp (사애리시), a female American missionary. She WEARS ROUND METAL-RIMMED EYEGLASSES in the original — you MUST KEEP the eyeglasses exactly as they are (do NOT remove them; this overrides any general rule about not adding glasses). Grey hair pulled back and parted, calm expression, wearing a dark high-collar dress with a hint of white collar. Render her as an elderly woman; preserve her exact face and age.",
 };
 
 const ext = (id: string) => [".jpg", ".jpeg", ".png"].map((e) => path.join(DIR, id + e));

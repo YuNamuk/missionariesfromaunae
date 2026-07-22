@@ -25,6 +25,7 @@ export const PHOTOS: Record<string, PersonPhoto> = {
   trollope: { qid: "Q6770039", photo: "/portraits/trollope.jpg", wiki: "", wikiEn: "https://en.wikipedia.org/wiki/Mark_Trollope", source: C },
   fenwick: { qid: "", photo: "/portraits/fenwick.jpg", wiki: "", source: "M. C. Fenwick, 『The Church of Christ in Corea』(1911) 권두 도판 ‘Mr. Fenwick and Pastor Sen’ — 퍼블릭 도메인(archive.org)" },
   eugenebell: { qid: "", photo: "/portraits/eugenebell.jpg", wiki: "https://ko.wikipedia.org/wiki/유진_벨", source: "유진 벨(배유지) 20세기 초 초상 — 남장로회 호남 선교 자료(공개). 학생 탐구 제출본" },
+  sharp: { qid: "", photo: "/portraits/sharp.jpg", wiki: "", source: "사애리시(Alice Hammond Sharp) 20세기 초 초상 — 공개 보도자료 도판(관리자 제공)" },
   allen: { qid: "Q505508", photo: "/portraits/allen.jpg", wiki: "https://ko.wikipedia.org/wiki/호러스_뉴턴_알렌", wikiEn: "https://en.wikipedia.org/wiki/Horace_Newton_Allen", namu: "https://namu.wiki/w/호러스 뉴턴 알렌", source: C },
   underwood: { qid: "Q623878", photo: "/portraits/underwood.jpg", wiki: "https://ko.wikipedia.org/wiki/호러스_그랜트_언더우드", wikiEn: "https://en.wikipedia.org/wiki/Horace_Grant_Underwood", namu: "https://namu.wiki/w/호러스 그랜트 언더우드", source: C },
   appenzeller: { qid: "Q1145616", photo: "/portraits/appenzeller.jpg", wiki: "https://ko.wikipedia.org/wiki/헨리_아펜젤러", wikiEn: "https://en.wikipedia.org/wiki/Henry_Appenzeller", namu: "https://namu.wiki/w/헨리 아펜젤러", source: C },
