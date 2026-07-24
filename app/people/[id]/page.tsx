@@ -16,6 +16,8 @@ import {
 import { PHOTOS } from "@/lib/data/photos";
 import { profileFor } from "@/lib/data/profiles";
 import { fetchColumnForPerson } from "@/lib/db/columns";
+import { fetchInterviewVideos, youtubeId } from "@/lib/db/interviews";
+import { YouTubePlayer } from "@/components/youtube-player";
 import { fetchPersonContent, fetchReview } from "@/lib/db/editable";
 import { getLocale } from "@/lib/i18n/server";
 import { fetchPersonI18n, fetchAllPersonI18n, fetchPlacesI18n, fetchRelationsI18n, ov } from "@/lib/i18n/content";
@@ -122,6 +124,8 @@ export default async function PersonPage({
   const sources = sourcesRaw.map((s, i) => ({ ...s, t: tr?.sources?.[i]?.t || s.t, a: tr?.sources?.[i]?.a || s.a }));
   // 관련 영상: 관리자 오버레이(있으면 우선) ?? 코드 기본. 여러 개 가능.
   const videos = ovc?.videos ?? profile?.videos ?? [];
+  // 가상 인터뷰 AI 재현 영상이 있으면 이 인물의 '관련 영상' 맨 위에 먼저 노출(타 사이트 영상보다 우선).
+  const interviewVid = youtubeId((await fetchInterviewVideos())[person.id]?.youtube);
   // 외부 링크: 관리자 오버레이(있으면 우선) ?? PHOTOS 기본.
   const extLinks = ovc?.links?.length ? ovc.links.filter((l) => l.href) : defaultExtLinks;
   const hasNarrative = !!(c.story?.length || c.journey || c.ministry.length || c.influence || c.beauty);
@@ -382,10 +386,23 @@ export default async function PersonPage({
       </div>
 
       {/* 관련 영상 — 페이지 안에서 재생(유튜브 로고 누르면 유튜브로 이동) */}
-      {videos.length > 0 && (
+      {(interviewVid || videos.length > 0) && (
         <section id="videos" className="mt-10 scroll-mt-28">
           <h2 className="font-display text-lg font-extrabold text-ink-900">{T("관련 영상", "Related videos", "Холбоотой бичлэг")}</h2>
           <div className="mt-4 space-y-6">
+            {/* 가상 인터뷰(AI 재현) 영상을 최우선 노출 — 현재 언어 자막 자동 대응 플레이어 */}
+            {interviewVid && (
+              <figure className="m-0">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#9b3d2d] px-2.5 py-1 text-[11.5px] font-extrabold text-[#fff8ed]">🎬 {T("가상 인터뷰", "Virtual interview", "Виртуал ярилцлага")}</span>
+                  <Link href={`/interviews/${person.id}`} className="text-[12.5px] font-bold text-sky-700 hover:underline">{T("인터뷰 페이지에서 보기", "Open interview page", "Ярилцлагын хуудас")} →</Link>
+                </div>
+                <div className="relative w-full overflow-hidden rounded-2xl border border-ink-200" style={{ aspectRatio: "16 / 9", background: "#000" }}>
+                  <YouTubePlayer videoId={interviewVid} lang={locale} title={`${L.name} ${T("가상 인터뷰", "Virtual interview", "Виртуал ярилцлага")}`} />
+                </div>
+                <figcaption className="mt-2 text-[12.5px] text-ink-500">{L.name} · {T("가상 인터뷰(AI 재현) — 드리미학교 학생 제작", "Virtual interview (AI reconstruction) — made by Drimi School students", "Виртуал ярилцлага (AI сэргээлт) — Дриеми сургуулийн сурагчид")}</figcaption>
+              </figure>
+            )}
             {videos.map((v) => {
               const id = ytId(v.url);
               return (
