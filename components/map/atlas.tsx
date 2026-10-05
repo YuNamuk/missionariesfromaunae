@@ -1061,7 +1061,7 @@ export function Atlas({ data, lens = "people" }: { data: AtlasData; lens?: Lens 
         <div style={{ position: "absolute", inset: 14, borderRadius: 18, overflow: "hidden", border: `1px solid ${C.line}` }}>
           <MapContainer center={[38.4, 127.5]} zoom={6} minZoom={4} maxZoom={18} zoomControl={false} scrollWheelZoom={false} zoomSnap={0} zoomDelta={0.6} zoomAnimationThreshold={4} style={{ height: "100%", width: "100%" }}>
             <SmoothWheelZoom />
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" subdomains="abcd" attribution="&copy; OpenStreetMap &copy; CARTO" maxZoom={19} maxNativeZoom={19} />
+            <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" maxZoom={19} maxNativeZoom={19} />
             <HistoricalOverlay year={year} on={showGeo} />
             <MapPanes />
             <MapBinder mapRef={mapRef} viewRef={viewRef} />
